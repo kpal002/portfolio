@@ -1,0 +1,116 @@
+/* -----------------------------------------------------------
+   Global stylesheet — brutalist + AI futuristic
+   - Cream background, near-black text, single electric accent
+   - Hard-edged borders and shadows, sharp corners, bold mono
+   - Background utilities skew technical: dot grid, cross hatch,
+     subtle horizontal scan lines
+   ----------------------------------------------------------- */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth in-page scrolling for anchor links. */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Body baseline. */
+body {
+  background-color: #fbf3e0;
+  color: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lime selection — matches the single accent. */
+::selection {
+  background-color: #a3e635;
+  color: #0a0a0a;
+}
+
+/* Custom scrollbar — chunky, on-theme. */
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+::-webkit-scrollbar-track {
+  background: #fbf3e0;
+  border-left: 2px solid #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #0a0a0a;
+  border: 2px solid #fbf3e0;
+}
+
+/* -----------------------------------------------------------
+   Decorative background utilities — all monochrome / accent-only.
+   - .bg-dots:        small dot-grid texture (technical)
+   - .bg-grid-fine:   fine 1px grid (blueprint feel)
+   - .bg-scanlines:   thin horizontal scan lines (CRT / terminal)
+   - .bg-hatch:       subtle diagonal pinstripes
+   ----------------------------------------------------------- */
+
+.bg-dots {
+  background-image: radial-gradient(
+    circle,
+    rgba(10, 10, 10, 0.18) 1px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+
+.bg-grid-fine {
+  background-image:
+    linear-gradient(to right, rgba(10, 10, 10, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(10, 10, 10, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+}
+
+.bg-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 3px,
+    rgba(10, 10, 10, 0.04) 3px,
+    rgba(10, 10, 10, 0.04) 4px
+  );
+}
+
+.bg-hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 14px,
+    rgba(10, 10, 10, 0.05) 14px 15px
+  );
+}
+
+/* Subtle accent line — used inside cards as a top decorative bar. */
+.accent-bar {
+  background:
+    linear-gradient(
+      90deg,
+      #a3e635 0,
+      #a3e635 30%,
+      transparent 30%,
+      transparent 60%,
+      #a3e635 60%,
+      #a3e635 70%,
+      transparent 70%
+    );
+}
+
+/* Hide content visually but keep it accessible to screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
