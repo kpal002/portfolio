@@ -121,7 +121,7 @@ export default function SkTimeAgenticPage() {
         {/* ── 1. Hero ── */}
         <Card>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
-            <span className="text-accent">{">"} </span>open source · esoc 2026 proposal
+            <span className="text-accent">{">"} </span>open source · sktime ecosystem
           </p>
           <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl">
             Agentic Forecaster for sktime
@@ -555,30 +555,29 @@ print(forecast)
           </div>
         </Card>
 
-        {/* ── 13. Roadmap ── */}
+        {/* ── 13. Future Plans ── */}
         <Card>
-          <SectionLabel>Roadmap</SectionLabel>
-          <h2 className="mb-4 text-xl font-bold">What's Next (ESoC 2026)</h2>
+          <SectionLabel>Future Plans</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Where This Is Going</h2>
           <p className="text-sm leading-relaxed text-ink/90 mb-6">
-            This is a 12-week ESoC (Engineering Season of Code) proposal for the sktime project.
-            The roadmap is structured as incremental phases, each building on the last.
+            The current prototype handles univariate selection with a fixed tool surface.
+            Several natural extensions would make it production-ready.
           </p>
           <div className="space-y-3">
             {[
-              { weeks: "Weeks 1–2", title: "MCP Tool Upstreaming", body: "Upstream the core MCP tool surface into sktime as a standalone, reusable module." },
-              { weeks: "Weeks 3–4", title: "AgenticForecaster v0", body: "Core fit/predict loop with in-process tools, mock backend, and the six-tool surface." },
-              { weeks: "Weeks 5–6", title: "Probabilistic Forecasting", body: "Extend the tool surface to support prediction intervals and quantile forecasts." },
-              { weeks: "Weeks 7–8", title: "AgenticPipeline", body: "Compose forecasters with transformers (detrending, deseasonalizing) as an agent-selectable pipeline." },
-              { weeks: "Weeks 9–10", title: "Benchmarking Harness", body: "Systematic comparison against AutoARIMA, ETS, and other AutoML baselines across standard datasets." },
-              { weeks: "Weeks 11–12", title: "Hardening + Docs", body: "Full test coverage, API documentation, and a contributed example notebook for the sktime docs." },
-            ].map((phase) => (
-              <div key={phase.weeks} className="flex items-start gap-4 border-2 border-ink bg-bg p-4">
-                <div className="shrink-0 border-2 border-ink bg-accent px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-ink whitespace-nowrap">
-                  {phase.weeks}
+              { tag: "Next", title: "Probabilistic Forecasting", body: "Extend the tool surface to support prediction intervals and quantile forecasts — not just point predictions." },
+              { tag: "Next", title: "AgenticPipeline", body: "Let the agent compose forecasters with pre-processing transformers (detrending, deseasonalizing, differencing) as a full pipeline, not just a single model." },
+              { tag: "Later", title: "Exogenous Variables", body: "Support for covariates — the agent would need to reason about which external features are relevant and which models can use them." },
+              { tag: "Later", title: "Benchmarking Harness", body: "Systematic comparison against AutoARIMA, ETS, and other AutoML baselines across standard datasets to measure when the agent adds value and when it doesn't." },
+              { tag: "Later", title: "Hyperparameter Search", body: "Currently the agent picks parameters based on reasoning. A tighter loop where it proposes ranges and scores variants would improve accuracy on complex series." },
+            ].map((item) => (
+              <div key={item.title} className="flex items-start gap-4 border-2 border-ink bg-bg p-4">
+                <div className={`shrink-0 border-2 border-ink px-2 py-1 text-[10px] font-bold uppercase tracking-widest whitespace-nowrap ${item.tag === "Next" ? "bg-accent text-ink" : "bg-bg text-muted"}`}>
+                  {item.tag}
                 </div>
                 <div>
-                  <p className="text-sm font-bold">{phase.title}</p>
-                  <p className="mt-1 text-[12px] leading-relaxed text-ink/80">{phase.body}</p>
+                  <p className="text-sm font-bold">{item.title}</p>
+                  <p className="mt-1 text-[12px] leading-relaxed text-ink/80">{item.body}</p>
                 </div>
               </div>
             ))}
