@@ -27,10 +27,10 @@ function Card({ children, className = "" }) {
   );
 }
 
-function Diagram({ src, alt, caption }) {
+function Diagram({ src, alt, caption, maxWidth }) {
   return (
     <figure className="my-6 border-2 border-ink bg-bg p-4">
-      <div className="relative w-full">
+      <div className={`relative ${maxWidth ? "mx-auto" : "w-full"}`} style={maxWidth ? { maxWidth } : {}}>
         <Image
           src={src}
           alt={alt}
@@ -459,6 +459,7 @@ export default function SkTimeAgenticPage() {
             src="/projects/sktime/06_full_flow.png"
             alt="Full end-to-end system flow"
             caption="Figure 6 — Complete flow from .fit() through the ReAct loop to a committed, refitted model. The same flow applies regardless of transport mode or LLM backend."
+            maxWidth="480px"
           />
         </Card>
 
