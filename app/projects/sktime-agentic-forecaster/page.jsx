@@ -593,11 +593,6 @@ export default function SkTimeAgenticPage() {
             model powers it. This is important for cost management: you might use a cheaper
             model in development and a stronger one in production.
           </p>
-          <Diagram
-            src="/projects/sktime/05_backends.png"
-            alt="Supported LLM backends diagram"
-            caption="Figure 5 — Four backends share the same tool-calling interface. The mock backend runs deterministically without any API calls — critical for CI/CD."
-          />
           <div className="grid gap-3 md:grid-cols-2 mt-2">
             {[
               { name: "anthropic", detail: 'Claude (claude-sonnet-4-5 default). Supports prompt caching — reduces input token cost by 60-80% after the first ReAct step by caching the tool schema and system prompt.' },
