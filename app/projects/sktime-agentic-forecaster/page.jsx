@@ -290,32 +290,102 @@ export default function SkTimeAgenticPage() {
           <SectionLabel>Core Mechanism</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">The ReAct Loop</h2>
           <p className="text-sm leading-relaxed text-ink/90 mb-2">
-            <strong>ReAct</strong> (Reasoning + Acting) is a prompting pattern where the LLM
-            alternates between reasoning steps (<em>"I should check if this series has seasonality
-            before picking a model"</em>) and action steps (<em>"call summarize_data"</em>). This
-            back-and-forth continues until the agent calls <code className="bg-ink text-accent px-1">commit</code>.
+            <strong>ReAct</strong> (Reasoning + Acting) is a prompting pattern introduced in a
+            2022 paper by Yao et al. The LLM alternates between a <em>thought</em> step —
+            reasoning about what to do next — and an <em>act</em> step — calling a tool and
+            observing the result. Each observation is appended to the message history, giving
+            the model a growing context of everything it has tried so far.
           </p>
           <Diagram
             src="/projects/sktime/03_react_loop.png"
             alt="ReAct loop diagram showing the reasoning and acting cycle"
-            caption="Figure 2 — The ReAct loop. Each iteration: the LLM reasons about what to do next, picks a tool, receives the result, and reasons again. This continues until commit() is called."
+            caption="Figure 2 — Each ReAct iteration: the LLM reasons, picks a tool, receives the result, and reasons again with updated context. This continues until commit() is called."
           />
           <BulletList items={[
             "The LLM maintains a message history — each tool result becomes part of the context for the next step.",
-            "Max steps is configurable (default 12). If the limit approaches without a commit, the loop emits a warning and the agent is given hints about its best candidates so far.",
+            "Max steps is configurable (default 12). If the limit approaches without a commit, the loop emits a warning and hints the agent toward its best candidates so far.",
             "A three-tier fallback fires if steps exhaust: use highest-scored candidate → attempt quick scoring on fitted candidates → use any fitted candidate.",
             "The full transcript (every tool call and response) is stored in forecaster.transcript_ for inspection.",
           ]} />
-          <div className="mt-6 border-l-4 border-accent pl-5">
-            <p className="text-sm font-bold leading-relaxed">
-              Why not just ask the LLM to pick in one shot?
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-ink/80">
-              One-shot prompting can't observe actual data characteristics or fit results.
-              The agent needs to see real scores on real data to make a defensible selection —
-              not guess from a description alone.
-            </p>
+
+          {/* Why ReAct */}
+          <div className="mt-8 mb-4 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Why ReAct?</p>
           </div>
+          <p className="text-sm leading-relaxed text-ink/90 mb-5">
+            There are several ways to get an LLM to select a forecasting model. Each makes
+            different trade-offs. ReAct was chosen because model selection is an
+            <em> empirical</em> task — the right answer depends on what the data actually looks
+            like and how candidates actually score, not what an LLM thinks they might score.
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                approach: "One-shot prompting",
+                what: "Describe the data in a single prompt and ask the LLM to name the best model.",
+                pro: "Zero latency — one API call.",
+                con: "The LLM guesses from a description. It never sees actual data statistics or real scores. A series described as 'seasonal' could have sp=4, sp=7, or sp=52 — the model can't tell without summarizing the data first.",
+                chosen: false,
+              },
+              {
+                approach: "Chain-of-Thought (CoT)",
+                what: "Ask the LLM to reason step-by-step before giving a final answer, all in one pass.",
+                pro: "Better than one-shot — the reasoning is visible.",
+                con: "Still a single forward pass. The LLM reasons about hypothetical tool calls but never actually runs them. Scores and fit results are imagined, not observed.",
+                chosen: false,
+              },
+              {
+                approach: "Plan-and-Execute",
+                what: "LLM first writes a full plan (which models to try, in what order), then a separate executor runs it.",
+                pro: "The plan is auditable upfront.",
+                con: "The plan is fixed before any data is seen. If step 2 of the plan fails or returns a surprising result, the executor can't adapt — it just continues the original plan.",
+                chosen: false,
+              },
+              {
+                approach: "ReAct loop ✓",
+                what: "LLM reasons and acts one step at a time, observing real results before deciding the next action.",
+                pro: "Adaptive — the agent adjusts based on what it actually observes. If ExponentialSmoothing scores poorly, it can pivot to a different class of model. Each decision is grounded in real data.",
+                con: "Multiple API calls per fit() — higher latency and cost than single-pass approaches. Prompt caching (Anthropic ephemeral cache) mitigates this by 60–80% after the first step.",
+                chosen: true,
+              },
+            ].map((item) => (
+              <div
+                key={item.approach}
+                className={`border-2 p-5 ${item.chosen ? "border-accent bg-bg shadow-brutal-sm" : "border-ink bg-bg opacity-80"}`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  {item.chosen && (
+                    <span className="border-2 border-ink bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-ink shrink-0">
+                      chosen
+                    </span>
+                  )}
+                  <p className="text-sm font-bold">{item.approach}</p>
+                </div>
+                <p className="text-[12px] leading-relaxed text-ink/70 mb-3 italic">{item.what}</p>
+                <div className="space-y-1.5">
+                  <p className="text-[12px] leading-relaxed text-ink/90">
+                    <span className="font-bold text-ok">✓ </span>{item.pro}
+                  </p>
+                  <p className="text-[12px] leading-relaxed text-ink/90">
+                    <span className="font-bold text-red-600">✗ </span>{item.con}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Limitations */}
+          <div className="mt-8 mb-4 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Known Limitations</p>
+          </div>
+          <BulletList items={[
+            "Latency — a full fit() run with a real LLM backend takes several seconds. This is acceptable for offline model selection but rules out real-time use cases.",
+            "Loop instability — LLMs can get stuck calling the same tool repeatedly without committing. The max_steps cap and three-tier fallback are mitigations, not solutions. Better prompting or a fine-tuned model would help.",
+            "Context length — the message history grows with every step. On very long runs (many candidates, verbose tool results) the context can become expensive. Tool results are kept terse to limit this.",
+            "Non-determinism — two runs on the same data with the same prompt can select different models. Temperature=0 reduces this but doesn't eliminate it for all backends.",
+          ]} />
         </Card>
 
         {/* ── 7. Fit Stages ── */}
