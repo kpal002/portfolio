@@ -331,7 +331,7 @@ export default function SkTimeAgenticPage() {
             src="/projects/sktime/02_fit_stages.png"
             alt="The four stages of the fit() call"
             caption="Figure 3 — Fit stages. Stage 4 (refit on full data) only runs after the agent commits — this is what makes predict() possible."
-            maxWidth="480px"
+            maxWidth="360px"
           />
           <div className="grid gap-3 md:grid-cols-4 mt-4">
             {[
