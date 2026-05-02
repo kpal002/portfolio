@@ -423,25 +423,30 @@ export default function SkTimeAgenticPage() {
         <Card>
           <SectionLabel>Deployment</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Two Transport Modes</h2>
-          <p className="text-sm leading-relaxed text-ink/90 mb-2">
-            The six tools can be invoked in two ways, controlled by the{" "}
-            <code className="bg-ink text-accent px-1">transport</code> parameter. This is a
-            key architectural decision that makes the system work both as a Python library and
-            as a backend for AI tools like Claude Desktop or Cursor.
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            A <em>transport</em> is how tool calls get routed from the agent to the actual
+            tool implementation. This is an architectural layer that most single-purpose
+            scripts ignore — but a library that wants to work in multiple deployment contexts
+            needs to make it explicit. The{" "}
+            <code className="bg-ink text-accent px-1">transport</code> parameter controls
+            which path is used without changing anything else about the agent's behavior.
           </p>
           <Diagram
             src="/projects/sktime/04_transports.png"
             alt="In-process vs MCP transport modes"
-            caption="Figure 4 — In-process mode calls tools as direct Python functions. MCP mode exposes them over a FastMCP server — enabling external clients to use the same tool surface."
+            caption="Figure 4 — Same tool surface, two execution paths. The agent's reasoning is identical in both modes — only where the tool call goes differs."
           />
-          <div className="grid gap-4 md:grid-cols-2 mt-2">
+
+          {/* The two modes */}
+          <div className="grid gap-4 md:grid-cols-2 mt-4">
             <div className="border-2 border-ink p-5 bg-bg">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">
                 In-Process (default)
               </p>
               <p className="text-sm leading-relaxed text-ink/90 mb-3">
-                Tools are called as regular Python functions in the same process. Zero setup,
-                fast, and works anywhere Python runs.
+                Tool calls are regular Python function calls in the same process. The
+                <code className="bg-ink text-accent px-1 mx-1">ToolRegistry</code> object
+                holds the data and fitted candidates in memory — no serialization, no network.
               </p>
               <CodeBlock
                 label="usage"
@@ -450,14 +455,21 @@ export default function SkTimeAgenticPage() {
     transport="in-process",
 )`}
               />
+              <BulletList items={[
+                "Zero setup — works anywhere Python runs",
+                "Fastest possible — no serialization overhead",
+                "State lives in memory alongside the forecaster",
+                "Default for library use and notebooks",
+              ]} />
             </div>
             <div className="border-2 border-ink p-5 bg-bg">
               <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">
                 MCP Mode
               </p>
               <p className="text-sm leading-relaxed text-ink/90 mb-3">
-                Tools are exposed via a FastMCP server over stdio. Enables Claude Desktop,
-                Cursor, or any MCP-compatible client to use sktime as a tool backend.
+                Tool calls are serialized as JSON and sent over stdio to a separate
+                <code className="bg-ink text-accent px-1 mx-1">mcp_server</code> process.
+                The server exposes the same six tools over the MCP protocol.
               </p>
               <CodeBlock
                 label="usage"
@@ -466,17 +478,110 @@ export default function SkTimeAgenticPage() {
     transport="mcp",
 )`}
               />
+              <BulletList items={[
+                "Tools run in an isolated process — crashes don't take down the caller",
+                "Any MCP client (Claude Desktop, Cursor) can use the tools directly",
+                "sktime becomes a shareable backend, not just a Python library",
+                "Slightly higher latency from JSON serialization + process boundary",
+              ]} />
             </div>
           </div>
-          <div className="mt-4 border-l-4 border-accent pl-5">
-            <p className="text-sm font-bold">What is MCP?</p>
-            <p className="mt-1 text-sm leading-relaxed text-ink/80">
-              The Model Context Protocol (MCP) is an open standard for connecting AI models to
-              external tools. Think of it as a USB-C port for AI — any MCP-compatible client
-              (Claude, Cursor, etc.) can connect to any MCP server and use its tools, without
-              custom integration code.
-            </p>
+
+          {/* What is MCP */}
+          <div className="mt-8 mb-4 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">What is MCP?</p>
           </div>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            The <strong>Model Context Protocol</strong> (MCP) is an open standard introduced
+            by Anthropic in 2024 for connecting AI models to external tools and data sources.
+            Before MCP, every AI tool integration was bespoke — a plugin format for one app,
+            a function schema for another, a REST API for a third. MCP standardizes the
+            interface so any compliant client can talk to any compliant server without custom
+            glue code.
+          </p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Think of it as the USB-C of AI tool use. A sktime MCP server exposes forecasting
+            tools; Claude Desktop, Cursor, or a custom agent can call them without knowing
+            anything about sktime's internals.
+          </p>
+
+          {/* Why these two specifically */}
+          <div className="mt-8 mb-4 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Why These Two? Were There Other Options?</p>
+          </div>
+          <p className="text-sm leading-relaxed text-ink/90 mb-5">
+            Yes — several alternatives were considered. The design goal was: support the
+            standard library use case with zero overhead, and support external clients without
+            a custom integration per client.
+          </p>
+          <div className="space-y-3">
+            {[
+              {
+                approach: "HTTP / REST API",
+                what: "Wrap tools behind a REST server. Client sends POST requests, server returns JSON.",
+                pro: "Language-agnostic — any HTTP client can call the tools.",
+                con: "Requires a running server with a known port, auth, and network config. Overkill for a Python library. Adds operational burden with no benefit over MCP for the target use cases.",
+                chosen: false,
+              },
+              {
+                approach: "gRPC",
+                what: "Define a protobuf schema for tool calls, generate client/server stubs.",
+                pro: "Strongly typed, fast binary serialization, good for high-throughput services.",
+                con: "Requires protobuf compilation step, heavy toolchain, and is completely incompatible with existing AI client ecosystems. No AI tool natively speaks gRPC.",
+                chosen: false,
+              },
+              {
+                approach: "Hardcoded function calls only",
+                what: "Skip the transport abstraction entirely — tools are always called as Python functions.",
+                pro: "Simplest possible implementation. No abstraction overhead.",
+                con: "Locks the tool surface to Python in-process forever. External clients (Claude Desktop, Cursor) can never use sktime tools without a separate integration layer built from scratch.",
+                chosen: false,
+              },
+              {
+                approach: "In-process + MCP over stdio ✓",
+                what: "In-process for library use; MCP over stdio for external clients. Same tool surface, two dispatch paths behind a single transport= parameter.",
+                pro: "In-process covers 95% of library use cases with zero overhead. MCP over stdio is the emerging standard for AI tool interop — no server ports, no auth, no custom protocol. A single codebase serves both contexts.",
+                con: "Two code paths to maintain. The MCP path adds a process boundary and JSON serialization overhead. stdio-based MCP isn't suitable for high-throughput or multi-client scenarios (an HTTP MCP transport exists for those cases but isn't implemented yet).",
+                chosen: true,
+              },
+            ].map((item) => (
+              <div
+                key={item.approach}
+                className={`border-2 p-5 ${item.chosen ? "border-accent bg-bg shadow-brutal-sm" : "border-ink bg-bg opacity-80"}`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  {item.chosen && (
+                    <span className="border-2 border-ink bg-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-ink shrink-0">
+                      chosen
+                    </span>
+                  )}
+                  <p className="text-sm font-bold">{item.approach}</p>
+                </div>
+                <p className="text-[12px] leading-relaxed text-ink/70 mb-3 italic">{item.what}</p>
+                <div className="space-y-1.5">
+                  <p className="text-[12px] leading-relaxed text-ink/90">
+                    <span className="font-bold text-ok">✓ </span>{item.pro}
+                  </p>
+                  <p className="text-[12px] leading-relaxed text-ink/90">
+                    <span className="font-bold text-red-600">✗ </span>{item.con}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Known limitations */}
+          <div className="mt-8 mb-4 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Known Limitations</p>
+          </div>
+          <BulletList items={[
+            "stdio MCP is one-client-at-a-time — not suitable for serving multiple concurrent agents. An HTTP MCP transport would be needed for multi-tenant or server deployments.",
+            "State isolation in MCP mode — fitted candidates live in the server process, not the calling process. If the server crashes mid-fit, in-progress state is lost. In-process mode doesn't have this problem.",
+            "No remote MCP yet — the current MCP mode launches the server as a subprocess on the same machine. True remote deployment (server on a different host) requires the HTTP MCP transport, which is a planned extension.",
+          ]} />
         </Card>
 
         {/* ── 9. LLM Backends ── */}
