@@ -2,6 +2,7 @@
 // Each card has a thin accent strip on the left and a terminal-style index
 // in the top-right. Hover lifts the card with a hard shadow.
 
+import Link from "next/link";
 import { ArrowUpRight, Github } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 import { projects } from "@/lib/content";
@@ -68,8 +69,8 @@ export default function Projects() {
                   {p.description}
                 </p>
 
-                {/* Tech stack tags pinned to the bottom */}
-                <ul className="mt-auto flex flex-wrap gap-2">
+                {/* Tech stack tags */}
+                <ul className="flex flex-wrap gap-2">
                   {p.tech.map((t) => (
                     <li
                       key={t}
@@ -79,6 +80,16 @@ export default function Projects() {
                     </li>
                   ))}
                 </ul>
+
+                {/* View details link pinned to bottom */}
+                <div className="mt-4 pt-4 border-t-2 border-ink">
+                  <Link
+                    href={`/projects/${p.slug}`}
+                    className="text-[11px] font-bold uppercase tracking-widest text-ink transition hover:text-accent"
+                  >
+                    View Details →
+                  </Link>
+                </div>
               </div>
             </article>
           ))}
