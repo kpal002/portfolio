@@ -138,18 +138,60 @@ export default function SkTimeAgenticPage() {
               </li>
             ))}
           </ul>
-          <a
-            href="https://github.com/kpal002/sktime-agentic-forecaster"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 text-sm font-bold text-bg shadow-brutal-sm transition hover:text-accent"
-          >
-            <Github size={14} />
-            View on GitHub
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="https://github.com/kpal002/sktime-agentic-forecaster"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 text-sm font-bold text-bg shadow-brutal-sm transition hover:text-accent"
+            >
+              <Github size={14} />
+              View on GitHub
+            </a>
+            <a
+              href="https://huggingface.co/spaces/kpal002/sktime-agentic-forecaster"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border-2 border-ink bg-accent px-4 py-2 text-sm font-bold text-ink shadow-brutal-sm transition hover:bg-ink hover:text-accent"
+            >
+              <ArrowUpRight size={14} />
+              Live Demo
+            </a>
+          </div>
         </Card>
 
-        {/* ── 2. Background ── */}
+        {/* ── 2. Live Demo embed ── */}
+        <Card>
+          <SectionLabel>Live Demo</SectionLabel>
+          <h2 className="mb-2 text-xl font-bold">Try It</h2>
+          <p className="text-sm leading-relaxed text-ink/90 mb-5">
+            Interactive demo running on Hugging Face Spaces. Enter a description of your
+            time series and watch the agent reason through model selection in real time.
+          </p>
+          <div className="border-2 border-ink overflow-hidden" style={{ aspectRatio: "16/10" }}>
+            <iframe
+              src="https://kpal002-sktime-agentic-forecaster.hf.space"
+              title="AgenticForecaster live demo"
+              width="100%"
+              height="100%"
+              style={{ border: "none", display: "block" }}
+            />
+          </div>
+          <p className="mt-3 text-[11px] text-muted">
+            <span className="text-accent font-bold">↗ </span>
+            Open in full screen at{" "}
+            <a
+              href="https://huggingface.co/spaces/kpal002/sktime-agentic-forecaster"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-accent"
+            >
+              huggingface.co/spaces/kpal002/sktime-agentic-forecaster
+            </a>
+          </p>
+        </Card>
+
+        {/* ── 3. Background ── */}
         <Card>
           <SectionLabel>Background</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">What is sktime?</h2>
@@ -757,7 +799,7 @@ print(forecast)
         </Card>
 
         {/* Footer nav */}
-        <div className="flex items-center justify-between border-t-2 border-ink pt-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t-2 border-ink pt-8">
           <Link
             href="/#projects"
             className="flex items-center gap-2 text-sm font-bold text-ink transition hover:text-accent"
@@ -765,15 +807,26 @@ print(forecast)
             <ArrowLeft size={14} />
             All Projects
           </Link>
-          <a
-            href="https://github.com/kpal002/sktime-agentic-forecaster"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 text-sm font-bold text-bg shadow-brutal-sm transition hover:text-accent"
-          >
-            <Github size={14} />
-            GitHub
-          </a>
+          <div className="flex gap-3">
+            <a
+              href="https://huggingface.co/spaces/kpal002/sktime-agentic-forecaster"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 border-2 border-ink bg-accent px-4 py-2 text-sm font-bold text-ink shadow-brutal-sm transition hover:bg-ink hover:text-accent"
+            >
+              <ArrowUpRight size={14} />
+              Live Demo
+            </a>
+            <a
+              href="https://github.com/kpal002/sktime-agentic-forecaster"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 border-2 border-ink bg-ink px-4 py-2 text-sm font-bold text-bg shadow-brutal-sm transition hover:text-accent"
+            >
+              <Github size={14} />
+              GitHub
+            </a>
+          </div>
         </div>
       </main>
     </div>
