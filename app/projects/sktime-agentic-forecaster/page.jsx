@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Github } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Github } from "lucide-react";
 
 export const metadata = {
   title: "Agentic Forecaster for sktime — Kuntal Pal",
