@@ -3,6 +3,7 @@
 // in the top-right. Hover lifts the card with a hard shadow.
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, Github } from "lucide-react";
 import SectionHeading from "./SectionHeading";
 import { projects } from "@/lib/content";
@@ -27,6 +28,19 @@ export default function Projects() {
             >
               {/* Vertical lime accent strip on the left */}
               <div aria-hidden className="w-1.5 shrink-0 bg-accent border-r-2 border-ink" />
+
+              {/* Preview image */}
+              {p.image && (
+                <div className="relative border-b-2 border-ink overflow-hidden bg-ink" style={{ height: "180px" }}>
+                  <Image
+                    src={p.image}
+                    alt={p.imageAlt || p.title}
+                    fill
+                    style={{ objectFit: "cover", objectPosition: "top" }}
+                    className="opacity-90 transition group-hover:opacity-100 group-hover:scale-[1.02]"
+                  />
+                </div>
+              )}
 
               <div className="flex flex-1 flex-col p-6">
                 {/* Top row — terminal-style index + outbound icons */}
