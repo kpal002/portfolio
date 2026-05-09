@@ -22,25 +22,27 @@ export default function Projects() {
           {projects.map((p, i) => (
             <article
               key={p.title}
-              className={`group relative flex border-2 border-ink bg-surface shadow-brutal transition hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg ${
+              className={`group relative flex flex-col border-2 border-ink bg-surface shadow-brutal transition hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg ${
                 p.featured ? "lg:col-span-2" : ""
               }`}
             >
-              {/* Vertical lime accent strip on the left */}
-              <div aria-hidden className="w-1.5 shrink-0 bg-accent border-r-2 border-ink" />
-
               {/* Preview image */}
               {p.image && (
-                <div className="relative border-b-2 border-ink overflow-hidden bg-ink" style={{ height: "180px" }}>
+                <div className="relative border-b-2 border-ink overflow-hidden bg-ink shrink-0" style={{ height: "180px" }}>
                   <Image
                     src={p.image}
                     alt={p.imageAlt || p.title}
                     fill
                     style={{ objectFit: "cover", objectPosition: "top" }}
-                    className="opacity-90 transition group-hover:opacity-100 group-hover:scale-[1.02]"
+                    className="opacity-90 transition duration-300 group-hover:opacity-100 group-hover:scale-[1.02]"
                   />
                 </div>
               )}
+
+              {/* Bottom: accent strip + content side by side */}
+              <div className="flex flex-1">
+                {/* Vertical lime accent strip */}
+                <div aria-hidden className="w-1.5 shrink-0 bg-accent border-r-2 border-ink" />
 
               <div className="flex flex-1 flex-col p-6">
                 {/* Top row — terminal-style index + outbound icons */}
@@ -105,6 +107,7 @@ export default function Projects() {
                   </Link>
                 </div>
               </div>
+              </div>{/* end accent strip + content row */}
             </article>
           ))}
         </div>
