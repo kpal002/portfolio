@@ -28,13 +28,13 @@ export default function Projects() {
             >
               {/* Preview image */}
               {p.image && (
-                <div className="relative border-b-2 border-ink overflow-hidden bg-ink shrink-0" style={{ height: "180px" }}>
+                <div className="relative border-b-2 border-ink overflow-hidden bg-ink shrink-0" style={{ height: "220px" }}>
                   <Image
                     src={p.image}
                     alt={p.imageAlt || p.title}
                     fill
-                    style={{ objectFit: "cover", objectPosition: "top" }}
-                    className="opacity-90 transition duration-300 group-hover:opacity-100 group-hover:scale-[1.02]"
+                    style={{ objectFit: "contain", objectPosition: "center", background: "#f8f8f6" }}
+                    className="transition duration-300 group-hover:scale-[1.02]"
                   />
                 </div>
               )}
