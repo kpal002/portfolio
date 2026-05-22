@@ -66,6 +66,81 @@ function AgentNode({ step, title, body }) {
   );
 }
 
+function PipelineArrow() {
+  return (
+    <div className="hidden md:flex items-center justify-center shrink-0 w-8">
+      <svg width="28" height="16" viewBox="0 0 28 16" fill="none">
+        <path d="M0 8 H22" stroke="#1a1a1a" strokeWidth="2"/>
+        <path d="M16 2 L26 8 L16 14" stroke="#1a1a1a" strokeWidth="2" fill="none"/>
+      </svg>
+    </div>
+  );
+}
+
+function PipelineStep({ step, name, icon, accent = false }) {
+  return (
+    <div className={`flex flex-col items-center gap-1 border-2 border-ink px-3 py-3 text-center shadow-brutal-sm min-w-[100px] ${accent ? "bg-accent" : "bg-bg"}`}>
+      <span className="text-xl">{icon}</span>
+      <p className="text-[9px] font-bold uppercase tracking-widest text-muted">{step}</p>
+      <p className="text-[11px] font-bold leading-tight">{name}</p>
+    </div>
+  );
+}
+
+function AgentDeepDive({ step, name, icon, badge, inputs, tools, outputs, design }) {
+  return (
+    <div className="border-2 border-ink bg-bg">
+      {/* Header */}
+      <div className="flex items-center gap-4 border-b-2 border-ink bg-ink px-5 py-3">
+        <span className="text-2xl">{icon}</span>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-accent">Node {step}</p>
+          <p className="text-base font-bold text-bg">{name}</p>
+        </div>
+        <span className="ml-auto border border-accent px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-accent">{badge}</span>
+      </div>
+      {/* Body */}
+      <div className="grid gap-0 md:grid-cols-3 divide-y-2 md:divide-y-0 md:divide-x-2 divide-ink">
+        <div className="p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">Inputs</p>
+          <ul className="space-y-1.5">
+            {inputs.map((i, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] leading-relaxed text-ink/80">
+                <span className="text-muted shrink-0">▸</span>{i}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">Tools & Algorithms</p>
+          <ul className="space-y-1.5">
+            {tools.map((t, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] leading-relaxed text-ink/80">
+                <span className="text-accent shrink-0 font-bold">→</span>{t}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">Outputs</p>
+          <ul className="space-y-1.5">
+            {outputs.map((o, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-[12px] leading-relaxed text-ink/80">
+                <span className="text-accent shrink-0 font-bold">✓</span>{o}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {/* Design note */}
+      <div className="border-t-2 border-ink bg-surface px-5 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-1">Design Note</p>
+        <p className="text-[12px] leading-relaxed text-ink/80">{design}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function FinancialAdvisorPage() {
   return (
     <div className="min-h-screen bg-bg font-mono text-ink">
@@ -191,28 +266,204 @@ export default function FinancialAdvisorPage() {
         <Card>
           <SectionLabel>Architecture</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">The 5-Node LangGraph Pipeline</h2>
-          <p className="text-sm leading-relaxed text-ink/90 mb-6">
+          <p className="text-sm leading-relaxed text-ink/90 mb-8">
             The first user message triggers a LangGraph state machine with five specialist
-            nodes. Each node receives the accumulated state from the previous node and adds
-            its own outputs — market data, risk metrics, signals, the synthesised report,
-            and a final validation pass.
+            nodes arranged in a sequential graph. Each node reads the accumulated{" "}
+            <code className="bg-ink text-accent px-1">AdvisorState</code> TypedDict, performs
+            its computation, and writes its outputs back — creating a typed, inspectable
+            data contract between every stage of the pipeline.
           </p>
-          <div className="grid gap-4 md:grid-cols-5 mb-6">
-            {[
-              { step: "01", title: "market_research", body: "Fetches price history via yfinance. Fits ARIMA models per symbol. Produces 30-day forecasts with 95% CI. Computes RSI and trend slope." },
-              { step: "02", title: "risk_analysis", body: "Calculates VaR (95%), CVaR, Sharpe ratio, Sortino ratio, max drawdown, and Markowitz-optimal allocation across the portfolio." },
-              { step: "03", title: "recommendation", body: "Runs Isolation Forest on normalised returns to detect anomalies. Issues BUY / HOLD / SELL signals with confidence scores per symbol." },
-              { step: "04", title: "synthesize", body: "Claude takes all quantitative outputs and writes a structured advisory report — markdown tables, plain-English explanations, and actionable recommendations." },
-              { step: "05", title: "validation", body: "Checks internal consistency of the report. Re-routes to synthesize if the confidence score is below threshold." },
-            ].map((n) => (
-              <AgentNode key={n.step} {...n} />
-            ))}
+
+          {/* Visual pipeline diagram */}
+          <div className="mb-8">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-4">Pipeline Flow</p>
+            <div className="overflow-x-auto pb-2">
+              <div className="flex items-center gap-0 min-w-max">
+                {/* START */}
+                <div className="flex flex-col items-center gap-1 border-2 border-ink bg-ink px-3 py-2 text-center min-w-[72px]">
+                  <p className="text-[10px] font-bold text-accent">START</p>
+                  <p className="text-[10px] text-bg/70">user query</p>
+                </div>
+                <PipelineArrow />
+                <PipelineStep step="01" name="market_research" icon="📡" />
+                <PipelineArrow />
+                <PipelineStep step="02" name="risk_analysis" icon="📊" />
+                <PipelineArrow />
+                <PipelineStep step="03" name="recommendation" icon="🔍" />
+                <PipelineArrow />
+                <PipelineStep step="04" name="synthesize" icon="🧠" accent />
+                <PipelineArrow />
+                <PipelineStep step="05" name="validate" icon="✅" />
+                <PipelineArrow />
+                {/* END */}
+                <div className="flex flex-col items-center gap-1 border-2 border-ink bg-ink px-3 py-2 text-center min-w-[72px]">
+                  <p className="text-[10px] font-bold text-accent">END</p>
+                  <p className="text-[10px] text-bg/70">report</p>
+                </div>
+              </div>
+              {/* Re-route annotation */}
+              <div className="mt-3 flex items-center gap-2 ml-4">
+                <div className="h-px w-16 bg-ink/30 border-t-2 border-dashed border-ink/40" />
+                <p className="text-[10px] text-muted italic">
+                  validate re-routes to synthesize on confidence &lt; threshold
+                </p>
+              </div>
+            </div>
           </div>
-          <p className="text-sm leading-relaxed text-ink/90">
-            LangGraph's typed state object flows through the graph — each node reads what it
-            needs and writes its outputs back. The graph is compiled once at startup and
-            reused across requests, keeping cold-start overhead minimal.
+
+          {/* State object */}
+          <CodeBlock
+            label="langgraph_pipeline.py — typed state contract"
+            code={`class AdvisorState(TypedDict):
+    user_query: str
+    portfolio_symbols: list[str]
+    current_allocation: dict[str, float]
+    # ↓ populated progressively as nodes execute
+    market_data: dict          # → market_research
+    risk_metrics: dict         # → risk_analysis
+    recommendations: dict      # → recommendation
+    advisory_report: str       # → synthesize
+    validation_result: dict    # → validate`}
+          />
+
+          <p className="text-sm leading-relaxed text-ink/90 mt-6 mb-10">
+            The graph is compiled once at startup with{" "}
+            <code className="bg-ink text-accent px-1">workflow.compile()</code> and reused
+            across all requests — keeping cold-start overhead to a single import cycle. Each
+            node function is a pure Python callable that accepts and returns{" "}
+            <code className="bg-ink text-accent px-1">AdvisorState</code>; LangGraph handles
+            the execution, error propagation, and conditional edge routing.
           </p>
+
+          {/* Per-agent deep dives */}
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-4">Node Deep Dives</p>
+          <div className="space-y-4">
+            <AgentDeepDive
+              step="01"
+              name="market_research"
+              icon="📡"
+              badge="Data & Forecasting"
+              inputs={[
+                "portfolio_symbols — list of ticker strings",
+                "current_allocation — user-supplied weight map",
+                "user_query — raw question string",
+              ]}
+              tools={[
+                "yfinance — 1-year daily OHLCV price history per symbol",
+                "statsmodels ARIMA — AIC-minimising order selection (p,d,q)",
+                "30-day point forecast + 95% confidence interval",
+                "RSI (14-day Wilder) — trend classification: bullish / bearish / range-bound",
+                "Trend slope from linear regression on log-returns",
+              ]}
+              outputs={[
+                "market_data dict keyed by symbol",
+                "forecast_30d — expected price in 30 days",
+                "trend — bullish | bearish | neutral",
+                "rsi — current RSI value",
+                "price_history — DataFrame passed downstream",
+              ]}
+              design="ARIMA order selection runs per-symbol rather than using a fixed (1,1,1) model. AIC minimisation picks the best-fitting model for each asset's autocorrelation structure. This adds ~2s per symbol but produces confidence intervals that actually reflect the asset's volatility rather than a generic band."
+            />
+            <AgentDeepDive
+              step="02"
+              name="risk_analysis"
+              icon="📊"
+              badge="Portfolio Risk"
+              inputs={[
+                "price_history DataFrames from market_research",
+                "current_allocation — existing weights",
+                "portfolio_symbols — for joint covariance estimation",
+              ]}
+              tools={[
+                "PortfolioRiskAnalyzer — custom class wrapping scipy + numpy",
+                "Historical VaR at 95th percentile on daily log-returns",
+                "CVaR — mean of losses exceeding the VaR threshold (tail risk)",
+                "Sharpe ratio — excess return / total volatility (annualised)",
+                "Sortino ratio — excess return / downside deviation only",
+                "scipy.optimize — constrained max-Sharpe on the efficient frontier",
+                "Max drawdown — peak-to-trough on the equity curve",
+              ]}
+              outputs={[
+                "risk_metrics — full metric dict per portfolio",
+                "recommended_allocation — Markowitz-optimal weight vector",
+                "portfolio_risk_level — LOW | MEDIUM | HIGH | VERY HIGH",
+                "expected_return and volatility (annualised)",
+              ]}
+              design="Markowitz optimisation is solved as a minimisation of negative Sharpe (rather than maximising Sharpe directly) so scipy's constrained minimiser can be used without a separate maximiser. Weights are constrained to [0, 1] with sum=1 to prevent short positions, which keeps the output valid for retail investors who can't short."
+            />
+            <AgentDeepDive
+              step="03"
+              name="recommendation"
+              icon="🔍"
+              badge="Signal Generation"
+              inputs={[
+                "market_data — forecasts, RSI, trend slopes",
+                "risk_metrics — Sharpe, VaR, portfolio risk level",
+                "price_history — rolling return matrices per symbol",
+              ]}
+              tools={[
+                "scikit-learn IsolationForest — anomaly detection on 90-day normalised returns",
+                "Contamination parameter tuned to flag ~10% of observations",
+                "Composite scoring: ARIMA trend + RSI + anomaly score → signal",
+                "Confidence calibration — score mapped to [0, 1] via sigmoid",
+              ]}
+              outputs={[
+                "recommendations dict per symbol",
+                "action — BUY | HOLD | SELL",
+                "confidence — float [0, 1]",
+                "reasoning — short string explaining the signal",
+              ]}
+              design="Isolation Forest detects anomalous return behaviour without predefined thresholds — a stock behaving unusually relative to its own 90-day history gets flagged regardless of whether it's technically overbought or oversold. This catches momentum breaks and volatility regime shifts that RSI-only systems miss. The final signal is a weighted composite, not a single-model output."
+            />
+            <AgentDeepDive
+              step="04"
+              name="synthesize"
+              icon="🧠"
+              badge="Claude LLM"
+              inputs={[
+                "market_data — all ARIMA forecasts, RSI values, trend labels",
+                "risk_metrics — VaR, CVaR, Sharpe, Sortino, max drawdown, allocation",
+                "recommendations — BUY/HOLD/SELL signals with confidence",
+                "user_query — original question to answer directly",
+              ]}
+              tools={[
+                "Claude claude-haiku-4-5 via Anthropic SDK",
+                "Structured prompt with quantitative data serialised as JSON",
+                "Embedded FINLEY_METRICS HTML comment for frontend dashboard extraction",
+                "Instruction to produce markdown tables, plain-English explanations, actionable steps",
+              ]}
+              outputs={[
+                "advisory_report — full markdown string",
+                "<!-- FINLEY_METRICS {...} --> comment block at report head",
+                "Structured sections: Executive Summary, Asset Analysis, Risk, Allocation, Outlook",
+              ]}
+              design="Claude's prompt receives all quantitative outputs as a structured JSON block — not as prose. This forces the model to reason from numbers rather than pattern-matching to generic financial advice. The FINLEY_METRICS comment block is a machine-readable channel embedded in the text response: the frontend strips it before rendering, parses the JSON, and builds the visual dashboard above the markdown."
+            />
+            <AgentDeepDive
+              step="05"
+              name="validate"
+              icon="✅"
+              badge="Quality Gate"
+              inputs={[
+                "advisory_report — synthesize node output",
+                "recommendations — expected signals to cross-check",
+                "risk_metrics — expected metric ranges",
+              ]}
+              tools={[
+                "Claude claude-haiku-4-5 — lightweight validation call",
+                "Cross-check: report mentions all portfolio symbols",
+                "Cross-check: BUY/HOLD/SELL signals match recommendations dict",
+                "Confidence score extraction from validation response",
+                "Conditional edge: re-route to synthesize if score < 0.7",
+              ]}
+              outputs={[
+                "validation_result — {confidence: float, issues: list[str]}",
+                "Graph terminates at END if confidence ≥ 0.7",
+                "Graph re-routes to synthesize node if confidence < 0.7",
+              ]}
+              design="The validation node is a lightweight second Claude call — it reads the report and the raw quantitative outputs and checks for internal consistency. The conditional re-route is a core LangGraph feature: add_conditional_edges() lets the graph branch dynamically based on node output without any ad-hoc if-statements in the orchestration layer. In practice the re-route fires rarely, but it catches hallucinated tickers or reversed signals."
+            />
+          </div>
         </Card>
 
         {/* ── 5. ML Pipeline ── */}
@@ -319,26 +570,7 @@ async def chat(req: ChatRequest):
           />
         </Card>
 
-        {/* ── 7. Frontend ── */}
-        <Card>
-          <SectionLabel>Frontend</SectionLabel>
-          <h2 className="mb-4 text-xl font-bold">FastAPI + Vanilla HTML — No Framework</h2>
-          <p className="text-sm leading-relaxed text-ink/90 mb-4">
-            The chat UI is a single self-contained HTML file served as a static asset by
-            FastAPI. No React, no build step, no bundler. Full styling control with plain
-            CSS and about 300 lines of vanilla JS.
-          </p>
-          <BulletList items={[
-            "Sidebar with portfolio settings (symbols, weights), New Session button, and a GitHub link",
-            "Welcome screen with four mode cards and example prompt chips — chips live inside the welcome section so they're always visible before the first message",
-            "Pipeline progress indicator: five timed stages (📡 Fetching → 📊 Risk → 🔍 Anomalies → 🧠 Synthesis → ✅ Validation) advance every ~8s to match real pipeline duration",
-            "Markdown rendering via marked.js CDN — Claude's structured reports (tables, headers, bold) render correctly in the chat bubble",
-            "Flex layout: #messages fills remaining viewport height; input area and settings accordion always anchor to the bottom",
-            "New Session clears the conversation history array and restores the welcome screen — the backend is stateless, so a fresh array is all that's needed",
-          ]} />
-        </Card>
-
-        {/* ── 8. Deployment ── */}
+        {/* ── 5b. Deployment ── */}
         <Card>
           <SectionLabel>Deployment</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Docker on Hugging Face Spaces</h2>
