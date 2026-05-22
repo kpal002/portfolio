@@ -139,14 +139,14 @@ export default function FinancialAdvisorPage() {
             optional weights, and ask Finley for an analysis. The first message triggers the
             full ML pipeline; follow-ups are answered directly from the prior context.
           </p>
-          <div className="border-2 border-ink overflow-auto" style={{ height: "680px" }}>
+          <div className="border-2 border-ink overflow-auto" style={{ height: "900px" }}>
             <iframe
               src="https://kpal002-intelligent-financial-advisor.hf.space"
               title="Finley Financial Advisor live demo"
               width="100%"
               height="100%"
               scrolling="yes"
-              style={{ border: "none", display: "block", minWidth: "900px", minHeight: "680px" }}
+              style={{ border: "none", display: "block", minHeight: "900px" }}
             />
           </div>
           <p className="mt-3 text-[11px] text-muted">

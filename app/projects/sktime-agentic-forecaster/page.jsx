@@ -168,14 +168,14 @@ export default function SkTimeAgenticPage() {
             Interactive demo running on Hugging Face Spaces. Enter a description of your
             time series and watch the agent reason through model selection in real time.
           </p>
-          <div className="border-2 border-ink overflow-auto" style={{ height: "680px" }}>
+          <div className="border-2 border-ink overflow-auto" style={{ height: "900px" }}>
             <iframe
               src="https://kpal002-sktime-agentic-forecaster.hf.space"
               title="AgenticForecaster live demo"
               width="100%"
               height="100%"
               scrolling="yes"
-              style={{ border: "none", display: "block", minWidth: "900px", minHeight: "680px" }}
+              style={{ border: "none", display: "block", minHeight: "900px" }}
             />
           </div>
           <p className="mt-3 text-[11px] text-muted">
