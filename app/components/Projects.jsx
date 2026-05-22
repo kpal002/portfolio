@@ -18,13 +18,11 @@ export default function Projects() {
           subtitle="ls ./projects/ — recent shipped work"
         />
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {projects.map((p, i) => (
             <article
               key={p.title}
-              className={`group relative flex flex-col border-2 border-ink bg-surface shadow-brutal transition hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg ${
-                p.featured ? "lg:col-span-2" : ""
-              }`}
+              className="group relative flex flex-col border-2 border-ink bg-surface shadow-brutal transition hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg"
             >
               {/* Preview image */}
               {p.image && (
