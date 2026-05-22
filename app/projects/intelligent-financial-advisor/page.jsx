@@ -615,14 +615,6 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]`}
                 q: "Why Isolation Forest for buy/hold/sell signals?",
                 a: "Most retail-facing tools use rule-based signals (RSI thresholds, moving average crossovers). Isolation Forest detects anomalies without requiring predefined thresholds — a symbol that's behaving unusually relative to its own recent history gets flagged regardless of whether it's overbought or oversold. That's a more useful signal for portfolios with diverse assets.",
               },
-              {
-                q: "Why abandon Gradio in favour of vanilla HTML?",
-                a: "Gradio's Svelte-scoped styles make deep UI customisation unreliable — CSS overrides that work in isolation get silently dropped by Svelte's component scoping. After exhausting all theme and CSS approaches, a self-contained HTML file gave deterministic styling with zero framework overhead.",
-              },
-              {
-                q: "Why no ANTHROPIC_API_KEY in the demo mode path?",
-                a: "HF Spaces can run without secrets set. The demo mode returns a realistic sample report so the UI, layout, and interaction flow can be evaluated even without a valid API key — useful for showing the project to people who can't set a secret.",
-              },
             ].map((item, i) => (
               <div key={i} className="border-l-4 border-ink pl-5">
                 <p className="text-sm font-bold">{item.q}</p>
