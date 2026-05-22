@@ -570,34 +570,7 @@ async def chat(req: ChatRequest):
           />
         </Card>
 
-        {/* ── 5b. Deployment ── */}
-        <Card>
-          <SectionLabel>Deployment</SectionLabel>
-          <h2 className="mb-4 text-xl font-bold">Docker on Hugging Face Spaces</h2>
-          <p className="text-sm leading-relaxed text-ink/90 mb-4">
-            The project uses the <code className="bg-ink text-accent px-1">sdk: docker</code> mode
-            on Hugging Face Spaces — giving full control over the runtime environment instead
-            of being constrained by the managed Gradio or Streamlit runtimes.
-          </p>
-          <CodeBlock
-            label="Dockerfile"
-            code={`FROM python:3.11-slim
-WORKDIR /app
-COPY requirements_space.txt .
-RUN pip install --no-cache-dir -r requirements_space.txt uvicorn[standard]
-COPY . .
-EXPOSE 7860
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]`}
-          />
-          <BulletList items={[
-            "python:3.11-slim keeps the image lean — no Conda, no CUDA overhead",
-            "Requirements installed before source copy so Docker layer cache is reused on code-only changes",
-            "uvicorn[standard] includes uvloop and httptools for production-grade async performance",
-            "ANTHROPIC_API_KEY is injected as a Hugging Face Space secret — the app detects its absence and falls back to a demo mode with sample output",
-          ]} />
-        </Card>
-
-        {/* ── 9. Design Decisions ── */}
+        {/* ── 6. Design Decisions ── */}
         <Card>
           <SectionLabel>Design Decisions</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Why These Choices?</h2>
