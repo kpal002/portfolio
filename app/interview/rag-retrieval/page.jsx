@@ -934,6 +934,72 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
+        {/* RAG vs Fine-tuning */}
+        <Card>
+          <SectionLabel>Decision Framework</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">RAG vs Fine-tuning</h2>
+          <p className="text-sm leading-relaxed text-ink/90 mb-6">
+            One of the most common interview questions in applied LLM roles. The answer isn't
+            either/or — but knowing when each is the right tool matters.
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2 mb-6">
+            {/* Choose RAG */}
+            <div className="border-2 border-ink bg-bg p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-4">
+                ✓ Choose RAG when
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { bold: "Knowledge changes frequently", rest: " — re-indexing is cheap; retraining is expensive." },
+                  { bold: "You need source attribution", rest: " — answers can be traced back to specific documents. Critical for claims verification." },
+                  { bold: "Domain knowledge is large", rest: " — fine-tuning can't realistically encode millions of documents into weights." },
+                  { bold: "You need to reduce hallucination", rest: " — grounding in retrieved documents is more reliable than parametric memory." },
+                  { bold: "Limited compute budget", rest: " — no GPU training required, just inference + vector search." },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+                    <span className="shrink-0 text-accent font-bold mt-0.5">→</span>
+                    <span><strong>{item.bold}</strong>{item.rest}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Choose Fine-tuning */}
+            <div className="border-2 border-ink bg-bg p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-4">
+                ✓ Choose Fine-tuning when
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { bold: "You need a specific style or output format", rest: " — RAG can't change how the model writes." },
+                  { bold: "Teaching a new task or behavior", rest: " — structured JSON extraction, domain-specific reasoning, custom instruction formats." },
+                  { bold: "Specialized vocabulary", rest: " — fine-tuning embeds domain terms into weights that the base model doesn't understand." },
+                  { bold: "Latency is critical", rest: " — no retrieval step means faster inference." },
+                  { bold: "Knowledge is stable and bounded", rest: " — if facts don't change, baking them into weights is fine." },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+                    <span className="shrink-0 text-accent font-bold mt-0.5">→</span>
+                    <span><strong>{item.bold}</strong>{item.rest}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* In practice callout */}
+          <div className="border-2 border-ink bg-accent p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-ink mb-3">
+              In practice — the answer is usually both
+            </p>
+            <p className="text-sm leading-relaxed text-ink">
+              <strong>Fine-tune the model to behave correctly in your domain</strong> — output format,
+              reasoning style, instruction following. Then <strong>add RAG on top</strong> to supply
+              current, specific factual knowledge. This is the production pattern at most mature ML teams.
+            </p>
+          </div>
+        </Card>
+
         {/* Footer nav */}
         <div className="flex items-center justify-start border-t-2 border-ink pt-8">
           <Link
