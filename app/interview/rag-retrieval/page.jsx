@@ -333,6 +333,44 @@ export default function RAGStudyNotesPage() {
               ["Structure-aware", "PDFs, HTML, Markdown", "Parser fragility"],
             ]}
           />
+          {/* Chunk size callout */}
+          <div className="mt-6 mb-2 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Chunk Size Matters More Than People Think</p>
+          </div>
+          <div className="space-y-3 mb-6">
+            {[
+              {
+                range: "Too small (64–128 tokens)",
+                verdict: "bad",
+                body: `Each chunk lacks context. "It increased 15% last quarter" means nothing without knowing what "it" refers to.`,
+              },
+              {
+                range: "Too large (2048+ tokens)",
+                verdict: "bad",
+                body: "Each chunk covers multiple topics, diluting relevance. When you search for revenue data, you get a chunk that's 10% about revenue and 90% about headcount.",
+              },
+              {
+                range: "Sweet spot (256–512 tokens)",
+                verdict: "good",
+                body: "Enough context to be self-contained, focused enough to be relevant. Most production RAG systems use 256–512 token chunks with 50-token overlap. Anthropic's RAG guidelines recommend this range.",
+              },
+            ].map((item) => (
+              <div
+                key={item.range}
+                className={`border-2 border-ink p-4 flex gap-4 items-start ${item.verdict === "good" ? "bg-accent" : "bg-bg"}`}
+              >
+                <span className={`shrink-0 font-bold text-sm ${item.verdict === "good" ? "text-ink" : "text-red-600"}`}>
+                  {item.verdict === "good" ? "✓" : "✗"}
+                </span>
+                <div>
+                  <p className={`text-sm font-bold mb-1 ${item.verdict === "good" ? "text-ink" : "text-ink"}`}>{item.range}</p>
+                  <p className={`text-sm leading-relaxed ${item.verdict === "good" ? "text-ink/90" : "text-ink/75"}`}>{item.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <InterviewCallout label="Interview Answer — Chunking Trade-off">
             Smaller chunks improve retrieval precision because the embedding focuses on a narrow topic.
             But smaller chunks give the LLM less context, risking incomplete answers. Hierarchical
@@ -931,6 +969,72 @@ avgdl    = average document length in corpus`}
                 </ul>
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* RAG vs Fine-tuning */}
+        <Card>
+          <SectionLabel>Decision Framework</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">RAG vs Fine-tuning</h2>
+          <p className="text-sm leading-relaxed text-ink/90 mb-6">
+            One of the most common interview questions in applied LLM roles. The answer isn't
+            either/or — but knowing when each is the right tool matters.
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2 mb-6">
+            {/* Choose RAG */}
+            <div className="border-2 border-ink bg-bg p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-4">
+                ✓ Choose RAG when
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { bold: "Knowledge changes frequently", rest: " — re-indexing is cheap; retraining is expensive." },
+                  { bold: "You need source attribution", rest: " — answers can be traced back to specific documents. Critical for claims verification." },
+                  { bold: "Domain knowledge is large", rest: " — fine-tuning can't realistically encode millions of documents into weights." },
+                  { bold: "You need to reduce hallucination", rest: " — grounding in retrieved documents is more reliable than parametric memory." },
+                  { bold: "Limited compute budget", rest: " — no GPU training required, just inference + vector search." },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+                    <span className="shrink-0 text-accent font-bold mt-0.5">→</span>
+                    <span><strong>{item.bold}</strong>{item.rest}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Choose Fine-tuning */}
+            <div className="border-2 border-ink bg-bg p-5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-4">
+                ✓ Choose Fine-tuning when
+              </p>
+              <ul className="space-y-3">
+                {[
+                  { bold: "You need a specific style or output format", rest: " — RAG can't change how the model writes." },
+                  { bold: "Teaching a new task or behavior", rest: " — structured JSON extraction, domain-specific reasoning, custom instruction formats." },
+                  { bold: "Specialized vocabulary", rest: " — fine-tuning embeds domain terms into weights that the base model doesn't understand." },
+                  { bold: "Latency is critical", rest: " — no retrieval step means faster inference." },
+                  { bold: "Knowledge is stable and bounded", rest: " — if facts don't change, baking them into weights is fine." },
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+                    <span className="shrink-0 text-accent font-bold mt-0.5">→</span>
+                    <span><strong>{item.bold}</strong>{item.rest}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* In practice callout */}
+          <div className="border-2 border-ink bg-accent p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-ink mb-3">
+              In practice — the answer is usually both
+            </p>
+            <p className="text-sm leading-relaxed text-ink">
+              <strong>Fine-tune the model to behave correctly in your domain</strong> — output format,
+              reasoning style, instruction following. Then <strong>add RAG on top</strong> to supply
+              current, specific factual knowledge. This is the production pattern at most mature ML teams.
+            </p>
           </div>
         </Card>
 
