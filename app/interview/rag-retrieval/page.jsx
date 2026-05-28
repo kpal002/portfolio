@@ -333,6 +333,44 @@ export default function RAGStudyNotesPage() {
               ["Structure-aware", "PDFs, HTML, Markdown", "Parser fragility"],
             ]}
           />
+          {/* Chunk size callout */}
+          <div className="mt-6 mb-2 flex items-center gap-2">
+            <div className="h-3 w-3 shrink-0 border-2 border-ink bg-accent" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">Chunk Size Matters More Than People Think</p>
+          </div>
+          <div className="space-y-3 mb-6">
+            {[
+              {
+                range: "Too small (64–128 tokens)",
+                verdict: "bad",
+                body: `Each chunk lacks context. "It increased 15% last quarter" means nothing without knowing what "it" refers to.`,
+              },
+              {
+                range: "Too large (2048+ tokens)",
+                verdict: "bad",
+                body: "Each chunk covers multiple topics, diluting relevance. When you search for revenue data, you get a chunk that's 10% about revenue and 90% about headcount.",
+              },
+              {
+                range: "Sweet spot (256–512 tokens)",
+                verdict: "good",
+                body: "Enough context to be self-contained, focused enough to be relevant. Most production RAG systems use 256–512 token chunks with 50-token overlap. Anthropic's RAG guidelines recommend this range.",
+              },
+            ].map((item) => (
+              <div
+                key={item.range}
+                className={`border-2 border-ink p-4 flex gap-4 items-start ${item.verdict === "good" ? "bg-accent" : "bg-bg"}`}
+              >
+                <span className={`shrink-0 font-bold text-sm ${item.verdict === "good" ? "text-ink" : "text-red-600"}`}>
+                  {item.verdict === "good" ? "✓" : "✗"}
+                </span>
+                <div>
+                  <p className={`text-sm font-bold mb-1 ${item.verdict === "good" ? "text-ink" : "text-ink"}`}>{item.range}</p>
+                  <p className={`text-sm leading-relaxed ${item.verdict === "good" ? "text-ink/90" : "text-ink/75"}`}>{item.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <InterviewCallout label="Interview Answer — Chunking Trade-off">
             Smaller chunks improve retrieval precision because the embedding focuses on a narrow topic.
             But smaller chunks give the LLM less context, risking incomplete answers. Hierarchical
