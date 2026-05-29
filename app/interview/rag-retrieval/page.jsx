@@ -550,9 +550,222 @@ export default function RAGStudyNotesPage() {
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Retrieval Strategies ── */}
+        {/* ── 8. ANN Algorithms ── */}
         <Card>
           <SectionLabel>Section 6</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">ANN Algorithms — How Vector Search Actually Works</h2>
+          <p className="text-sm leading-relaxed text-ink/90 mb-6">
+            Every vector database under the hood uses an Approximate Nearest Neighbor (ANN) index. Understanding
+            these algorithms is essential for production RAG — they control the recall/speed/memory triangle
+            that governs retrieval performance.
+          </p>
+
+          {/* Why ANN Exists */}
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Why ANN Exists — The Scaling Problem</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            The naive approach — compare the query against every stored vector — is called exact nearest neighbor search.
+          </p>
+          <div className="mb-4 border-2 border-ink bg-bg p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Exact Search Complexity</p>
+            <div className="space-y-1 text-sm font-mono text-ink/80">
+              <p>N = number of vectors · D = embedding dimension</p>
+              <p>Cost per query = O(N × D)</p>
+              <p className="mt-2">OpenAI text-embedding-3-large: N=1M docs, D=3,072</p>
+              <p>Operations per query = <strong>3,000,000,000</strong> — infeasible at scale</p>
+            </div>
+          </div>
+          <Insight label="The ANN Solution">
+            Accept a small, controlled drop in recall (e.g., 95–99% instead of 100%) in exchange for
+            10–1000× speed improvement. Build data structures that skip the vast majority of vectors and
+            only check a small promising subset.
+          </Insight>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Core Trade-off Triangle</p>
+          <CompareTable
+            headers={["Dimension", "What It Means", "How to Tune"]}
+            rows={[
+              ["Recall", "% of true nearest neighbors found. 100% = exact search.", "Increase ef (HNSW), nprobe (IVF), L (LSH)"],
+              ["Speed", "Query latency — how fast you get an answer.", "Decrease ef, nprobe, or L"],
+              ["Memory", "RAM needed to store the index.", "Use PQ compression, reduce M (HNSW)"],
+            ]}
+          />
+
+          {/* KD-Trees */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">KD-Trees — Space Partitioning</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Recursively partitions the vector space by splitting on one dimension at a time, building a binary tree.
+            At query time, traverse the tree and prune branches that cannot possibly contain a nearer neighbor.
+          </p>
+          <BoldBulletList items={[
+            { label: "Building", desc: "At each node, split on the dimension with highest variance. Recursively partition left/right subtrees until leaf size is small." },
+            { label: "Pruning rule", desc: "Skip a subtree if the distance from the query to the split hyperplane is greater than the current best distance." },
+          ]} />
+          <div className="mt-4 border-2 border-ink bg-bg p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">Curse of Dimensionality</p>
+            <p className="text-sm text-ink/80">
+              In high dimensions, points are spread so far apart that the distance to any split hyperplane is almost
+              always smaller than the best distance found — so almost no branches get pruned. The tree degenerates
+              to brute force.
+            </p>
+            <div className="mt-3 space-y-1 text-sm font-mono">
+              <p><span className="text-accent font-bold">✓</span> D {"<"} 20 → KD-tree works well</p>
+              <p><span className="text-accent font-bold">~</span> D = 50 → starts degrading</p>
+              <p><span className="text-red-500 font-bold">✗</span> D {">"} 100 → essentially brute force</p>
+              <p><span className="text-red-500 font-bold">✗</span> Modern embeddings: D = 384–3072 → useless</p>
+            </div>
+          </div>
+          <InterviewCallout label="Interview Answer — KD-Trees">
+            KD-trees work great for GPS coordinates or simple feature vectors (D{"<"}20). Modern text embeddings
+            have D=768–3072. The curse of dimensionality means almost no branches get pruned — the tree degenerates
+            to brute force. HNSW or IVF are the right choices for embedding search.
+          </InterviewCallout>
+
+          {/* Ball Trees */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Ball Trees — Hypersphere Partitioning</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Like KD-trees but partition space into hyperspheres instead of hyperplanes. Handles non-axis-aligned
+            clusters better and works in slightly higher dimensions.
+          </p>
+          <BoldBulletList items={[
+            { label: "Building", desc: "Each node defines a ball: (center=centroid, radius=max distance to any point). Split by picking two furthest seeds, assign points to nearest seed, recurse." },
+            { label: "Pruning rule", desc: "Skip a ball if: dist(query, center) - radius > best_dist_so_far. I.e., even the closest possible point in the ball can't beat the current best." },
+          ]} />
+          <CompareTable
+            headers={["Ball Trees", "KD-Trees"]}
+            rows={[
+              ["Partition into hyperspheres", "Partition into axis-aligned hyperrectangles"],
+              ["Better for non-axis-aligned clusters", "Better for axis-aligned data"],
+              ["Works up to D ≈ 50", "Works up to D ≈ 20"],
+              ["Slower to build", "Faster to build"],
+              ["Both fail above D ≈ 50–100 — use HNSW", "Both fail above D ≈ 50–100 — use HNSW"],
+            ]}
+          />
+
+          {/* LSH */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">LSH — Locality Sensitive Hashing</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Design hash functions where <strong>similar vectors are more likely to produce the same hash value</strong>.
+            Opposite of cryptographic hashes which deliberately make similar inputs produce different hashes.
+          </p>
+          <BoldBulletList items={[
+            { label: "Random Projection LSH", desc: "Project vectors onto random unit vectors. Similar vectors land near each other on the line. Divide into buckets — similar vectors fall into the same bucket." },
+            { label: "K hash functions per table", desc: "Use K hash functions and require all K to agree. Higher K → fewer false positives but more false negatives (similar vectors split across bucket boundaries)." },
+            { label: "L tables", desc: "Repeat with L independent sets of K hash functions. At query time, look up in all L tables and union candidates. Higher L → better recall, more memory." },
+          ]} />
+          <div className="mt-4 border-2 border-ink bg-bg p-4 space-y-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted">LSH Variants</p>
+            <p className="text-sm text-ink/80"><strong>Random Projection LSH:</strong> For cosine similarity. Project onto random lines.</p>
+            <p className="text-sm text-ink/80"><strong>MinHash LSH:</strong> For Jaccard similarity (set overlap). Near-duplicate document detection.</p>
+            <p className="text-sm text-ink/80"><strong>SimHash:</strong> Google{"'"}s near-duplicate web page detection. Compact binary signature, small Hamming distance = near-duplicate.</p>
+          </div>
+          <InterviewCallout label="Interview Answer — LSH">
+            LSH uses random projections to create hash functions where similar vectors land in the same bucket.
+            Multiple hash tables (L tables, K hashes each) improve recall. HNSW generally outperforms LSH on
+            recall-speed for dense embeddings, but LSH remains the standard for near-duplicate detection and
+            set-similarity tasks (MinHash).
+          </InterviewCallout>
+
+          {/* IVF */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">IVF — Inverted File Index (KMeans-Based)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Divide the vector space into k clusters using KMeans. Each vector is assigned to its nearest centroid.
+            At query time, find the nearest cluster centroids and only search vectors within those clusters.
+          </p>
+          <BoldBulletList items={[
+            { label: "Building", desc: "Run KMeans with k clusters on all N vectors. Build inverted lists: inverted_list[i] = all vectors assigned to cluster i. Build time: O(N × k × D × iterations)." },
+            { label: "nprobe", desc: "The main recall-speed knob. Controls how many clusters you search per query. nprobe=1 → fastest, ~80-90% recall. nprobe=k → exact search (same as brute force)." },
+          ]} />
+          <CompareTable
+            headers={["nprobe", "Recall", "Speed"]}
+            rows={[
+              ["1", "~80–90% (misses cluster boundary vectors)", "Fastest"],
+              ["4", "~95% (covers most boundary cases)", "Fast"],
+              ["16", "~99% (near-exact)", "Moderate"],
+              ["k (all clusters)", "100% (exact search)", "Same as brute force"],
+            ]}
+          />
+          <div className="mt-4 border-2 border-ink bg-bg p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-2">IVF + PQ — Scaling to Billions</p>
+            <p className="text-sm text-ink/80 mb-2">
+              Product Quantization (PQ) compresses vectors to save memory. Split each D-dim vector into M sub-vectors,
+              run KMeans (256 centroids) on each sub-space, replace each sub-vector with its nearest centroid ID (1 byte).
+            </p>
+            <p className="text-sm font-mono text-ink/80">
+              D=128, M=8: Original = 128×4 = 512 bytes → PQ = 8 bytes → <strong>64× compression</strong>
+            </p>
+            <p className="mt-2 text-sm text-ink/80">Trade-off: 64× memory savings at the cost of some recall drop (IVF+PQ: 90–95% vs IVF: 95–99%).</p>
+          </div>
+          <InterviewCallout label="Interview Answer — IVF">
+            IVF partitions the vector space into k clusters using KMeans. At query time, you only search the nprobe
+            nearest clusters, skipping the rest. nprobe is the recall-speed knob — higher nprobe = better recall but
+            slower. IVF+PQ adds compression for billion-scale search. I{"'"}d use IVF when memory is constrained and
+            HNSW when I need the best recall-speed trade-off.
+          </InterviewCallout>
+
+          {/* HNSW */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">HNSW — Hierarchical Navigable Small World</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The best general-purpose ANN algorithm for production. Used by Weaviate, Qdrant, Milvus, and FAISS.
+            Builds a multi-layer graph where upper layers have sparse long-range connections for fast navigation,
+            lower layers have dense short-range connections for precise search.
+          </p>
+          <BoldBulletList items={[
+            { label: "Layer assignment", desc: "When inserting a vector, randomly assign its max layer using exponential decay: max_layer = floor(-ln(random()) × mL). ~63% of vectors land only in Layer 0. A vector appears in ALL layers 0 to max_layer." },
+            { label: "Upper layers", desc: "Express highways — sparse, long-range connections. Lets you navigate to the right region of the space in a few hops." },
+            { label: "Layer 0", desc: "Local streets — dense, short-range connections. Precise search within the right neighborhood." },
+            { label: "ef parameter", desc: "Controls how many candidates you track during search. ef=50 is typical production starting point. ef must be ≥ k. Tune this first — it's the main production knob." },
+          ]} />
+          <div className="mt-4 border-2 border-ink bg-bg p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted mb-3">HNSW Parameters — Complete Reference</p>
+            <CompareTable
+              headers={["Parameter", "Default", "Effect"]}
+              rows={[
+                ["M", "16", "Connections per node. Higher = better recall, more memory, slower build."],
+                ["ef_construction", "200", "Build-time search width. Higher = better index quality, slower build."],
+                ["ef (query)", "50", "Query-time search width. THE main production tuning knob."],
+                ["Mmax", "32 (2×M)", "Max connections at Layer 0. Usually left at 2×M."],
+              ]}
+            />
+          </div>
+          <InterviewCallout label="Interview Answer — HNSW">
+            HNSW builds a hierarchical graph. Upper layers are sparse with long-range connections — express highways
+            to navigate to the right region quickly. Lower layers are dense with local connections for precise search.
+            Layer assignment is random with exponential decay, so most vectors are only in Layer 0. At query time you
+            navigate greedily top-to-bottom, checking only ~30–50 nodes out of millions. The recall-speed trade-off
+            is controlled by ef — tune this at inference time against a recall benchmark until you hit the latency budget.
+          </InterviewCallout>
+
+          {/* Algorithm Comparison */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Algorithm Comparison</p>
+          <CompareTable
+            headers={["Algorithm", "Recall", "Speed", "Memory", "Best Use Case"]}
+            rows={[
+              ["Exact / Flat", "100%", "O(N×D) slowest", "Low", "Corpus <100K, eval baseline"],
+              ["KD-Tree", "100%", "Fast (D<20), brute force (D>50)", "Low", "GPS, low-D geometric data"],
+              ["Ball Tree", "100%", "Fast (D<50), slow (D>100)", "Low", "Non-axis-aligned clusters, D<50"],
+              ["LSH", "~85–95%", "Fast", "Medium", "Near-duplicate detection, set similarity"],
+              ["IVF", "~95–99%", "Fast", "Medium", "Large corpus, memory-constrained"],
+              ["IVF+PQ", "~90–95%", "Very fast", "Very low (64×)", "Billion-scale, extreme memory constraints"],
+              ["HNSW", "~97–99%", "Very fast", "High", "General production RAG — best default"],
+            ]}
+          />
+
+          <div className="mt-6 border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Decision Guide</p>
+            <div className="space-y-2 text-sm text-ink/80">
+              <p><span className="text-accent font-bold">→</span> D {"<"} 20? <strong>KD-Tree or Ball Tree</strong></p>
+              <p><span className="text-accent font-bold">→</span> D {">"} 20 and corpus {"<"} 100K? <strong>Exact search (FAISS flat index)</strong></p>
+              <p><span className="text-accent font-bold">→</span> Corpus {">"} 100K and memory constrained? <strong>IVF or IVF+PQ</strong></p>
+              <p><span className="text-accent font-bold">→</span> Corpus {">"} 100K and memory available? <strong>HNSW (best default for production RAG)</strong></p>
+              <p><span className="text-accent font-bold">→</span> Near-duplicate detection? <strong>LSH (MinHash for text)</strong></p>
+              <p><span className="text-accent font-bold">→</span> Corpus {">"} 1 billion vectors? <strong>IVF+PQ or HNSW+PQ</strong></p>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── 9. Retrieval Strategies ── */}
+        <Card>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Retrieval Strategies</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Sparse Retrieval — TF-IDF and BM25</p>
@@ -619,9 +832,9 @@ avgdl    = average document length in corpus`}
           ]} />
         </Card>
 
-        {/* ── 9. IR Evaluation Metrics ── */}
+        {/* ── 10. IR Evaluation Metrics ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Information Retrieval Evaluation Metrics</h2>
           <p className="text-sm leading-relaxed text-ink/90 mb-6">
             Be able to compute NDCG by hand. These metrics are standard in IR and search evaluation,
@@ -713,9 +926,9 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
-        {/* ── 10. RAGAS Evaluation ── */}
+        {/* ── 11. RAGAS Evaluation ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">RAG Evaluation — RAGAS Framework</h2>
           <p className="text-sm leading-relaxed text-ink/90 mb-4">
             Evaluating RAG requires assessing both retrieval quality AND generation quality. RAGAS
@@ -759,9 +972,9 @@ avgdl    = average document length in corpus`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 11. Failure Modes ── */}
+        {/* ── 12. Failure Modes ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">RAG Failure Modes and How to Fix Them</h2>
           <div className="space-y-4">
             {[
@@ -832,9 +1045,9 @@ avgdl    = average document length in corpus`}
           </Insight>
         </Card>
 
-        {/* ── 12. Advanced RAG ── */}
+        {/* ── 13. Advanced RAG ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Advanced RAG Techniques</h2>
           <div className="space-y-4">
             {[
@@ -877,9 +1090,9 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
-        {/* ── 13. Production Considerations ── */}
+        {/* ── 14. Production Considerations ── */}
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Production RAG Considerations</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Latency vs. Throughput Trade-offs</p>
@@ -917,9 +1130,9 @@ avgdl    = average document length in corpus`}
           ]} />
         </Card>
 
-        {/* ── 14. Interview Q&A ── */}
+        {/* ── 15. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -960,9 +1173,9 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
-        {/* ── 15. Quick Reference Cheat Sheet ── */}
+        {/* ── 16. Quick Reference Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
