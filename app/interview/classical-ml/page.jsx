@@ -153,7 +153,7 @@ export default function ClassicalMLPage() {
             regularization, bias-variance, cross-validation, and feature engineering.
           </p>
           <ul className="flex flex-wrap gap-2">
-            {["Decision Trees", "Random Forests", "XGBoost", "LightGBM", "SVMs", "L1/L2", "Bias-Variance", "Cross-Validation", "Feature Engineering"].map((t) => (
+            {["Linear Regression", "Logistic Regression", "Decision Trees", "Random Forests", "XGBoost", "LightGBM", "SVMs", "L1/L2", "Bias-Variance", "Cross-Validation", "Feature Engineering"].map((t) => (
               <li key={t} className="border-2 border-ink bg-bg px-2 py-0.5 text-[11px] font-bold">
                 {t}
               </li>
@@ -161,9 +161,113 @@ export default function ClassicalMLPage() {
           </ul>
         </Card>
 
-        {/* ── 1. Logistic Regression ── */}
+        {/* ── 1. Linear Regression ── */}
         <Card>
           <SectionLabel>Section 1</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Linear Regression</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Models a continuous output as a linear combination of input features. The simplest supervised
+            learning algorithm and the foundation of logistic regression, regularization, and most of the
+            statistical thinking behind ML.
+          </p>
+
+          <CodeBlock
+            label="The model"
+            code={`ŷ = w₁x₁ + w₂x₂ + ... + wₙxₙ + b  =  wᵀx + b
+
+Simple linear regression (1 feature):   ŷ = wx + b  →  a straight line
+Multiple linear regression (n features): ŷ = wᵀx + b  →  hyperplane in n+1 dims`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Loss Function — MSE vs MAE</p>
+          <CodeBlock
+            label="Loss functions"
+            code={`MSE = (1/N) · Σᵢ (yᵢ - ŷᵢ)²
+
+Why squared error?
+  1. Always positive — error in either direction is penalized
+  2. Differentiable everywhere — easy to optimize
+  3. Penalizes large errors more than small ones
+  4. Convex → guaranteed global minimum
+
+MAE = (1/N) · Σᵢ |yᵢ - ŷᵢ|
+  → More robust to outliers (no squaring amplification)
+  → Not differentiable at 0 (harder to optimize)
+  → Use when outliers are present and meaningful`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Solving — Two Approaches</p>
+          <CodeBlock
+            label="Normal Equation vs Gradient Descent"
+            code={`APPROACH 1: Normal Equation (closed-form)
+  w* = (XᵀX)⁻¹ Xᵀy
+  Pros: exact solution, no learning rate to tune
+  Cons: O(n³) to invert XᵀX — infeasible for n > ~10,000 features
+        Fails if XᵀX is singular (collinear features)
+
+APPROACH 2: Gradient Descent
+  ∂MSE/∂w = (-2/N) · Xᵀ(y - Xw)
+  w ← w - η · ∂MSE/∂w
+  b ← b - η · ∂MSE/∂b
+  Pros: scales to millions of features and samples
+  Cons: requires learning rate tuning, may need many iterations`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Assumptions (LINE)</p>
+          <BoldBulletList items={[
+            { label: "Linearity", desc: "Relationship between X and y is linear. Check: residual plot should show no pattern." },
+            { label: "Independence", desc: "Observations are independent. Violated by time series data → use time series models." },
+            { label: "Homoscedasticity", desc: "Constant variance of residuals across all X values. Fix if violated: log-transform the target y." },
+            { label: "No Multicollinearity", desc: "Features should not be highly correlated. Check: Variance Inflation Factor (VIF > 10 = problem). Fix: remove one correlated feature, or use Ridge." },
+            { label: "Normality of residuals", desc: "Required for valid hypothesis tests on coefficients. Less important for pure prediction tasks." },
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Evaluation Metrics</p>
+          <CodeBlock
+            label="Regression metrics"
+            code={`MSE  = (1/N) Σ(y - ŷ)²          ← in squared units, penalizes outliers hard
+RMSE = √MSE                      ← in original units, interpretable
+MAE  = (1/N) Σ|y - ŷ|           ← robust to outliers
+
+R² (R-squared):
+  R² = 1 - SS_res / SS_tot
+  SS_res = Σ(y - ŷ)²   (residual sum of squares)
+  SS_tot = Σ(y - ȳ)²   (total sum of squares)
+
+  R² = 1.0  → perfect fit
+  R² = 0.0  → no better than predicting the mean
+  R² < 0    → worse than predicting the mean
+
+Adjusted R²:  R²_adj = 1 - (1-R²)(N-1)/(N-p-1)   where p = num features
+  Penalizes adding irrelevant features.
+  Always use Adjusted R² when comparing models with different feature counts.`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Linear vs Logistic Regression</p>
+          <CompareTable
+            headers={["Linear Regression", "Logistic Regression"]}
+            rows={[
+              ["Predicts a continuous value", "Predicts a probability (0 to 1)"],
+              ["Output: ŷ = wᵀx + b (unbounded)", "Output: σ(wᵀx + b) ∈ (0, 1)"],
+              ["Loss: Mean Squared Error", "Loss: Binary Cross-Entropy"],
+              ["Use: predicting emissions values, revenue", "Use: classifying high/low risk suppliers"],
+              ["Assumptions: normality, homoscedasticity", "Fewer distributional assumptions"],
+            ]}
+          />
+
+          <InterviewCallout>
+            Linear regression models continuous outputs as a weighted sum of features. The MSE loss is
+            convex so gradient descent always finds the global minimum. For small feature sets the Normal
+            Equation gives an exact closed-form solution. Key diagnostics: check residual plots for linearity,
+            VIF for multicollinearity, and use Adjusted R² when comparing models. For sustainability use
+            cases — predicting supplier emissions values, estimating carbon footprint from product attributes
+            — linear regression with feature engineering is often a strong, interpretable baseline.
+          </InterviewCallout>
+        </Card>
+
+        {/* ── 2. Logistic Regression ── */}
+        <Card>
+          <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Logistic Regression</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A linear classifier that models the probability of a binary outcome. Despite the name it is a
@@ -212,9 +316,9 @@ L = -Σₖ yₖ · log(P(y=k|x))`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 2. Decision Trees ── */}
+        {/* ── 3. Decision Trees ── */}
         <Card>
-          <SectionLabel>Section 2</SectionLabel>
+          <SectionLabel>Section 3</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Decision Trees</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A decision tree recursively partitions the feature space by asking binary questions.
@@ -273,9 +377,9 @@ In practice, results are nearly identical.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 3. Random Forests ── */}
+        {/* ── 4. Random Forests ── */}
         <Card>
-          <SectionLabel>Section 3</SectionLabel>
+          <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Random Forests</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Random Forests fix the high variance of individual trees by training many trees on different
@@ -345,9 +449,9 @@ result = permutation_importance(rf, X_val, y_val)
           </InterviewCallout>
         </Card>
 
-        {/* ── 4. Gradient Boosting ── */}
+        {/* ── 5. Gradient Boosting ── */}
         <Card>
-          <SectionLabel>Section 4</SectionLabel>
+          <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Gradient Boosting — XGBoost {"&"} LightGBM</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Gradient boosting builds trees sequentially, each correcting the errors of all previous trees.
@@ -431,9 +535,9 @@ Connection to gradient descent:
           </InterviewCallout>
         </Card>
 
-        {/* ── 5. SVMs ── */}
+        {/* ── 6. SVMs ── */}
         <Card>
-          <SectionLabel>Section 5</SectionLabel>
+          <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Support Vector Machines</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             SVMs find the hyperplane that maximally separates two classes — the decision boundary with the
@@ -513,9 +617,9 @@ RBF/Gaussian: K(x,z) = exp(-γ||x-z||²)          → infinite-dimensional space
           </InterviewCallout>
         </Card>
 
-        {/* ── 6. Regularization ── */}
+        {/* ── 7. Regularization ── */}
         <Card>
-          <SectionLabel>Section 6</SectionLabel>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Regularization — L1, L2, Elastic Net</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Regularization adds a penalty on model weights to the loss function, discouraging the model from
@@ -587,9 +691,9 @@ print(gs.best_params_)`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. Bias-Variance ── */}
+        {/* ── 8. Bias-Variance ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bias-Variance Trade-off</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The fundamental tension in supervised learning between underfitting (high bias) and overfitting
@@ -656,9 +760,9 @@ High train error + Low test error    → Impossible
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Cross-Validation ── */}
+        {/* ── 9. Cross-Validation ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Cross-Validation</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The standard way to estimate model generalization and tune hyperparameters using only training
@@ -739,9 +843,9 @@ tscv = TimeSeriesSplit(n_splits=5)`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 9. Feature Engineering ── */}
+        {/* ── 10. Feature Engineering ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Feature Engineering</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Transforming raw data into features that better represent the underlying pattern.
@@ -838,9 +942,9 @@ XGBoost/LightGBM handle missing values natively — no imputation needed.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 10. Classical vs Deep Learning ── */}
+        {/* ── 11. Classical vs Deep Learning ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">When Classical ML Beats Deep Learning</h2>
           <p className="text-sm leading-relaxed text-ink/90 mb-6">
             The 6 scenarios where you should reach for classical models over neural networks.
@@ -951,9 +1055,9 @@ Example: 'Does this intervention reduce supplier emissions?'
           </InterviewCallout>
         </Card>
 
-        {/* ── 11. Interview Q&A ── */}
+        {/* ── 12. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -992,9 +1096,9 @@ Example: 'Does this intervention reduce supplier emissions?'
           </div>
         </Card>
 
-        {/* ── 12. Cheat Sheet ── */}
+        {/* ── 13. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
