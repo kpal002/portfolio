@@ -1090,9 +1090,226 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
-        {/* ── 14. Production Considerations ── */}
+        {/* ── 14. Advanced RAG — Multi-Hop, Graph, Adaptive ── */}
         <Card>
           <SectionLabel>Section 12</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Advanced RAG Concepts — Deep Dives</h2>
+          <p className="text-sm leading-relaxed text-ink/90 mb-8">
+            Three techniques that separate production-grade RAG from toy demos: multi-hop retrieval for
+            questions that span multiple documents, structured knowledge handling for tables and
+            relationships, and adaptive strategies that route queries to the right pipeline.
+          </p>
+
+          {/* ── Multi-Hop ── */}
+          <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">1 · Multi-Hop and Cross-Document Retrieval</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Standard RAG works when the answer lives in one chunk. Multi-hop handles questions that require
+            chaining facts across multiple documents — each retrieval step informs the next query.
+          </p>
+
+          <div className="grid gap-4 md:grid-cols-2 mb-4">
+            <div className="border-2 border-ink bg-bg p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Single-hop (standard RAG)</p>
+              <p className="text-sm text-ink/80">
+                <em>"What is Amazon's Scope 1 emissions?"</em><br />
+                → Retrieve one chunk from the sustainability report → done.
+              </p>
+            </div>
+            <div className="border-2 border-ink bg-bg p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Multi-hop (chained retrieval)</p>
+              <p className="text-sm text-ink/80">
+                <em>"What is the emissions intensity of Amazon's top supplier in electronics?"</em><br />
+                → Hop 1: find top supplier → Hop 2: get their emissions → Hop 3: get their revenue → calculate.
+              </p>
+            </div>
+          </div>
+
+          <CodeBlock
+            label="Multi-hop retrieval — step by step"
+            code={`Query: "What is the emissions intensity of Amazon's top electronics supplier?"
+
+Step 1: Retrieve for original query
+  → "Foxconn is Amazon's largest electronics supplier"
+
+Step 2: Reformulate with what was found
+  → new query: "Foxconn annual emissions"
+  → "Foxconn emitted 9.2M tonnes CO2e in 2023"
+
+Step 3: Reformulate again
+  → new query: "Foxconn annual revenue 2023"
+  → "Foxconn revenue was $214B in 2023"
+
+Step 4: Generate final answer
+  → emissions intensity = 9.2M / 214B = 43 tonnes per $M revenue`}
+          />
+
+          <CodeBlock
+            label="Implementation patterns"
+            code={`IRCoT (Interleaved Retrieval + Chain of Thought):
+  Interleave reasoning steps with retrieval steps.
+  Reason: "I need the top supplier first"
+  Retrieve: "Foxconn is top supplier"
+  Reason: "Now I need Foxconn's emissions"
+  Retrieve: "9.2M tonnes CO2e"
+  Reason: "Now I need revenue to compute intensity"
+  Retrieve: "$214B revenue"
+  Generate: "Emissions intensity = 43 tonnes per $M"
+
+ReAct pattern:
+  Thought → Action (retrieve) → Observation → Thought → ...
+  Loop until sufficient information to answer.`}
+          />
+
+          <Insight label="Why this matters for sustainability">
+            Sustainability questions are inherently multi-hop. "Which of our top 10 suppliers has the
+            highest emissions per dollar of spend?" requires supplier data, emissions data, and spend
+            data — all from different sources. Cross-document retrieval is the core challenge: facts
+            are spread across supplier lists, emissions disclosures, and financial reports.
+          </Insight>
+
+          {/* ── Table Extraction and Graph RAG ── */}
+          <p className="mt-10 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">2 · Table Extraction and Graph RAG</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Standard RAG embeds text chunks. But huge amounts of sustainability data live in tables and
+            relationship graphs — structures that text embeddings can't represent well.
+          </p>
+
+          <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-muted/70">Table Extraction</p>
+          <CodeBlock
+            label="The problem — raw table as text loses structure"
+            code={`Raw table embedded as text (bad):
+"Scope 1 2021 45000 Scope 2 2021 123000 Scope 3 2021 890000
+ Scope 1 2022 42000 Scope 2 2022 118000..."
+
+The embedding has no idea this is a 2D structure.
+Rows and columns that have meaning are flattened away.`}
+          />
+          <BoldBulletList items={[
+            { label: "Table-to-text verbalization", desc: "Convert each cell to natural language before embedding. \"In 2021, Scope 1 emissions were 45,000 tonnes. In 2022, Scope 1 decreased to 42,000 tonnes.\" The embedding now captures meaning." },
+            { label: "Row-per-chunk", desc: "Each row becomes its own chunk with column headers prepended. \"Year: 2021 | Category: Scope 1 | Value: 45,000 tonnes CO2e\"" },
+            { label: "SQL / structured retrieval", desc: "Parse the table into a database. Convert natural language questions to SQL at query time. Most reliable for numerical questions and comparisons." },
+            { label: "Multimodal embedding", desc: "Embed the table as an image. Models like GPT-4V can reason about table structure visually — useful when tables have complex merged cells or visual formatting." },
+          ]} />
+
+          <p className="mt-6 mb-2 text-[11px] font-bold uppercase tracking-widest text-muted/70">Graph RAG</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Standard RAG treats documents as isolated chunks with no explicit connections. Graph RAG builds a
+            knowledge graph where entities are nodes and relationships are edges — then uses graph traversal
+            for retrieval.
+          </p>
+          <CodeBlock
+            label="Standard RAG vs Graph RAG"
+            code={`Standard RAG index (disconnected chunks):
+  Chunk 1: "Amazon partners with Rivian for electric delivery vans"
+  Chunk 2: "Rivian produces zero-emission vehicles"
+  Chunk 3: "Amazon's Scope 3 transport emissions fell 8% in 2023"
+  → No explicit link between them.
+
+Graph RAG index (explicit relationships):
+  [Amazon] --PARTNERS_WITH--> [Rivian]
+  [Rivian] --PRODUCES--> [Electric Delivery Vans]
+  [Electric Delivery Vans] --REDUCES--> [Scope 3 Emissions]
+  [Amazon] --HAS--> [Scope 3 Emissions]
+
+Query: "How is Amazon reducing transport emissions?"
+  → Graph traversal: Amazon → partners → Rivian
+    → produces → electric vans → reduces → Scope 3`}
+          />
+          <p className="mb-1 mt-4 text-[11px] font-bold uppercase tracking-widest text-muted">Microsoft GraphRAG (2024)</p>
+          <BulletList items={[
+            "Extracts entities and relationships from all documents using an LLM",
+            "Builds a community structure — clusters of related entities",
+            "Generates summaries for each community",
+            "At query time uses both graph traversal and vector search",
+          ]} />
+          <CompareTable
+            headers={["Graph RAG wins when…", "Standard RAG wins when…"]}
+            rows={[
+              ["Questions about relationships between entities", "Specific factual lookups"],
+              ["Corpus-wide summarization (\"main themes across all reports\")", "Small corpus where graph construction overhead isn't worth it"],
+              ["Questions requiring global understanding", "Keyword-based queries without relational structure"],
+            ]}
+          />
+
+          {/* ── Adaptive Retrieval ── */}
+          <p className="mt-10 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">3 · Adaptive Retrieval Strategies</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            A fixed pipeline treats every query the same way. Adaptive retrieval detects the query type and
+            routes it to the right strategy — avoiding wasted retrieval for simple questions and under-powered
+            retrieval for complex ones.
+          </p>
+
+          <CodeBlock
+            label="Why a fixed strategy fails"
+            code={`Query A: "What is CO2?"
+→ General knowledge. LLM already knows this.
+  Retrieval wastes time and adds noise. Don't retrieve.
+
+Query B: "What were our Scope 3 emissions in Q3 2024?"
+→ Specific factual lookup. Needs retrieval.
+  Dense retrieval is fine — straightforward semantic match.
+
+Query C: "Compare emissions reduction strategies across
+          all suppliers in Southeast Asia"
+→ Multi-document synthesis. Needs multi-hop retrieval.
+
+Query D: "Verify this supplier's claimed 30% reduction"
+→ Targeted evidence retrieval + citation checking.
+
+A fixed pipeline applies the same strategy to all four.`}
+          />
+
+          <CodeBlock
+            label="Adaptive retrieval — routing logic"
+            code={`Step 1: Query classification
+  - Does this need retrieval at all?
+  - Is it simple (single-hop) or complex (multi-hop)?
+  - Is it a lookup, comparison, or verification task?
+
+Step 2: Route to the right strategy
+  No retrieval needed  → straight to LLM
+  Simple factual       → dense retrieval, top-3 chunks
+  Complex multi-part   → multi-hop retrieval pipeline
+  Comparison           → retrieve from multiple sources, synthesize
+  Verification         → targeted retrieval + citation extraction
+
+Step 3: Adjust K dynamically
+  Simple query  → K=3 (less context needed)
+  Complex query → K=10 (more context needed)
+
+Step 4: Confidence-based fallback
+  Retrieval confidence low → trigger web search (CRAG)`}
+          />
+
+          <p className="mb-2 mt-4 text-[11px] font-bold uppercase tracking-widest text-muted">Self-RAG — the model decides when to retrieve</p>
+          <CodeBlock
+            label="Self-RAG special tokens"
+            code={`The model learns to emit special tokens:
+  [Retrieve]    → "I need to retrieve for this"
+  [No Retrieve] → "I already know this, skip retrieval"
+  [IsRel]       → "Is this retrieved chunk relevant?"
+  [IsSup]       → "Does this chunk support my answer?"
+  [IsUse]       → "Is this retrieval useful overall?"
+
+The model scores its own retrievals and decides whether
+to use them, retry, or generate without retrieval.`}
+          />
+
+          <InterviewCallout label="Interview One-Liner — All Three">
+            Multi-hop handles questions where the answer requires chaining facts across multiple documents —
+            each retrieval informs the next query. Table extraction and Graph RAG handle structured knowledge
+            that text embeddings can{"'"}t represent well — tables need verbalization or SQL, and
+            relationship-heavy corpora benefit from a knowledge graph. Adaptive retrieval routes different
+            query types to different strategies — simple factual queries get basic dense retrieval, complex
+            analytical queries get multi-hop pipelines, and queries the model already knows skip retrieval
+            entirely. In a sustainability context all three are critical because the data is heterogeneous,
+            highly relational, and spans very different query types.
+          </InterviewCallout>
+        </Card>
+
+        {/* ── 15. Production Considerations ── */}
+        <Card>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Production RAG Considerations</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Latency vs. Throughput Trade-offs</p>
@@ -1130,9 +1347,9 @@ avgdl    = average document length in corpus`}
           ]} />
         </Card>
 
-        {/* ── 15. Interview Q&A ── */}
+        {/* ── 16. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1173,9 +1390,9 @@ avgdl    = average document length in corpus`}
           </div>
         </Card>
 
-        {/* ── 16. Quick Reference Cheat Sheet ── */}
+        {/* ── 17. Quick Reference Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 14</SectionLabel>
+          <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
