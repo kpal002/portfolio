@@ -299,6 +299,30 @@ Gradient:     ∂L/∂w = (ŷ - y) · x   ← clean, convenient form`}
             { label: "Fast to train", desc: "Convex loss function — gradient descent always finds the global minimum. No local optima." },
           ]} />
 
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Decision Boundary</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The decision boundary is the set of points where ŷ = 0.5, which means{" "}
+            <span className="font-mono">σ(z) = 0.5</span> → <span className="font-mono">z = 0</span> →{" "}
+            <span className="font-mono">Xw + b = 0</span>. This is a <strong>hyperplane</strong> in
+            feature space — a line in 2D, a plane in 3D.
+          </p>
+          <CodeBlock
+            label="Why it's called a linear classifier"
+            code={`Decision boundary: wᵀx + b = 0  →  a hyperplane
+
+  σ(wᵀx + b) = 0.5  ←→  wᵀx + b = 0  ←→  Xw + b = 0
+
+The sigmoid is nonlinear, but the boundary it creates is linear.
+That's why logistic regression is a linear classifier.
+
+Can only separate:   ✓ linearly separable classes
+Cannot separate:     ✗ XOR  ✗ concentric circles  ✗ spirals
+
+For non-linear boundaries:
+  → Feature engineering: add polynomial features x₁², x₂², x₁x₂
+  → More powerful model: SVM with RBF kernel, neural network`}
+          />
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Multiclass Extension — Softmax</p>
           <CodeBlock
             label="Softmax regression (K > 2 classes)"
