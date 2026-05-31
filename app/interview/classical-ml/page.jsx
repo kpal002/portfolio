@@ -958,6 +958,54 @@ IRREDUCIBLE NOISE:
   Inherent noise in the data. Sets the lower bound on error.`}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Proof</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Setup: the true target is <span className="font-mono">y = f(x) + ε</span> where{" "}
+            <span className="font-mono">E[ε] = 0</span> and{" "}
+            <span className="font-mono">E[ε²] = σ²</span>. Let{" "}
+            <span className="font-mono">f̄ = E[f̂]</span> be the expected prediction of the model.
+          </p>
+
+          <div className="space-y-0 border-2 border-ink">
+            {/* Step 1 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Add and subtract f̄</p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`E[(y − f̂)²]
+
+= E[(y − f̄  +  f̄ − f̂)²]
+
+= E[(y − f̄)²]  +  2E[(y − f̄)(f̄ − f̂)]  +  E[(f̄ − f̂)²]`}</pre>
+            </div>
+
+            {/* Step 2 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Cross term vanishes</p>
+              <p className="text-sm text-ink/80 mb-2">
+                <span className="font-mono">E[f̄ − f̂] = 0</span> because <span className="font-mono">f̄</span> is defined as <span className="font-mono">E[f̂]</span>, so the middle term is zero.
+              </p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(y − f̄)²]  +  E[(f̄ − f̂)²]
+
+= E[(f(x) + ε − f̄)²]  +  Var(f̂)`}</pre>
+            </div>
+
+            {/* Step 3 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Expand the first term</p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(f(x) − f̄)²]  +  2E[ε(f(x) − f̄)]  +  E[ε²]  +  Var(f̂)`}</pre>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Middle term vanishes, collect terms</p>
+              <p className="text-sm text-ink/80 mb-2">
+                <span className="font-mono">E[ε] = 0</span> and <span className="font-mono">ε</span> is independent of <span className="font-mono">f(x) − f̄</span>, so the cross term is zero.
+              </p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= (f(x) − f̄)²  +  Var(f̂)  +  σ²
+
+= Bias²  +  Variance  +  Irreducible Noise`}</pre>
+            </div>
+          </div>
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Algorithm Positions on the Spectrum</p>
           <CompareTable
             headers={["Algorithm", "Bias", "Variance"]}
