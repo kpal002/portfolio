@@ -314,6 +314,115 @@ L = -Σₖ yₖ · log(P(y=k|x))`}
             optimum. I use it as a strong baseline — if it performs well, the problem is likely linearly
             separable and you don{"'"}t need a complex model.
           </InterviewCallout>
+
+          {/* MLE Proof */}
+          <div className="mt-8 border-t-2 border-ink pt-8">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">
+              Why Log Loss? — The MLE Derivation
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-4">
+              Log loss isn{"'"}t an arbitrary choice. It is the unique loss that follows from modeling labels
+              as Bernoulli random variables and applying maximum likelihood estimation.
+            </p>
+
+            <div className="space-y-4">
+
+              {/* Step 1 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Probabilistic model</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Model each label as a Bernoulli random variable. Both cases in one expression:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`P(y | x) = ŷʸ · (1-ŷ)^(1-y)
+
+y=1: ŷ¹ · (1-ŷ)⁰ = ŷ       ✓
+y=0: ŷ⁰ · (1-ŷ)¹ = (1-ŷ)   ✓`}</code>
+                </pre>
+              </div>
+
+              {/* Step 2 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Write the likelihood</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Assuming N examples are independent, the probability of observing all of them is:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`L(w) = ∏ᵢ P(yᵢ | xᵢ)  =  ∏ᵢ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ)`}</code>
+                </pre>
+              </div>
+
+              {/* Step 3 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Take the log</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Log turns products into sums. Maximizing log L(w) is equivalent to maximizing L(w).
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`log L(w) = Σᵢ log [ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ) ]   ← log(∏) = Σlog
+
+         = Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]   ← log(aᵇ) = b·log(a)`}</code>
+                </pre>
+              </div>
+
+              {/* Step 4 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Negate to get a loss</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  ML frameworks minimize, not maximize. Negate and average:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`Loss = -(1/N) Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]
+
+This is exactly binary cross-entropy.  ✓`}</code>
+                </pre>
+              </div>
+
+              {/* Intuition */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Intuition — penalty grows exponentially for confident mistakes</p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`y=1, ŷ=0.99  (correct, confident)  →  -log(0.99) ≈ 0.01   tiny
+y=1, ŷ=0.50  (correct, uncertain)  →  -log(0.50) ≈ 0.69   moderate
+y=1, ŷ=0.01  (wrong,   confident)  →  -log(0.01) ≈ 4.60   huge
+
+As ŷ → 0 when y=1:  -log(ŷ)   → +∞
+As ŷ → 1 when y=0:  -log(1-ŷ) → +∞`}</code>
+                </pre>
+              </div>
+
+              {/* Full chain */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">The full chain</p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`Bernoulli model for binary labels
+           ↓
+L(w) = ∏ ŷʸ(1-ŷ)^(1-y)
+           ↓
+log L(w) = Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]
+           ↓
+Negate + average
+           ↓
+Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
+                </pre>
+              </div>
+
+            </div>
+
+            <div className="mt-4 border-l-4 border-accent pl-5">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+                <span className="text-accent">▸ </span>Interview One-Liner
+              </p>
+              <p className="text-sm leading-relaxed text-ink/80">
+                MLE asks: what weights make the observed training data most probable? If we model each
+                label as a Bernoulli random variable with P(y=1|x) = σ(wᵀx), the joint likelihood of all
+                N observations is a product of Bernoullis. Taking the log turns that product into a sum.
+                Negating to convert maximization to minimization gives exactly binary cross-entropy. Log
+                loss isn{"'"}t an arbitrary choice — it{"'"}s the unique loss that follows from assuming
+                Bernoulli labels and applying MLE.
+              </p>
+            </div>
+          </div>
         </Card>
 
         {/* ── 3. Decision Trees ── */}
