@@ -101,6 +101,71 @@ function InterviewCallout({ label = "Interview Answer", children }) {
   );
 }
 
+function binomialPMF(n, p) {
+  const probs = new Array(n + 1);
+  probs[0] = Math.pow(1 - p, n);
+  for (let k = 0; k < n; k++) {
+    probs[k + 1] = probs[k] * ((n - k) / (k + 1)) * (p / (1 - p));
+  }
+  return probs;
+}
+
+function BinomialBarChart({ n, p, label, note }) {
+  const probs = binomialPMF(n, p);
+  const maxP = Math.max(...probs);
+  const W = 300;
+  const H = 80;
+  const padL = 4;
+  const padR = 4;
+  const padB = 4;
+  const chartW = W - padL - padR;
+  const barW = chartW / probs.length;
+
+  return (
+    <div className="border-2 border-ink bg-bg p-4">
+      <div className="flex items-baseline justify-between mb-2">
+        <p className="text-[10px] font-bold font-mono text-ink">{label}</p>
+        <p className="text-[10px] text-ink/50 font-mono">{note}</p>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H + padB}`} className="w-full" style={{ display: "block" }}>
+        {probs.map((prob, k) => {
+          const barH = (prob / maxP) * H;
+          const x = padL + k * barW;
+          const y = H - barH;
+          return (
+            <rect
+              key={k}
+              x={x + 0.5}
+              y={y}
+              width={Math.max(barW - 1, 0.5)}
+              height={barH}
+              fill="#0a0a0a"
+            />
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function BinomialConvergencePlot() {
+  return (
+    <div className="my-4 border-2 border-ink bg-bg p-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-4">
+        Visualising the convergence — Binomial(n, 0.5)
+      </p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <BinomialBarChart n={5}   p={0.5} label="n = 5"   note="discrete, lumpy" />
+        <BinomialBarChart n={20}  p={0.5} label="n = 20"  note="smoother bell" />
+        <BinomialBarChart n={100} p={0.5} label="n = 100" note="nearly Gaussian" />
+      </div>
+      <p className="mt-3 text-[11px] text-ink/50 font-mono">
+        As n ↑: discrete mass concentrates into a continuous bell curve
+      </p>
+    </div>
+  );
+}
+
 function Insight({ label = "Key Insight", children }) {
   return (
     <div className="mt-6 border-l-4 border-accent pl-5">
@@ -378,9 +443,9 @@ Example — Binomial(3, 0.5):
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PDF — Probability Density Function (continuous)</p>
           <CodeBlock
             label="Definition and properties"
-            code={`PDF: f(x) ≥ 0,   ∫₋∞^∞ f(x) dx = 1
+            code={`PDF: f(x) ≥ 0,   integral from -inf to +inf of f(x) dx = 1
 
-P(a ≤ X ≤ b) = ∫ₐᵇ f(x) dx   ← area under the curve
+P(a ≤ X ≤ b) = integral from a to b of f(x) dx   ← area under the curve
 
 Key insight:
   f(x) is NOT a probability — it can be > 1
@@ -389,7 +454,7 @@ Key insight:
 
 Example — Gaussian N(0,1):
   f(x) = (1/√2π) · exp(-x²/2)
-  P(-1 ≤ X ≤ 1) = ∫₋₁¹ f(x) dx ≈ 0.68   ← 68% rule`}
+  P(-1 ≤ X ≤ 1) = integral from -1 to 1 of f(x) dx ≈ 0.68   ← 68% rule`}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF — Cumulative Distribution Function</p>
@@ -398,16 +463,16 @@ Example — Gaussian N(0,1):
             code={`CDF: F(x) = P(X ≤ x)
 
 For discrete:    F(x) = Σₖ≤ₓ p(k)   ← sum up to x
-For continuous:  F(x) = ∫₋∞ˣ f(t) dt ← area up to x
+For continuous:  F(x) = integral from -inf to x of f(t) dt   ← area up to x
 
 Properties:
-  F(-∞) = 0,   F(+∞) = 1
+  F(-inf) = 0,   F(+inf) = 1
   F is non-decreasing
   F is right-continuous
 
 Relationship between PDF and CDF:
   f(x) = dF(x)/dx   ← PDF is the derivative of the CDF
-  F(x) = ∫₋∞ˣ f(t) dt ← CDF is the integral of the PDF
+  F(x) = integral from -inf to x of f(t) dt   ← CDF is the integral of the PDF
 
 Computing probabilities from CDF:
   P(a ≤ X ≤ b) = F(b) - F(a)
@@ -593,14 +658,64 @@ Examples:
   n=100, p=0.01: np=1  ← BAD — use Poisson instead`}
           />
 
-          <div className="my-4 border-2 border-ink bg-bg p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Visualising the convergence</p>
-            <div className="space-y-2 font-mono text-[11px] text-ink/80">
-              <p>Binomial(n=5,  p=0.5): <span className="text-ink">▁▄█▄▁</span>  — discrete, lumpy, symmetric</p>
-              <p>Binomial(n=20, p=0.5): <span className="text-ink">▁▂▄▆██▆▄▂▁</span>  — smoother bell</p>
-              <p>Binomial(n=100,p=0.5): <span className="text-ink">▁▂▄▆████▆▄▂▁</span>  — nearly Gaussian</p>
-              <p className="mt-2 text-ink/60">As n ↑: discrete mass concentrates into a continuous bell curve</p>
-            </div>
+          <BinomialConvergencePlot />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson as a Limit of Binomial</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Poisson is not just related to Binomial by analogy — it is exactly the Binomial in the limit
+            n→∞, p→0 with the product np = λ held fixed. Here is the derivation.
+          </p>
+          <CodeBlock
+            label="Setup"
+            code={`X ~ Binomial(n, p)
+P(X = k) = C(n,k) · pᵏ · (1-p)^(n-k)
+
+Let p = λ/n  (so that np = λ is fixed as n → ∞)
+Substitute:
+P(X = k) = C(n,k) · (λ/n)ᵏ · (1 - λ/n)^(n-k)`}
+          />
+          <CodeBlock
+            label="Step 1 — expand C(n,k) · (λ/n)ᵏ"
+            code={`C(n,k) · (λ/n)ᵏ = [n! / (k!(n-k)!)] · λᵏ/nᵏ
+
+             = λᵏ/k! · [n(n-1)(n-2)···(n-k+1)] / nᵏ
+
+             = λᵏ/k! · [1 · (1-1/n) · (1-2/n) ··· (1-(k-1)/n)]
+
+As n → ∞, each factor (1 - j/n) → 1  for fixed j, so:
+
+             → λᵏ / k!`}
+          />
+          <CodeBlock
+            label="Step 2 — handle (1 - λ/n)^(n-k)"
+            code={`(1 - λ/n)^(n-k) = (1 - λ/n)ⁿ · (1 - λ/n)^(-k)
+
+As n → ∞:
+  (1 - λ/n)ⁿ  →  e^(-λ)       ← definition of e (or limit of compound interest)
+  (1 - λ/n)^(-k) → 1           ← k is fixed, λ/n → 0
+
+Together: (1 - λ/n)^(n-k)  →  e^(-λ)`}
+          />
+          <CodeBlock
+            label="Step 3 — combine"
+            code={`P(X = k) = C(n,k) · (λ/n)ᵏ · (1 - λ/n)^(n-k)
+
+         →   (λᵏ / k!)  ·  e^(-λ)
+
+         =   e^(-λ) λᵏ / k!   ← Poisson(λ) PMF  ✓
+
+The Binomial(n, λ/n) converges to Poisson(λ) as n → ∞.`}
+          />
+          <div className="border-2 border-ink bg-bg p-4 my-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">The physical interpretation</p>
+            <p className="text-sm text-ink/80">
+              Divide a time interval into n tiny sub-intervals. In each, an event can happen with
+              probability p = λ/n (small). Sub-intervals are independent. The total count of events
+              is Binomial(n, λ/n). As n→∞ (continuous time, infinitesimally small intervals) with
+              average rate λ fixed, the count converges to Poisson(λ). This is why Poisson models
+              counts of rare independent events — server requests per second, audit violations per
+              year, radioactive decays per minute.
+            </p>
           </div>
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson → Gaussian</p>
