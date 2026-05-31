@@ -149,9 +149,68 @@ export default function ProbabilityStatisticsPage() {
           </ul>
         </Card>
 
-        {/* ── 1. Bayes' Theorem ── */}
+        {/* ── 1. Conditional Probability ── */}
         <Card>
           <SectionLabel>Section 1</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Conditional Probability</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            A and B are two events (outcomes) of a random experiment. Conditional probability asks:
+            given that B happened, how likely is A?
+          </p>
+
+          <CodeBlock
+            label="Definition"
+            code={`P(A | B) = P(A ∩ B) / P(B)
+
+Restrict the sample space to B, then ask what fraction of B also contains A.
+
+Rearranged → Multiplication Law:
+  P(A ∩ B) = P(A | B) · P(B)`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Inverse Problem — P(B|A) from P(A|B)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Given P(A|B), how do you get P(B|A)? Apply the multiplication law to both orderings of the
+            joint probability P(A∩B):
+          </p>
+          <CodeBlock
+            label="Deriving Bayes' theorem from conditional probability"
+            code={`P(A ∩ B) = P(A | B) · P(B)   ← one way to write the joint
+P(A ∩ B) = P(B | A) · P(A)   ← the other way
+
+Set them equal:
+  P(A | B) · P(B) = P(B | A) · P(A)
+
+Solve for P(B | A):
+  P(B | A) = P(A | B) · P(B) / P(A)   ← Bayes' theorem ✓`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Law of Total Probability</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            If events B₁, B₂, …, Bₙ partition the sample space Ω (they are mutually exclusive and
+            exhaustive: Ω = ∪Bᵢ, Bᵢ ∩ Bⱼ = ∅ for i ≠ j), then:
+          </p>
+          <CodeBlock
+            label="Law of total probability"
+            code={`P(A) = Σᵢ P(A | Bᵢ) · P(Bᵢ)
+
+Simplest case — B and Bᶜ partition Ω:
+  P(A) = P(A | B) · P(B) + P(A | Bᶜ) · P(Bᶜ)
+
+This is the P(B) denominator in Bayes' theorem:
+  P(A | B) = P(B | A) · P(A) / [P(B|A)·P(A) + P(B|¬A)·P(¬A)]`}
+          />
+
+          <Insight label="Why this matters for Bayes' theorem">
+            The law of total probability shows where the denominator P(B) in Bayes{"'"} theorem comes from —
+            it{"'"}s not mysterious, it{"'"}s just the sum over all ways B could have happened. It acts as a
+            normalizing constant ensuring the posterior probabilities sum to 1.
+          </Insight>
+        </Card>
+
+        {/* ── 2. Bayes' Theorem ── */}
+        <Card>
+          <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayes{"'"} Theorem</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Describes how to update a belief (probability) when new evidence arrives. The mathematical
@@ -210,9 +269,180 @@ The rarity of the disease dominates.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 2. Key Distributions ── */}
+        {/* ── 3. Independence ── */}
         <Card>
-          <SectionLabel>Section 2</SectionLabel>
+          <SectionLabel>Section 3</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Independence</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Two events A and B are <strong>independent</strong> if knowing one occurred gives no extra
+            information about the other.
+          </p>
+
+          <CodeBlock
+            label="Definition — two equivalent forms"
+            code={`P(A | B) = P(A)   ← B gives no info about A
+P(B | A) = P(B)   ← A gives no info about B
+
+Plug into the multiplication law P(A∩B) = P(A|B)·P(B):
+  P(A ∩ B) = P(A) · P(B)   ← the product rule for independent events`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Concrete Example — Cards</p>
+          <CodeBlock
+            label="A = spade, B = queen"
+            code={`P(A) = 13/52 = 1/4    (13 spades in 52 cards)
+P(B) = 4/52  = 1/13   (4 queens in 52 cards)
+
+Are they independent? Check:
+  P(A ∩ B) = P(queen of spades) = 1/52
+  P(A)·P(B) = 1/4 × 1/13 = 1/52  ✓
+
+They match → A and B are independent.
+Knowing a card is a queen doesn't change the probability it's a spade.`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Independence vs Mutual Exclusivity</p>
+          <div className="space-y-3">
+            <div className="border-l-4 border-ink pl-5">
+              <p className="text-sm font-bold">Independent: P(A∩B) = P(A)·P(B)</p>
+              <p className="mt-1 text-sm text-ink/80">Knowing A happened tells you nothing about B. Both can happen simultaneously.</p>
+            </div>
+            <div className="border-l-4 border-ink pl-5">
+              <p className="text-sm font-bold">Mutually exclusive: P(A∩B) = 0</p>
+              <p className="mt-1 text-sm text-ink/80">They cannot both happen. Knowing A happened tells you B did NOT happen — the most extreme dependence.</p>
+            </div>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Reliability — Independence in Practice</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When components fail independently, the product rule gives exact reliability calculations.
+          </p>
+          <CodeBlock
+            label="Series vs parallel systems (n=10, p=0.05 per component)"
+            code={`SERIES — all must succeed (chain fails if any link fails):
+  P(series success) = (1-p)ⁿ = (0.95)¹⁰ ≈ 0.60
+  P(series failure) = 1 - (1-p)ⁿ = 1 - 0.95¹⁰ ≈ 0.40
+
+  Even with 95% reliable components, a chain of 10
+  has only 60% chance of working.
+
+PARALLEL — any one succeeding is enough:
+  P(parallel failure) = pⁿ = (0.05)¹⁰ ≈ 10⁻¹³
+  P(parallel success) = 1 - pⁿ  ≈  1.0
+
+  Redundancy drives failure probability to near zero.`}
+          />
+
+          <Insight label="ML Connection">
+            Independence assumptions power most of ML. Naive Bayes classifies text by assuming words
+            are independent given the class. MLE treats training examples as independent draws.
+            Bootstrapping in Random Forests relies on approximate independence between trees.
+            When independence is violated (e.g. time series), standard methods break.
+          </Insight>
+        </Card>
+
+        {/* ── 4. PDF and CDF ── */}
+        <Card>
+          <SectionLabel>Section 4</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">PDF and CDF</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Two fundamental ways to describe a probability distribution. Every distribution you encounter
+            in ML can be described by both.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Discrete vs Continuous Random Variables</p>
+          <CompareTable
+            headers={["Discrete", "Continuous"]}
+            rows={[
+              ["Takes countable values: 0, 1, 2, …", "Takes any value in an interval: x ∈ ℝ"],
+              ["Described by PMF — Probability Mass Function", "Described by PDF — Probability Density Function"],
+              ["P(X=k) gives exact probability of each value", "P(X=x) = 0 for any single point — only intervals have probability"],
+              ["Example: coin flips, audit failure counts", "Example: emissions values, model scores, wait times"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PMF — Probability Mass Function (discrete)</p>
+          <CodeBlock
+            label="Definition and properties"
+            code={`PMF: p(k) = P(X = k)
+
+Properties:
+  p(k) ≥ 0  for all k
+  Σₖ p(k) = 1   ← probabilities sum to 1
+
+Example — Binomial(3, 0.5):
+  P(X=0) = 1/8,  P(X=1) = 3/8,  P(X=2) = 3/8,  P(X=3) = 1/8
+  Sum = 8/8 = 1  ✓`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PDF — Probability Density Function (continuous)</p>
+          <CodeBlock
+            label="Definition and properties"
+            code={`PDF: f(x) ≥ 0,   ∫₋∞^∞ f(x) dx = 1
+
+P(a ≤ X ≤ b) = ∫ₐᵇ f(x) dx   ← area under the curve
+
+Key insight:
+  f(x) is NOT a probability — it can be > 1
+  Only integrals (areas) are probabilities
+  P(X = x) = 0 for any single point
+
+Example — Gaussian N(0,1):
+  f(x) = (1/√2π) · exp(-x²/2)
+  P(-1 ≤ X ≤ 1) = ∫₋₁¹ f(x) dx ≈ 0.68   ← 68% rule`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF — Cumulative Distribution Function</p>
+          <CodeBlock
+            label="Definition — works for both discrete and continuous"
+            code={`CDF: F(x) = P(X ≤ x)
+
+For discrete:    F(x) = Σₖ≤ₓ p(k)   ← sum up to x
+For continuous:  F(x) = ∫₋∞ˣ f(t) dt ← area up to x
+
+Properties:
+  F(-∞) = 0,   F(+∞) = 1
+  F is non-decreasing
+  F is right-continuous
+
+Relationship between PDF and CDF:
+  f(x) = dF(x)/dx   ← PDF is the derivative of the CDF
+  F(x) = ∫₋∞ˣ f(t) dt ← CDF is the integral of the PDF
+
+Computing probabilities from CDF:
+  P(a ≤ X ≤ b) = F(b) - F(a)
+  P(X > a)     = 1 - F(a)`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF in Practice</p>
+          <CodeBlock
+            label="Z-score and hypothesis testing"
+            code={`Standard Normal CDF: Φ(z) = P(Z ≤ z)
+
+Z-test: test statistic Z = (x̄ - μ₀) / (σ/√n)
+p-value (one-tailed) = 1 - Φ(Z)
+p-value (two-tailed) = 2·(1 - Φ(|Z|))
+
+Example: Z = 2.0
+  p-value (two-tailed) = 2·(1 - Φ(2.0)) = 2·(1 - 0.977) = 0.046
+  → Reject H₀ at α = 0.05
+
+Critical values come from the inverse CDF (quantile function):
+  Φ⁻¹(0.975) = 1.96  ← 95% CI uses ±1.96σ
+  Φ⁻¹(0.995) = 2.576 ← 99% CI uses ±2.576σ`}
+          />
+
+          <Insight label="Why PDF > 1 is not a problem">
+            A PDF value of 3.0 at some point x just means the distribution is very concentrated there.
+            It{"'"}s a density, not a probability. The probability of a tiny interval [x, x+dx] is
+            f(x)·dx — and for small enough dx this is always ≤ 1. Only areas (integrals) are
+            probabilities.
+          </Insight>
+        </Card>
+
+        {/* ── 5. Key Distributions ── */}
+        <Card>
+          <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gaussian (Normal) — N(μ, σ²)</p>
@@ -296,9 +526,146 @@ Use Poisson when N is large and p is small.`}
           />
         </Card>
 
-        {/* ── 3. MLE ── */}
+        {/* ── 6. Central Limit Theorem ── */}
         <Card>
-          <SectionLabel>Section 3</SectionLabel>
+          <SectionLabel>Section 6</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Central Limit Theorem</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            One of the most powerful results in probability theory. It explains why the Gaussian
+            distribution appears everywhere — and why statistical inference works even when you don{"'"}t
+            know the underlying distribution.
+          </p>
+
+          <CodeBlock
+            label="The theorem"
+            code={`Let X₁, X₂, ..., Xₙ be iid random variables with:
+  E[Xᵢ] = μ   (finite mean)
+  Var(Xᵢ) = σ²  (finite variance)
+
+Define the sample mean: X̄ₙ = (1/n) Σᵢ Xᵢ
+
+Then as n → ∞:
+
+  √n · (X̄ₙ - μ) / σ  →  N(0, 1)   in distribution
+
+Or equivalently:
+  X̄ₙ ~ N(μ, σ²/n)   approximately, for large n
+
+The distribution of the MEAN converges to Gaussian,
+regardless of the original distribution of Xᵢ.`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Why It Matters</p>
+          <BulletList items={[
+            "Hypothesis tests (Z-test, t-test) use normal/t distributions even when the data is not normal — valid for large n by CLT",
+            "Confidence intervals are symmetric around the mean — justified by CLT",
+            "MLE estimates are approximately Gaussian for large n — enables asymptotic inference",
+            "With n ≥ 30, you can almost always use the normal approximation in practice",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Binomial → Gaussian</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            A Binomial(n, p) is the sum of n independent Bernoulli(p) random variables. By CLT, this
+            sum converges to a Gaussian as n grows.
+          </p>
+          <CodeBlock
+            label="The De Moivre–Laplace theorem"
+            code={`X ~ Binomial(n, p)
+
+E[X] = np
+Var(X) = np(1-p)
+
+CLT applies because X = X₁ + X₂ + ... + Xₙ, each Xᵢ ~ Bernoulli(p)
+
+As n → ∞:
+  X ~ N(np, np(1-p))   approximately
+
+Standardized:
+  Z = (X - np) / √(np(1-p))  →  N(0,1)
+
+When does the approximation hold?
+  Rule of thumb: np ≥ 5  AND  n(1-p) ≥ 5
+
+Examples:
+  n=10,  p=0.5:  np=5  ← borderline, still skewed
+  n=30,  p=0.5:  np=15 ← good approximation
+  n=100, p=0.1:  np=10 ← good (both conditions met)
+  n=100, p=0.01: np=1  ← BAD — use Poisson instead`}
+          />
+
+          <div className="my-4 border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Visualising the convergence</p>
+            <div className="space-y-2 font-mono text-[11px] text-ink/80">
+              <p>Binomial(n=5,  p=0.5): <span className="text-ink">▁▄█▄▁</span>  — discrete, lumpy, symmetric</p>
+              <p>Binomial(n=20, p=0.5): <span className="text-ink">▁▂▄▆██▆▄▂▁</span>  — smoother bell</p>
+              <p>Binomial(n=100,p=0.5): <span className="text-ink">▁▂▄▆████▆▄▂▁</span>  — nearly Gaussian</p>
+              <p className="mt-2 text-ink/60">As n ↑: discrete mass concentrates into a continuous bell curve</p>
+            </div>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson → Gaussian</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            A Poisson(λ) can be thought of as the sum of many independent rare events. As λ grows,
+            CLT kicks in and the distribution becomes Gaussian.
+          </p>
+          <CodeBlock
+            label="Poisson CLT limit"
+            code={`X ~ Poisson(λ)
+
+E[X] = λ,   Var(X) = λ   (both equal λ)
+
+A Poisson(λ) is the limit of Binomial(n, p) as n→∞, p→0, np=λ.
+Applying CLT to that Binomial:
+
+As λ → ∞:
+  X ~ N(λ, λ)   approximately
+
+Standardized:
+  Z = (X - λ) / √λ  →  N(0, 1)
+
+When does the approximation hold?
+  Rule of thumb: λ ≥ 10
+
+Examples:
+  λ = 1:   very skewed, right tail dominant — CLT has not kicked in
+  λ = 5:   still noticeably skewed
+  λ = 10:  reasonable approximation
+  λ = 30:  excellent approximation, nearly symmetric bell`}
+          />
+
+          <div className="my-4 border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Why Poisson is right-skewed for small λ</p>
+            <p className="text-sm text-ink/80">
+              Poisson(λ=1): P(X=0) = 0.368, P(X=1) = 0.368, P(X=2) = 0.184, P(X=3) = 0.061 …
+              Most of the probability mass is near 0, with a long right tail. Mean = Variance = 1.
+              As λ grows, the distribution can spread out symmetrically on both sides — the left tail
+              has room to develop — and the bell shape emerges.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Three Limits — Summary</p>
+          <CompareTable
+            headers={["Distribution", "Limit condition", "Approaches", "Approximation rule"]}
+            rows={[
+              ["Binomial(n, p)", "n → ∞, p fixed", "N(np, np(1-p))", "np ≥ 5 and n(1-p) ≥ 5"],
+              ["Binomial(n, p)", "n → ∞, p → 0, np = λ", "Poisson(λ)", "n ≥ 20, p ≤ 0.05"],
+              ["Poisson(λ)", "λ → ∞", "N(λ, λ)", "λ ≥ 10"],
+            ]}
+          />
+
+          <InterviewCallout>
+            CLT states that the sample mean of n iid variables with mean μ and variance σ² converges
+            to N(μ, σ²/n) regardless of the original distribution. This is why normal approximations
+            work: Binomial(n,p) → N(np, np(1-p)) when np≥5 and n(1-p)≥5, and Poisson(λ) → N(λ,λ)
+            when λ≥10. In both cases the discrete distribution becomes a continuous bell curve because
+            the sum of many small independent contributions — however distributed — always converges
+            to Gaussian.
+          </InterviewCallout>
+        </Card>
+
+        {/* ── 7. MLE ── */}
+        <Card>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -367,9 +734,9 @@ Every loss function has a probabilistic interpretation.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 4. Hypothesis Testing ── */}
+        {/* ── 8. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 4</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -444,9 +811,9 @@ CHI-SQUARED TEST (categorical data):
           </Insight>
         </Card>
 
-        {/* ── 5. Confidence Intervals ── */}
+        {/* ── 9. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 5</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -497,9 +864,9 @@ Example: 500 visitors, 50 conversions
           </Insight>
         </Card>
 
-        {/* ── 6. A/B Testing ── */}
+        {/* ── 10. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 6</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -557,9 +924,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. Bayesian Inference ── */}
+        {/* ── 11. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -667,9 +1034,9 @@ This is why regularization has a Bayesian interpretation:
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Interview Q&A ── */}
+        {/* ── 12. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -704,9 +1071,9 @@ This is why regularization has a Bayesian interpretation:
           </div>
         </Card>
 
-        {/* ── 9. Cheat Sheet ── */}
+        {/* ── 13. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
