@@ -642,6 +642,17 @@ Why this helps:
             The ~37% of samples not seen by each tree form a free validation set. Average OOB predictions
             across all trees for an unbiased generalization estimate — no separate validation set needed.
           </p>
+          <div className="mb-4 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold">Why exactly 37%?</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink/80">
+              Each bootstrap sample draws N times with replacement from N samples. The probability a
+              specific sample is <em>never</em> drawn is{" "}
+              <span className="font-mono">(1 - 1/N)ᴺ</span>. As N grows this converges to{" "}
+              <span className="font-mono">1/e ≈ 0.368</span> — the same limit that defines Euler{"'"}s
+              number. So roughly 37% of samples are out-of-bag in every bootstrap, guaranteed by
+              probability theory rather than by design.
+            </p>
+          </div>
           <CodeBlock
             label="OOB score in sklearn"
             code={`rf = RandomForestClassifier(oob_score=True)
