@@ -660,6 +660,64 @@ Examples:
 
           <BinomialConvergencePlot />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson as a Limit of Binomial</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Poisson is not just related to Binomial by analogy — it is exactly the Binomial in the limit
+            n→∞, p→0 with the product np = λ held fixed. Here is the derivation.
+          </p>
+          <CodeBlock
+            label="Setup"
+            code={`X ~ Binomial(n, p)
+P(X = k) = C(n,k) · pᵏ · (1-p)^(n-k)
+
+Let p = λ/n  (so that np = λ is fixed as n → ∞)
+Substitute:
+P(X = k) = C(n,k) · (λ/n)ᵏ · (1 - λ/n)^(n-k)`}
+          />
+          <CodeBlock
+            label="Step 1 — expand C(n,k) · (λ/n)ᵏ"
+            code={`C(n,k) · (λ/n)ᵏ = [n! / (k!(n-k)!)] · λᵏ/nᵏ
+
+             = λᵏ/k! · [n(n-1)(n-2)···(n-k+1)] / nᵏ
+
+             = λᵏ/k! · [1 · (1-1/n) · (1-2/n) ··· (1-(k-1)/n)]
+
+As n → ∞, each factor (1 - j/n) → 1  for fixed j, so:
+
+             → λᵏ / k!`}
+          />
+          <CodeBlock
+            label="Step 2 — handle (1 - λ/n)^(n-k)"
+            code={`(1 - λ/n)^(n-k) = (1 - λ/n)ⁿ · (1 - λ/n)^(-k)
+
+As n → ∞:
+  (1 - λ/n)ⁿ  →  e^(-λ)       ← definition of e (or limit of compound interest)
+  (1 - λ/n)^(-k) → 1           ← k is fixed, λ/n → 0
+
+Together: (1 - λ/n)^(n-k)  →  e^(-λ)`}
+          />
+          <CodeBlock
+            label="Step 3 — combine"
+            code={`P(X = k) = C(n,k) · (λ/n)ᵏ · (1 - λ/n)^(n-k)
+
+         →   (λᵏ / k!)  ·  e^(-λ)
+
+         =   e^(-λ) λᵏ / k!   ← Poisson(λ) PMF  ✓
+
+The Binomial(n, λ/n) converges to Poisson(λ) as n → ∞.`}
+          />
+          <div className="border-2 border-ink bg-bg p-4 my-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">The physical interpretation</p>
+            <p className="text-sm text-ink/80">
+              Divide a time interval into n tiny sub-intervals. In each, an event can happen with
+              probability p = λ/n (small). Sub-intervals are independent. The total count of events
+              is Binomial(n, λ/n). As n→∞ (continuous time, infinitesimally small intervals) with
+              average rate λ fixed, the count converges to Poisson(λ). This is why Poisson models
+              counts of rare independent events — server requests per second, audit violations per
+              year, radioactive decays per minute.
+            </p>
+          </div>
+
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson → Gaussian</p>
           <p className="text-sm leading-relaxed text-ink/90 mb-3">
             A Poisson(λ) can be thought of as the sum of many independent rare events. As λ grows,
