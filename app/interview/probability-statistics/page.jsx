@@ -149,9 +149,68 @@ export default function ProbabilityStatisticsPage() {
           </ul>
         </Card>
 
-        {/* ── 1. Bayes' Theorem ── */}
+        {/* ── 1. Conditional Probability ── */}
         <Card>
           <SectionLabel>Section 1</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Conditional Probability</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            A and B are two events (outcomes) of a random experiment. Conditional probability asks:
+            given that B happened, how likely is A?
+          </p>
+
+          <CodeBlock
+            label="Definition"
+            code={`P(A | B) = P(A ∩ B) / P(B)
+
+Restrict the sample space to B, then ask what fraction of B also contains A.
+
+Rearranged → Multiplication Law:
+  P(A ∩ B) = P(A | B) · P(B)`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Inverse Problem — P(B|A) from P(A|B)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Given P(A|B), how do you get P(B|A)? Apply the multiplication law to both orderings of the
+            joint probability P(A∩B):
+          </p>
+          <CodeBlock
+            label="Deriving Bayes' theorem from conditional probability"
+            code={`P(A ∩ B) = P(A | B) · P(B)   ← one way to write the joint
+P(A ∩ B) = P(B | A) · P(A)   ← the other way
+
+Set them equal:
+  P(A | B) · P(B) = P(B | A) · P(A)
+
+Solve for P(B | A):
+  P(B | A) = P(A | B) · P(B) / P(A)   ← Bayes' theorem ✓`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Law of Total Probability</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            If events B₁, B₂, …, Bₙ partition the sample space Ω (they are mutually exclusive and
+            exhaustive: Ω = ∪Bᵢ, Bᵢ ∩ Bⱼ = ∅ for i ≠ j), then:
+          </p>
+          <CodeBlock
+            label="Law of total probability"
+            code={`P(A) = Σᵢ P(A | Bᵢ) · P(Bᵢ)
+
+Simplest case — B and Bᶜ partition Ω:
+  P(A) = P(A | B) · P(B) + P(A | Bᶜ) · P(Bᶜ)
+
+This is the P(B) denominator in Bayes' theorem:
+  P(A | B) = P(B | A) · P(A) / [P(B|A)·P(A) + P(B|¬A)·P(¬A)]`}
+          />
+
+          <Insight label="Why this matters for Bayes' theorem">
+            The law of total probability shows where the denominator P(B) in Bayes{"'"} theorem comes from —
+            it{"'"}s not mysterious, it{"'"}s just the sum over all ways B could have happened. It acts as a
+            normalizing constant ensuring the posterior probabilities sum to 1.
+          </Insight>
+        </Card>
+
+        {/* ── 2. Bayes' Theorem ── */}
+        <Card>
+          <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayes{"'"} Theorem</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Describes how to update a belief (probability) when new evidence arrives. The mathematical
@@ -210,9 +269,9 @@ The rarity of the disease dominates.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 2. Key Distributions ── */}
+        {/* ── 3. Key Distributions ── */}
         <Card>
-          <SectionLabel>Section 2</SectionLabel>
+          <SectionLabel>Section 3</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gaussian (Normal) — N(μ, σ²)</p>
@@ -296,9 +355,9 @@ Use Poisson when N is large and p is small.`}
           />
         </Card>
 
-        {/* ── 3. MLE ── */}
+        {/* ── 4. MLE ── */}
         <Card>
-          <SectionLabel>Section 3</SectionLabel>
+          <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -367,9 +426,9 @@ Every loss function has a probabilistic interpretation.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 4. Hypothesis Testing ── */}
+        {/* ── 5. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 4</SectionLabel>
+          <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -444,9 +503,9 @@ CHI-SQUARED TEST (categorical data):
           </Insight>
         </Card>
 
-        {/* ── 5. Confidence Intervals ── */}
+        {/* ── 6. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 5</SectionLabel>
+          <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -497,9 +556,9 @@ Example: 500 visitors, 50 conversions
           </Insight>
         </Card>
 
-        {/* ── 6. A/B Testing ── */}
+        {/* ── 7. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 6</SectionLabel>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -557,9 +616,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. Bayesian Inference ── */}
+        {/* ── 8. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -667,9 +726,9 @@ This is why regularization has a Bayesian interpretation:
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Interview Q&A ── */}
+        {/* ── 9. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -704,9 +763,9 @@ This is why regularization has a Bayesian interpretation:
           </div>
         </Card>
 
-        {/* ── 9. Cheat Sheet ── */}
+        {/* ── 10. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
