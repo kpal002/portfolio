@@ -341,9 +341,108 @@ PARALLEL — any one succeeding is enough:
           </Insight>
         </Card>
 
-        {/* ── 4. Key Distributions ── */}
+        {/* ── 4. PDF and CDF ── */}
         <Card>
           <SectionLabel>Section 4</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">PDF and CDF</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Two fundamental ways to describe a probability distribution. Every distribution you encounter
+            in ML can be described by both.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Discrete vs Continuous Random Variables</p>
+          <CompareTable
+            headers={["Discrete", "Continuous"]}
+            rows={[
+              ["Takes countable values: 0, 1, 2, …", "Takes any value in an interval: x ∈ ℝ"],
+              ["Described by PMF — Probability Mass Function", "Described by PDF — Probability Density Function"],
+              ["P(X=k) gives exact probability of each value", "P(X=x) = 0 for any single point — only intervals have probability"],
+              ["Example: coin flips, audit failure counts", "Example: emissions values, model scores, wait times"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PMF — Probability Mass Function (discrete)</p>
+          <CodeBlock
+            label="Definition and properties"
+            code={`PMF: p(k) = P(X = k)
+
+Properties:
+  p(k) ≥ 0  for all k
+  Σₖ p(k) = 1   ← probabilities sum to 1
+
+Example — Binomial(3, 0.5):
+  P(X=0) = 1/8,  P(X=1) = 3/8,  P(X=2) = 3/8,  P(X=3) = 1/8
+  Sum = 8/8 = 1  ✓`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PDF — Probability Density Function (continuous)</p>
+          <CodeBlock
+            label="Definition and properties"
+            code={`PDF: f(x) ≥ 0,   ∫₋∞^∞ f(x) dx = 1
+
+P(a ≤ X ≤ b) = ∫ₐᵇ f(x) dx   ← area under the curve
+
+Key insight:
+  f(x) is NOT a probability — it can be > 1
+  Only integrals (areas) are probabilities
+  P(X = x) = 0 for any single point
+
+Example — Gaussian N(0,1):
+  f(x) = (1/√2π) · exp(-x²/2)
+  P(-1 ≤ X ≤ 1) = ∫₋₁¹ f(x) dx ≈ 0.68   ← 68% rule`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF — Cumulative Distribution Function</p>
+          <CodeBlock
+            label="Definition — works for both discrete and continuous"
+            code={`CDF: F(x) = P(X ≤ x)
+
+For discrete:    F(x) = Σₖ≤ₓ p(k)   ← sum up to x
+For continuous:  F(x) = ∫₋∞ˣ f(t) dt ← area up to x
+
+Properties:
+  F(-∞) = 0,   F(+∞) = 1
+  F is non-decreasing
+  F is right-continuous
+
+Relationship between PDF and CDF:
+  f(x) = dF(x)/dx   ← PDF is the derivative of the CDF
+  F(x) = ∫₋∞ˣ f(t) dt ← CDF is the integral of the PDF
+
+Computing probabilities from CDF:
+  P(a ≤ X ≤ b) = F(b) - F(a)
+  P(X > a)     = 1 - F(a)`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF in Practice</p>
+          <CodeBlock
+            label="Z-score and hypothesis testing"
+            code={`Standard Normal CDF: Φ(z) = P(Z ≤ z)
+
+Z-test: test statistic Z = (x̄ - μ₀) / (σ/√n)
+p-value (one-tailed) = 1 - Φ(Z)
+p-value (two-tailed) = 2·(1 - Φ(|Z|))
+
+Example: Z = 2.0
+  p-value (two-tailed) = 2·(1 - Φ(2.0)) = 2·(1 - 0.977) = 0.046
+  → Reject H₀ at α = 0.05
+
+Critical values come from the inverse CDF (quantile function):
+  Φ⁻¹(0.975) = 1.96  ← 95% CI uses ±1.96σ
+  Φ⁻¹(0.995) = 2.576 ← 99% CI uses ±2.576σ`}
+          />
+
+          <Insight label="Why PDF > 1 is not a problem">
+            A PDF value of 3.0 at some point x just means the distribution is very concentrated there.
+            It{"'"}s a density, not a probability. The probability of a tiny interval [x, x+dx] is
+            f(x)·dx — and for small enough dx this is always ≤ 1. Only areas (integrals) are
+            probabilities.
+          </Insight>
+        </Card>
+
+        {/* ── 5. Key Distributions ── */}
+        <Card>
+          <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gaussian (Normal) — N(μ, σ²)</p>
@@ -427,9 +526,9 @@ Use Poisson when N is large and p is small.`}
           />
         </Card>
 
-        {/* ── 5. MLE ── */}
+        {/* ── 6. MLE ── */}
         <Card>
-          <SectionLabel>Section 5</SectionLabel>
+          <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -498,9 +597,9 @@ Every loss function has a probabilistic interpretation.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 6. Hypothesis Testing ── */}
+        {/* ── 7. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 6</SectionLabel>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -575,9 +674,9 @@ CHI-SQUARED TEST (categorical data):
           </Insight>
         </Card>
 
-        {/* ── 7. Confidence Intervals ── */}
+        {/* ── 8. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -628,9 +727,9 @@ Example: 500 visitors, 50 conversions
           </Insight>
         </Card>
 
-        {/* ── 8. A/B Testing ── */}
+        {/* ── 9. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -688,9 +787,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 9. Bayesian Inference ── */}
+        {/* ── 10. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -798,9 +897,9 @@ This is why regularization has a Bayesian interpretation:
           </InterviewCallout>
         </Card>
 
-        {/* ── 10. Interview Q&A ── */}
+        {/* ── 11. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -835,9 +934,9 @@ This is why regularization has a Bayesian interpretation:
           </div>
         </Card>
 
-        {/* ── 11. Cheat Sheet ── */}
+        {/* ── 12. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
