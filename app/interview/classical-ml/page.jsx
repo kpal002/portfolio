@@ -340,6 +340,104 @@ L = -Σₖ yₖ · log(P(y=k|x))`}
             separable and you don{"'"}t need a complex model.
           </InterviewCallout>
 
+          {/* Assumptions */}
+          <div className="mt-8 border-t-2 border-ink pt-8">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">Assumptions</p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-4">
+              Fewer than linear regression — no normally distributed residuals, no homoscedasticity.
+              But it has its own set.
+            </p>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "Binary outcome",
+                  body: "Dependent variable must be categorical (binary for standard logistic regression). Can't predict continuous values like emissions tonnage.",
+                },
+                {
+                  label: "Independence of observations",
+                  body: "Each example must be independent. Violated by time series, clustered data (suppliers within regions), or repeated measures. Fix: mixed effects models or account for the grouping structure.",
+                },
+                {
+                  label: "Linearity of log-odds",
+                  body: "The key assumption. Linear relationship between features and the log-odds of the outcome — not the probability directly.",
+                  code: `log(P(y=1) / P(y=0)) = wᵀx + b   ← log-odds is linear in x
+
+Probability: S-shaped (sigmoid) relationship with x
+Log-odds:    LINEAR relationship with x
+
+Check: plot log-odds against each continuous feature
+Fix:   add polynomial terms or bin the feature if non-linear`,
+                },
+                {
+                  label: "No multicollinearity",
+                  body: "Correlated features cause unstable coefficient estimates — the model can't determine which deserves credit. Check VIF > 10. Fix: drop one, use Ridge (L2), or PCA.",
+                },
+                {
+                  label: "No extreme outliers",
+                  body: "A single extreme point can heavily shift the decision boundary. Check: z-scores (|z| > 3). Fix: remove true errors, robust scaling, or winsorization.",
+                },
+                {
+                  label: "Large enough sample size",
+                  body: "Rule of thumb: 10–20 events (minority class samples) per predictor variable. With D features need at least 10D minority class examples. Use L2 regularization to stabilize estimates when N is small.",
+                },
+              ].map((item) => (
+                <div key={item.label} className="border-l-4 border-ink pl-5">
+                  <p className="text-sm font-bold">{item.label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink/80">{item.body}</p>
+                  {item.code && (
+                    <pre className="mt-2 overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                      <code>{item.code}</code>
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full border-2 border-ink text-sm">
+                <thead>
+                  <tr className="border-b-2 border-ink bg-ink text-bg">
+                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Assumption</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Linear Reg</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Logistic Reg</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Binary/categorical outcome", "✗", "✓ required"],
+                    ["Independence", "✓", "✓"],
+                    ["Linear relationship", "in y", "in log-odds"],
+                    ["Normally distributed errors", "✓", "✗ not needed"],
+                    ["Homoscedasticity", "✓", "✗ not needed"],
+                    ["No multicollinearity", "✓", "✓"],
+                    ["No extreme outliers", "✓", "✓"],
+                    ["Large N", "✓", "✓"],
+                  ].map(([assumption, lin, log]) => (
+                    <tr key={assumption} className="border-b border-ink/30">
+                      <td className="px-4 py-2 text-sm font-bold text-ink">{assumption}</td>
+                      <td className="px-4 py-2 text-center text-sm text-ink/80">{lin}</td>
+                      <td className="px-4 py-2 text-center text-sm text-ink/80">{log}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6 border-l-4 border-accent pl-5">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+                <span className="text-accent">▸ </span>Interview One-Liner
+              </p>
+              <p className="text-sm leading-relaxed text-ink/80">
+                Logistic regression assumes: binary outcome, independent observations, linearity in the
+                log-odds (not the probability), no severe multicollinearity, no extreme outliers, and
+                sufficient sample size — roughly 10–20 events per feature. It does <strong>not</strong> require
+                normally distributed residuals or homoscedasticity — those are linear regression
+                assumptions. The most commonly violated in practice is log-odds linearity, which you
+                check by plotting log-odds against each continuous feature and fix by adding polynomial terms.
+              </p>
+            </div>
+          </div>
+
           {/* MLE Proof */}
           <div className="mt-8 border-t-2 border-ink pt-8">
             <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">
