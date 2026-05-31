@@ -677,7 +677,7 @@ result = permutation_importance(rf, X_val, y_val)
             headers={["Parameter", "Default", "Effect"]}
             rows={[
               ["n_estimators", "100", "Number of trees. More = better, diminishing returns after ~200."],
-              ["max_depth", "None", "Max depth. None = grow until pure. Set to prevent overfitting."],
+              ["max_depth", "None", "None = grow until pure. Intentional here — fully grown trees have low bias and high variance, and averaging many of them cancels the variance while preserving the low bias. Setting max_depth introduces bias that averaging cannot fix."],
               ["max_features", "sqrt(n)", "Features per split. Lower = more decorrelation, higher bias."],
               ["min_samples_leaf", "1", "Min samples at leaf. Higher = smoother, less overfit."],
               ["n_jobs", "-1", "Use all CPU cores for parallel training."],
