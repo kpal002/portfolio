@@ -746,16 +746,13 @@ Connection to gradient descent:
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">LightGBM vs XGBoost</p>
-          <CompareTable
-            headers={["XGBoost", "LightGBM"]}
-            rows={[
-              ["Level-wise tree growth (row by row)", "Leaf-wise tree growth — grows the leaf with max gain"],
-              ["Slower on large datasets", "10–100× faster — key advantage for big data"],
-              ["More memory usage", "Histogram-based: bins continuous features (much less memory)"],
-              ["Better on small/medium datasets", "Better on large datasets (>10K rows)"],
-              ["More mature, stable", "Can overfit more aggressively — needs careful tuning"],
-            ]}
-          />
+          <BoldBulletList items={[
+            { label: "Leaf-wise vs level-wise growth", desc: "LightGBM always splits the highest-gain leaf next; XGBoost completes each full depth level before going deeper. Leaf-wise reaches lower loss faster but can overfit more aggressively." },
+            { label: "Histogram-based split finding", desc: "LightGBM bins N samples into K=255 buckets, reducing split computation from O(N log N) to O(K). This is the main source of its speed advantage." },
+            { label: "GOSS (Gradient-based One-Side Sampling)", desc: "LightGBM focuses training on high-gradient samples (the ones the model is getting wrong) and downsamples low-gradient ones — further improving speed with minimal accuracy loss." },
+            { label: "EFB (Exclusive Feature Bundling)", desc: "LightGBM bundles sparse mutually exclusive features into single features, reducing effective feature count and speeding up split finding." },
+            { label: "Second-order gradients", desc: "XGBoost uses both gradient and Hessian by default for a more accurate step direction — its main accuracy advantage over LightGBM." },
+          ]} />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Critical Hyperparameters</p>
           <CompareTable
