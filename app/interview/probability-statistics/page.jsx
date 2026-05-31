@@ -579,13 +579,230 @@ Poisson = limit of Binomial as N→∞, p→0, Np=λ
 Use Poisson when N is large and p is small.`}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Geometric — Geometric(p)</p>
+          <CodeBlock
+            label="Number of trials until first success"
+            code={`PMF: P(X = k) = (1-p)^(k-1) · p   for k = 1, 2, 3, ...
+
+  k=1: success on first try   → P = p
+  k=2: fail then succeed      → P = (1-p)·p
+  k=3: fail, fail, succeed    → P = (1-p)²·p
+
+E[X] = 1/p
+Var(X) = (1-p) / p²
+
+Example — supplier fraud detection:
+  Each audit catches fraud with probability p = 0.20
+  X = number of audits until fraud is first detected
+  X ~ Geometric(0.20)
+  E[X] = 1/0.20 = 5 audits on average until detection
+  P(X = 1) = 0.20  (caught on first audit)
+  P(X > 3) = (1-0.20)³ = 0.512  (51% chance not caught in first 3)`}
+          />
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Memoryless property</p>
+            <p className="mt-1 text-sm text-ink/80">
+              P(X {">"} m+n | X {">"} m) = P(X {">"} n). If fraud hasn{"'"}t been caught in the first m audits,
+              the remaining wait has the same distribution as starting fresh — each trial is independent
+              so the past gives no information about the future.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Exponential — Exp(λ)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            The continuous counterpart of the geometric — models the <em>time</em> until the first event
+            in a Poisson process. Where geometric counts discrete trials, exponential measures continuous
+            waiting time.
+          </p>
+          <CodeBlock
+            label="Waiting time until first event"
+            code={`PDF: f(x) = λ · e^(-λx)   for x ≥ 0
+CDF: F(x) = 1 - e^(-λx)
+
+λ = rate (events per unit time)
+
+E[X] = 1/λ     ← average waiting time
+Var(X) = 1/λ²
+
+Example — server request handling:
+  A server receives λ = 10 requests per second
+  X = time until the next request arrives  →  X ~ Exp(10)
+  E[X] = 1/10 = 0.1 seconds average wait
+  P(X > 0.2) = e^(-10×0.2) = e^(-2) ≈ 0.135
+  (13.5% chance of waiting more than 0.2s for the next request)`}
+          />
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Memoryless property — unique among continuous distributions</p>
+            <p className="mt-1 text-sm text-ink/80">
+              P(X {">"} s+t | X {">"} s) = P(X {">"} t). Having already waited s seconds tells you nothing
+              about how much longer you{"'"}ll wait. The exponential is the <em>only</em> continuous
+              distribution with this property — the continuous analogue of geometric{"'"}s memorylessness.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Geometric ↔ Exponential Bridge</p>
+          <CompareTable
+            headers={["Geometric(p)", "Exponential(λ)"]}
+            rows={[
+              ["Discrete — counts trials", "Continuous — measures time"],
+              ["PMF: (1-p)^(k-1)·p", "PDF: λe^(-λx)"],
+              ["E[X] = 1/p", "E[X] = 1/λ"],
+              ["Var(X) = (1-p)/p²", "Var(X) = 1/λ²"],
+              ["Memoryless: past trials irrelevant", "Memoryless: past wait time irrelevant"],
+              ["Use: trials until first success", "Use: wait time between Poisson events"],
+            ]}
+          />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gamma — Gamma(α, β)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            Generalises the exponential — models the waiting time until the <em>α-th</em> event in a
+            Poisson process. Where Exponential(λ) is the wait for the 1st event, Gamma(α, λ) is the
+            wait for the α-th event.
+          </p>
+          <CodeBlock
+            label="PDF and properties"
+            code={`PDF: f(x) = (β^α / Γ(α)) · x^(α-1) · e^(-βx)   for x ≥ 0
+
+Parameters:
+  α (shape) — number of events to wait for  (α > 0)
+  β (rate)  — event rate, same λ as Poisson  (β > 0)
+  1/β = θ (scale) — mean time between events
+
+E[X] = α/β
+Var(X) = α/β²
+
+Γ(α) = gamma function:
+  Γ(n) = (n-1)!   for positive integers
+  Γ(1/2) = √π     (key special value)
+  Γ(α+1) = α·Γ(α) (recursion)`}
+          />
+
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">Special cases</p>
+          <CodeBlock
+            label="How Gamma generalises other distributions"
+            code={`α = 1:          Gamma(1, β) = Exponential(β)
+                ← wait for 1st event = exponential
+
+α = k/2, β = 1/2: Gamma(k/2, 1/2) = Chi-squared(k)
+                ← sum of k squared standard normals
+
+α integer:      Erlang distribution
+                ← used in queueing theory (call centre wait times)
+
+As α → ∞:       Gamma → Gaussian  (by CLT — sum of α exponentials)`}
+          />
+
+          <CodeBlock
+            label="Example — time until 3rd audit failure"
+            code={`Supplier has audit failures at rate β = 2 per year → Poisson(2)
+X = time until the 3rd failure  →  X ~ Gamma(α=3, β=2)
+
+E[X] = 3/2 = 1.5 years until the 3rd failure
+Var(X) = 3/4 = 0.75,   Std = 0.87 years
+
+Compare to Exponential(2) — wait for 1st failure:
+  E[X] = 1/2 = 0.5 years
+  Each additional event adds 1/β = 0.5 years on average`}
+          />
+
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Conjugate prior for Poisson and Exponential</p>
+            <p className="mt-1 text-sm text-ink/80">
+              Gamma is the conjugate prior for both the Poisson rate λ and the Exponential rate λ.
+              Prior Gamma(α, β) + n Poisson observations summing to Σxᵢ → Posterior Gamma(α + Σxᵢ, β + n).
+              This is why Gamma appears throughout Bayesian inference.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chi-Squared — χ²(k)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            The distribution of the sum of squares of k independent standard normal random variables.
+            It is a special case of Gamma and appears everywhere hypothesis testing touches variance.
+          </p>
+
+          <CodeBlock
+            label="Derivation from Normal — step by step"
+            code={`Start with Z ~ N(0,1) — a standard normal.
+
+Step 1: What is the distribution of Z²?
+
+  Z is symmetric around 0, so Z² is always non-negative.
+  For z > 0, the CDF of Z² is:
+    P(Z² ≤ z) = P(-√z ≤ Z ≤ √z) = 2Φ(√z) - 1
+
+  Differentiate to get the PDF of Z²:
+    f(z) = (1/√z) · φ(√z) = (1/√(2πz)) · e^(-z/2)
+
+  This is Gamma(1/2, 1/2) — also written χ²(1).
+
+Step 2: Sum k independent Z²s.
+
+  Let Z₁, Z₂, ..., Zₖ ~ N(0,1) independently.
+  Define: X = Z₁² + Z₂² + ... + Zₖ²
+
+  Each Zᵢ² ~ Gamma(1/2, 1/2)
+  Sum of k independent Gammas with same β:
+    Gamma(α₁,β) + Gamma(α₂,β) = Gamma(α₁+α₂, β)
+
+  Therefore: X ~ Gamma(k/2, 1/2) = χ²(k)  ✓
+
+PDF: f(x) = x^(k/2-1) · e^(-x/2) / (2^(k/2) · Γ(k/2))   for x ≥ 0`}
+          />
+
+          <CodeBlock
+            label="Properties"
+            code={`k = degrees of freedom
+
+E[X] = k
+Var(X) = 2k
+
+Shape:
+  k=1,2:  right-skewed, peak near 0
+  k=3-10: moderate right skew
+  k→∞:    approaches N(k, 2k)  by CLT
+
+Additivity: χ²(m) + χ²(n) = χ²(m+n)  ← independent sums
+
+Special cases:
+  k=1: χ²(1) = Z²  (square of a standard normal)
+  k=2: χ²(2) = Exponential(1/2)  (appears in survival analysis)`}
+          />
+
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">Where Chi-squared appears in statistics</p>
+          <BoldBulletList items={[
+            { label: "Chi-squared test", desc: "H₀: no association between categorical variables. Test statistic χ² = Σ(O-E)²/E follows χ²(df) under H₀. Used for contingency tables, goodness-of-fit." },
+            { label: "Sample variance", desc: "(n-1)S²/σ² ~ χ²(n-1). This is why hypothesis tests on variance use the chi-squared distribution." },
+            { label: "Confidence interval for σ²", desc: "CI for population variance: [(n-1)S²/χ²(α/2), (n-1)S²/χ²(1-α/2)]." },
+            { label: "Likelihood ratio tests", desc: "-2·log(likelihood ratio) → χ²(df) asymptotically. Standard test for model comparison in ML." },
+          ]} />
+
+          <CodeBlock
+            label="Example — goodness-of-fit test"
+            code={`Are supplier risk categories uniformly distributed?
+Observed: Low=45, Medium=30, High=25  (n=100)
+Expected under H₀ (uniform): 33.3, 33.3, 33.3
+
+χ² = (45-33.3)²/33.3 + (30-33.3)²/33.3 + (25-33.3)²/33.3
+   = 4.11 + 0.33 + 2.07
+   = 6.51
+
+df = categories - 1 = 2
+Critical value χ²(0.05, df=2) = 5.99
+
+6.51 > 5.99  →  reject H₀  →  distribution is not uniform`}
+          />
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Distribution Comparison</p>
           <CompareTable
             headers={["Distribution", "Models", "E[X]", "Var(X)"]}
             rows={[
               ["Bernoulli(p)", "Single binary outcome", "p", "p(1-p)"],
               ["Binomial(N,p)", "Count of successes in N trials", "Np", "Np(1-p)"],
+              ["Geometric(p)", "Trials until first success (discrete)", "1/p", "(1-p)/p²"],
               ["Poisson(λ)", "Count of rare events in interval", "λ", "λ"],
+              ["Exponential(λ)", "Wait time until first event (continuous)", "1/λ", "1/λ²"],
+              ["Gamma(α,β)", "Wait time until α-th event", "α/β", "α/β²"],
+              ["Chi-squared χ²(k)", "Sum of k squared standard normals", "k", "2k"],
               ["Gaussian(μ,σ²)", "Continuous symmetric outcomes", "μ", "σ²"],
             ]}
           />
