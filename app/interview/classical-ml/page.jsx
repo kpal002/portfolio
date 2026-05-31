@@ -263,6 +263,7 @@ Adjusted R²:  R²_adj = 1 - (1-R²)(N-1)/(N-p-1)   where p = num features
             cases — predicting supplier emissions values, estimating carbon footprint from product attributes
             — linear regression with feature engineering is often a strong, interpretable baseline.
           </InterviewCallout>
+
         </Card>
 
         {/* ── 2. Logistic Regression ── */}
@@ -299,6 +300,30 @@ Gradient:     ∂L/∂w = (ŷ - y) · x   ← clean, convenient form`}
             { label: "Fast to train", desc: "Convex loss function — gradient descent always finds the global minimum. No local optima." },
           ]} />
 
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Decision Boundary</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The decision boundary is the set of points where ŷ = 0.5, which means{" "}
+            <span className="font-mono">σ(z) = 0.5</span> → <span className="font-mono">z = 0</span> →{" "}
+            <span className="font-mono">Xw + b = 0</span>. This is a <strong>hyperplane</strong> in
+            feature space — a line in 2D, a plane in 3D.
+          </p>
+          <CodeBlock
+            label="Why it's called a linear classifier"
+            code={`Decision boundary: wᵀx + b = 0  →  a hyperplane
+
+  σ(wᵀx + b) = 0.5  ←→  wᵀx + b = 0  ←→  Xw + b = 0
+
+The sigmoid is nonlinear, but the boundary it creates is linear.
+That's why logistic regression is a linear classifier.
+
+Can only separate:   ✓ linearly separable classes
+Cannot separate:     ✗ XOR  ✗ concentric circles  ✗ spirals
+
+For non-linear boundaries:
+  → Feature engineering: add polynomial features x₁², x₂², x₁x₂
+  → More powerful model: SVM with RBF kernel, neural network`}
+          />
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Multiclass Extension — Softmax</p>
           <CodeBlock
             label="Softmax regression (K > 2 classes)"
@@ -314,6 +339,213 @@ L = -Σₖ yₖ · log(P(y=k|x))`}
             optimum. I use it as a strong baseline — if it performs well, the problem is likely linearly
             separable and you don{"'"}t need a complex model.
           </InterviewCallout>
+
+          {/* Assumptions */}
+          <div className="mt-8 border-t-2 border-ink pt-8">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">Assumptions</p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-4">
+              Fewer than linear regression — no normally distributed residuals, no homoscedasticity.
+              But it has its own set.
+            </p>
+            <div className="space-y-3">
+              {[
+                {
+                  label: "Binary outcome",
+                  body: "Dependent variable must be categorical (binary for standard logistic regression). Can't predict continuous values like emissions tonnage.",
+                },
+                {
+                  label: "Independence of observations",
+                  body: "Each example must be independent. Violated by time series, clustered data (suppliers within regions), or repeated measures. Fix: mixed effects models or account for the grouping structure.",
+                },
+                {
+                  label: "Linearity of log-odds",
+                  body: "The key assumption. Linear relationship between features and the log-odds of the outcome — not the probability directly.",
+                  code: `log(P(y=1) / P(y=0)) = wᵀx + b   ← log-odds is linear in x
+
+Probability: S-shaped (sigmoid) relationship with x
+Log-odds:    LINEAR relationship with x
+
+Check: plot log-odds against each continuous feature
+Fix:   add polynomial terms or bin the feature if non-linear`,
+                },
+                {
+                  label: "No multicollinearity",
+                  body: "Correlated features cause unstable coefficient estimates — the model can't determine which deserves credit. Check VIF > 10. Fix: drop one, use Ridge (L2), or PCA.",
+                },
+                {
+                  label: "No extreme outliers",
+                  body: "A single extreme point can heavily shift the decision boundary. Check: z-scores (|z| > 3). Fix: remove true errors, robust scaling, or winsorization.",
+                },
+                {
+                  label: "Large enough sample size",
+                  body: "Rule of thumb: 10–20 events (minority class samples) per predictor variable. With D features need at least 10D minority class examples. Use L2 regularization to stabilize estimates when N is small.",
+                },
+              ].map((item) => (
+                <div key={item.label} className="border-l-4 border-ink pl-5">
+                  <p className="text-sm font-bold">{item.label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-ink/80">{item.body}</p>
+                  {item.code && (
+                    <pre className="mt-2 overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                      <code>{item.code}</code>
+                    </pre>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 overflow-x-auto">
+              <table className="w-full border-2 border-ink text-sm">
+                <thead>
+                  <tr className="border-b-2 border-ink bg-ink text-bg">
+                    <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Assumption</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Linear Reg</th>
+                    <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Logistic Reg</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Binary/categorical outcome", "✗", "✓ required"],
+                    ["Independence", "✓", "✓"],
+                    ["Linear relationship", "in y", "in log-odds"],
+                    ["Normally distributed errors", "✓", "✗ not needed"],
+                    ["Homoscedasticity", "✓", "✗ not needed"],
+                    ["No multicollinearity", "✓", "✓"],
+                    ["No extreme outliers", "✓", "✓"],
+                    ["Large N", "✓", "✓"],
+                  ].map(([assumption, lin, log]) => (
+                    <tr key={assumption} className="border-b border-ink/30">
+                      <td className="px-4 py-2 text-sm font-bold text-ink">{assumption}</td>
+                      <td className="px-4 py-2 text-center text-sm text-ink/80">{lin}</td>
+                      <td className="px-4 py-2 text-center text-sm text-ink/80">{log}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6 border-l-4 border-accent pl-5">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+                <span className="text-accent">▸ </span>Interview One-Liner
+              </p>
+              <p className="text-sm leading-relaxed text-ink/80">
+                Logistic regression assumes: binary outcome, independent observations, linearity in the
+                log-odds (not the probability), no severe multicollinearity, no extreme outliers, and
+                sufficient sample size — roughly 10–20 events per feature. It does <strong>not</strong> require
+                normally distributed residuals or homoscedasticity — those are linear regression
+                assumptions. The most commonly violated in practice is log-odds linearity, which you
+                check by plotting log-odds against each continuous feature and fix by adding polynomial terms.
+              </p>
+            </div>
+          </div>
+
+          {/* MLE Proof */}
+          <div className="mt-8 border-t-2 border-ink pt-8">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">
+              Why Log Loss? — The MLE Derivation
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-4">
+              Log loss isn{"'"}t an arbitrary choice. It is the unique loss that follows from modeling labels
+              as Bernoulli random variables and applying maximum likelihood estimation.
+            </p>
+
+            <div className="space-y-4">
+
+              {/* Step 1 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Probabilistic model</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Model each label as a Bernoulli random variable. Both cases in one expression:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`P(y | x) = ŷʸ · (1-ŷ)^(1-y)
+
+y=1: ŷ¹ · (1-ŷ)⁰ = ŷ       ✓
+y=0: ŷ⁰ · (1-ŷ)¹ = (1-ŷ)   ✓`}</code>
+                </pre>
+              </div>
+
+              {/* Step 2 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Write the likelihood</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Assuming N examples are independent, the probability of observing all of them is:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`L(w) = ∏ᵢ P(yᵢ | xᵢ)  =  ∏ᵢ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ)`}</code>
+                </pre>
+              </div>
+
+              {/* Step 3 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Take the log</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  Log turns products into sums. Maximizing log L(w) is equivalent to maximizing L(w).
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`log L(w) = Σᵢ log [ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ) ]   ← log(∏) = Σlog
+
+         = Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]   ← log(aᵇ) = b·log(a)`}</code>
+                </pre>
+              </div>
+
+              {/* Step 4 */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Negate to get a loss</p>
+                <p className="text-sm text-ink/80 mb-3">
+                  ML frameworks minimize, not maximize. Negate and average:
+                </p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`Loss = -(1/N) Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]
+
+This is exactly binary cross-entropy.  ✓`}</code>
+                </pre>
+              </div>
+
+              {/* Intuition */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Intuition — penalty grows exponentially for confident mistakes</p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`y=1, ŷ=0.99  (correct, confident)  →  -log(0.99) ≈ 0.01   tiny
+y=1, ŷ=0.50  (correct, uncertain)  →  -log(0.50) ≈ 0.69   moderate
+y=1, ŷ=0.01  (wrong,   confident)  →  -log(0.01) ≈ 4.60   huge
+
+As ŷ → 0 when y=1:  -log(ŷ)   → +∞
+As ŷ → 1 when y=0:  -log(1-ŷ) → +∞`}</code>
+                </pre>
+              </div>
+
+              {/* Full chain */}
+              <div className="border-2 border-ink bg-bg p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">The full chain</p>
+                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
+                  <code>{`Bernoulli model for binary labels
+           ↓
+L(w) = ∏ ŷʸ(1-ŷ)^(1-y)
+           ↓
+log L(w) = Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]
+           ↓
+Negate + average
+           ↓
+Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
+                </pre>
+              </div>
+
+            </div>
+
+            <div className="mt-4 border-l-4 border-accent pl-5">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+                <span className="text-accent">▸ </span>Interview One-Liner
+              </p>
+              <p className="text-sm leading-relaxed text-ink/80">
+                MLE asks: what weights make the observed training data most probable? If we model each
+                label as a Bernoulli random variable with P(y=1|x) = σ(wᵀx), the joint likelihood of all
+                N observations is a product of Bernoullis. Taking the log turns that product into a sum.
+                Negating to convert maximization to minimization gives exactly binary cross-entropy. Log
+                loss isn{"'"}t an arbitrary choice — it{"'"}s the unique loss that follows from assuming
+                Bernoulli labels and applying MLE.
+              </p>
+            </div>
+          </div>
         </Card>
 
         {/* ── 3. Decision Trees ── */}
@@ -1085,6 +1317,14 @@ Example: 'Does this intervention reduce supplier emissions?'
               {
                 q: "You have a dataset with 5,000 rows and 200 features. Which model do you start with?",
                 a: "I'd start with a Random Forest or XGBoost baseline. 5K rows is small enough that deep learning would likely overfit. I'd use 5-fold stratified cross-validation to evaluate, check OOB error as a sanity check, and use permutation importance to identify the most predictive features. If interpretability matters, I'd also fit a logistic regression with L2 regularization for comparison.",
+              },
+              {
+                q: "Can you fit non-linear data with linear regression?",
+                a: "Yes — by adding non-linear transformations of the features as new inputs. The model remains linear in its weights so all the math still works, but it can now fit curves. Common approaches: polynomial features (add x², x³), log transforms for exponential relationships, and explicit interaction terms. The risk is overfitting with high-degree polynomials and feature explosion with many inputs — degree-2 on 100 features produces 5,050 columns. This is why tree-based models are usually preferred for complex non-linear relationships: they learn interactions automatically without manual feature engineering.",
+              },
+              {
+                q: "How do you make the output of binary logistic regression generative, or better reflect confidence?",
+                a: "Logistic regression is discriminative — it models P(y|x) directly and outputs a single score. It can't generate new samples or quantify uncertainty in its weights. Three approaches address this. (1) Make it generative: add a model of P(x|y) and recover P(y|x) via Bayes' theorem — P(y=1|x) = P(x|y=1)·P(y=1) / P(x), where P(x) = P(x|y=1)·P(y=1) + P(x|y=0)·P(y=0) is the normalising constant that drops out when computing class ratios. If you assume Gaussian features per class you get GDA — each class gets its own Gaussian N(μₖ, Σₖ) with a quadratic boundary. LDA is the special case where all classes share one covariance Σ, which makes the quadratic terms cancel and gives a linear boundary identical to logistic regression. LDA/GDA can generate new samples by drawing from N(μₖ, Σₖ). (2) Better confidence via Bayesian logistic regression: treat weights as a distribution rather than a point estimate. You get a mean prediction and a std per input — two inputs can both output 0.85 but one has std=0.02 (confident) and the other std=0.20 (uncertain). (3) Conformal prediction: output a set of classes guaranteed to contain the true label with user-defined probability (e.g. 90% coverage). High-confidence inputs get a singleton set {class 1}; uncertain inputs get {class 0, class 1}.",
               },
             ].map((item, i) => (
               <div key={i} className="border-2 border-ink bg-bg p-5">
