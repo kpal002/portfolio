@@ -642,6 +642,17 @@ Why this helps:
             The ~37% of samples not seen by each tree form a free validation set. Average OOB predictions
             across all trees for an unbiased generalization estimate — no separate validation set needed.
           </p>
+          <div className="mb-4 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold">Why exactly 37%?</p>
+            <p className="mt-1 text-sm leading-relaxed text-ink/80">
+              Each bootstrap sample draws N times with replacement from N samples. The probability a
+              specific sample is <em>never</em> drawn is{" "}
+              <span className="font-mono">(1 - 1/N)ᴺ</span>. As N grows this converges to{" "}
+              <span className="font-mono">1/e ≈ 0.368</span> — the same limit that defines Euler{"'"}s
+              number. So roughly 37% of samples are out-of-bag in every bootstrap, guaranteed by
+              probability theory rather than by design.
+            </p>
+          </div>
           <CodeBlock
             label="OOB score in sklearn"
             code={`rf = RandomForestClassifier(oob_score=True)
@@ -666,7 +677,7 @@ result = permutation_importance(rf, X_val, y_val)
             headers={["Parameter", "Default", "Effect"]}
             rows={[
               ["n_estimators", "100", "Number of trees. More = better, diminishing returns after ~200."],
-              ["max_depth", "None", "Max depth. None = grow until pure. Set to prevent overfitting."],
+              ["max_depth", "None", "None = grow until pure. Intentional here — fully grown trees have low bias and high variance, and averaging many of them cancels the variance while preserving the low bias. Setting max_depth introduces bias that averaging cannot fix."],
               ["max_features", "sqrt(n)", "Features per split. Lower = more decorrelation, higher bias."],
               ["min_samples_leaf", "1", "Min samples at leaf. Higher = smoother, less overfit."],
               ["n_jobs", "-1", "Use all CPU cores for parallel training."],
@@ -735,16 +746,13 @@ Connection to gradient descent:
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">LightGBM vs XGBoost</p>
-          <CompareTable
-            headers={["XGBoost", "LightGBM"]}
-            rows={[
-              ["Level-wise tree growth (row by row)", "Leaf-wise tree growth — grows the leaf with max gain"],
-              ["Slower on large datasets", "10–100× faster — key advantage for big data"],
-              ["More memory usage", "Histogram-based: bins continuous features (much less memory)"],
-              ["Better on small/medium datasets", "Better on large datasets (>10K rows)"],
-              ["More mature, stable", "Can overfit more aggressively — needs careful tuning"],
-            ]}
-          />
+          <BoldBulletList items={[
+            { label: "Leaf-wise vs level-wise growth", desc: "LightGBM always splits the highest-gain leaf next; XGBoost completes each full depth level before going deeper. Leaf-wise reaches lower loss faster but can overfit more aggressively." },
+            { label: "Histogram-based split finding", desc: "LightGBM bins N samples into K=255 buckets, reducing split computation from O(N log N) to O(K). This is the main source of its speed advantage." },
+            { label: "GOSS (Gradient-based One-Side Sampling)", desc: "LightGBM focuses training on high-gradient samples (the ones the model is getting wrong) and downsamples low-gradient ones — further improving speed with minimal accuracy loss." },
+            { label: "EFB (Exclusive Feature Bundling)", desc: "LightGBM bundles sparse mutually exclusive features into single features, reducing effective feature count and speeding up split finding." },
+            { label: "Second-order gradients", desc: "XGBoost uses both gradient and Hessian by default for a more accurate step direction — its main accuracy advantage over LightGBM." },
+          ]} />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Critical Hyperparameters</p>
           <CompareTable
@@ -949,6 +957,54 @@ VARIANCE:
 IRREDUCIBLE NOISE:
   Inherent noise in the data. Sets the lower bound on error.`}
           />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Proof</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-4">
+            Setup: the true target is <span className="font-mono">y = f(x) + ε</span> where{" "}
+            <span className="font-mono">E[ε] = 0</span> and{" "}
+            <span className="font-mono">E[ε²] = σ²</span>. Let{" "}
+            <span className="font-mono">f̄ = E[f̂]</span> be the expected prediction of the model.
+          </p>
+
+          <div className="space-y-0 border-2 border-ink">
+            {/* Step 1 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Add and subtract f̄</p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`E[(y − f̂)²]
+
+= E[(y − f̄  +  f̄ − f̂)²]
+
+= E[(y − f̄)²]  +  2E[(y − f̄)(f̄ − f̂)]  +  E[(f̄ − f̂)²]`}</pre>
+            </div>
+
+            {/* Step 2 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Cross term vanishes</p>
+              <p className="text-sm text-ink/80 mb-2">
+                <span className="font-mono">E[f̄ − f̂] = 0</span> because <span className="font-mono">f̄</span> is defined as <span className="font-mono">E[f̂]</span>, so the middle term is zero.
+              </p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(y − f̄)²]  +  E[(f̄ − f̂)²]
+
+= E[(f(x) + ε − f̄)²]  +  Var(f̂)`}</pre>
+            </div>
+
+            {/* Step 3 */}
+            <div className="border-b-2 border-ink p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Expand the first term</p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(f(x) − f̄)²]  +  2E[ε(f(x) − f̄)]  +  E[ε²]  +  Var(f̂)`}</pre>
+            </div>
+
+            {/* Step 4 */}
+            <div className="p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Middle term vanishes, collect terms</p>
+              <p className="text-sm text-ink/80 mb-2">
+                <span className="font-mono">E[ε] = 0</span> and <span className="font-mono">ε</span> is independent of <span className="font-mono">f(x) − f̄</span>, so the cross term is zero.
+              </p>
+              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= (f(x) − f̄)²  +  Var(f̂)  +  σ²
+
+= Bias²  +  Variance  +  Irreducible Noise`}</pre>
+            </div>
+          </div>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Algorithm Positions on the Spectrum</p>
           <CompareTable
