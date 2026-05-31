@@ -714,6 +714,84 @@ Compare to Exponential(2) — wait for 1st failure:
             </p>
           </div>
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chi-Squared — χ²(k)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            The distribution of the sum of squares of k independent standard normal random variables.
+            It is a special case of Gamma and appears everywhere hypothesis testing touches variance.
+          </p>
+
+          <CodeBlock
+            label="Derivation from Normal — step by step"
+            code={`Start with Z ~ N(0,1) — a standard normal.
+
+Step 1: What is the distribution of Z²?
+
+  Z is symmetric around 0, so Z² is always non-negative.
+  For z > 0, the CDF of Z² is:
+    P(Z² ≤ z) = P(-√z ≤ Z ≤ √z) = 2Φ(√z) - 1
+
+  Differentiate to get the PDF of Z²:
+    f(z) = (1/√z) · φ(√z) = (1/√(2πz)) · e^(-z/2)
+
+  This is Gamma(1/2, 1/2) — also written χ²(1).
+
+Step 2: Sum k independent Z²s.
+
+  Let Z₁, Z₂, ..., Zₖ ~ N(0,1) independently.
+  Define: X = Z₁² + Z₂² + ... + Zₖ²
+
+  Each Zᵢ² ~ Gamma(1/2, 1/2)
+  Sum of k independent Gammas with same β:
+    Gamma(α₁,β) + Gamma(α₂,β) = Gamma(α₁+α₂, β)
+
+  Therefore: X ~ Gamma(k/2, 1/2) = χ²(k)  ✓
+
+PDF: f(x) = x^(k/2-1) · e^(-x/2) / (2^(k/2) · Γ(k/2))   for x ≥ 0`}
+          />
+
+          <CodeBlock
+            label="Properties"
+            code={`k = degrees of freedom
+
+E[X] = k
+Var(X) = 2k
+
+Shape:
+  k=1,2:  right-skewed, peak near 0
+  k=3-10: moderate right skew
+  k→∞:    approaches N(k, 2k)  by CLT
+
+Additivity: χ²(m) + χ²(n) = χ²(m+n)  ← independent sums
+
+Special cases:
+  k=1: χ²(1) = Z²  (square of a standard normal)
+  k=2: χ²(2) = Exponential(1/2)  (appears in survival analysis)`}
+          />
+
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">Where Chi-squared appears in statistics</p>
+          <BoldBulletList items={[
+            { label: "Chi-squared test", desc: "H₀: no association between categorical variables. Test statistic χ² = Σ(O-E)²/E follows χ²(df) under H₀. Used for contingency tables, goodness-of-fit." },
+            { label: "Sample variance", desc: "(n-1)S²/σ² ~ χ²(n-1). This is why hypothesis tests on variance use the chi-squared distribution." },
+            { label: "Confidence interval for σ²", desc: "CI for population variance: [(n-1)S²/χ²(α/2), (n-1)S²/χ²(1-α/2)]." },
+            { label: "Likelihood ratio tests", desc: "-2·log(likelihood ratio) → χ²(df) asymptotically. Standard test for model comparison in ML." },
+          ]} />
+
+          <CodeBlock
+            label="Example — goodness-of-fit test"
+            code={`Are supplier risk categories uniformly distributed?
+Observed: Low=45, Medium=30, High=25  (n=100)
+Expected under H₀ (uniform): 33.3, 33.3, 33.3
+
+χ² = (45-33.3)²/33.3 + (30-33.3)²/33.3 + (25-33.3)²/33.3
+   = 4.11 + 0.33 + 2.07
+   = 6.51
+
+df = categories - 1 = 2
+Critical value χ²(0.05, df=2) = 5.99
+
+6.51 > 5.99  →  reject H₀  →  distribution is not uniform`}
+          />
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Distribution Comparison</p>
           <CompareTable
             headers={["Distribution", "Models", "E[X]", "Var(X)"]}
@@ -724,6 +802,7 @@ Compare to Exponential(2) — wait for 1st failure:
               ["Poisson(λ)", "Count of rare events in interval", "λ", "λ"],
               ["Exponential(λ)", "Wait time until first event (continuous)", "1/λ", "1/λ²"],
               ["Gamma(α,β)", "Wait time until α-th event", "α/β", "α/β²"],
+              ["Chi-squared χ²(k)", "Sum of k squared standard normals", "k", "2k"],
               ["Gaussian(μ,σ²)", "Continuous symmetric outcomes", "μ", "σ²"],
             ]}
           />
