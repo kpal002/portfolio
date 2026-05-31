@@ -269,9 +269,81 @@ The rarity of the disease dominates.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 3. Key Distributions ── */}
+        {/* ── 3. Independence ── */}
         <Card>
           <SectionLabel>Section 3</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Independence</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Two events A and B are <strong>independent</strong> if knowing one occurred gives no extra
+            information about the other.
+          </p>
+
+          <CodeBlock
+            label="Definition — two equivalent forms"
+            code={`P(A | B) = P(A)   ← B gives no info about A
+P(B | A) = P(B)   ← A gives no info about B
+
+Plug into the multiplication law P(A∩B) = P(A|B)·P(B):
+  P(A ∩ B) = P(A) · P(B)   ← the product rule for independent events`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Concrete Example — Cards</p>
+          <CodeBlock
+            label="A = spade, B = queen"
+            code={`P(A) = 13/52 = 1/4    (13 spades in 52 cards)
+P(B) = 4/52  = 1/13   (4 queens in 52 cards)
+
+Are they independent? Check:
+  P(A ∩ B) = P(queen of spades) = 1/52
+  P(A)·P(B) = 1/4 × 1/13 = 1/52  ✓
+
+They match → A and B are independent.
+Knowing a card is a queen doesn't change the probability it's a spade.`}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Independence vs Mutual Exclusivity</p>
+          <div className="space-y-3">
+            <div className="border-l-4 border-ink pl-5">
+              <p className="text-sm font-bold">Independent: P(A∩B) = P(A)·P(B)</p>
+              <p className="mt-1 text-sm text-ink/80">Knowing A happened tells you nothing about B. Both can happen simultaneously.</p>
+            </div>
+            <div className="border-l-4 border-ink pl-5">
+              <p className="text-sm font-bold">Mutually exclusive: P(A∩B) = 0</p>
+              <p className="mt-1 text-sm text-ink/80">They cannot both happen. Knowing A happened tells you B did NOT happen — the most extreme dependence.</p>
+            </div>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Reliability — Independence in Practice</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When components fail independently, the product rule gives exact reliability calculations.
+          </p>
+          <CodeBlock
+            label="Series vs parallel systems (n=10, p=0.05 per component)"
+            code={`SERIES — all must succeed (chain fails if any link fails):
+  P(series success) = (1-p)ⁿ = (0.95)¹⁰ ≈ 0.60
+  P(series failure) = 1 - (1-p)ⁿ = 1 - 0.95¹⁰ ≈ 0.40
+
+  Even with 95% reliable components, a chain of 10
+  has only 60% chance of working.
+
+PARALLEL — any one succeeding is enough:
+  P(parallel failure) = pⁿ = (0.05)¹⁰ ≈ 10⁻¹³
+  P(parallel success) = 1 - pⁿ  ≈  1.0
+
+  Redundancy drives failure probability to near zero.`}
+          />
+
+          <Insight label="ML Connection">
+            Independence assumptions power most of ML. Naive Bayes classifies text by assuming words
+            are independent given the class. MLE treats training examples as independent draws.
+            Bootstrapping in Random Forests relies on approximate independence between trees.
+            When independence is violated (e.g. time series), standard methods break.
+          </Insight>
+        </Card>
+
+        {/* ── 4. Key Distributions ── */}
+        <Card>
+          <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gaussian (Normal) — N(μ, σ²)</p>
@@ -355,9 +427,9 @@ Use Poisson when N is large and p is small.`}
           />
         </Card>
 
-        {/* ── 4. MLE ── */}
+        {/* ── 5. MLE ── */}
         <Card>
-          <SectionLabel>Section 4</SectionLabel>
+          <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -426,9 +498,9 @@ Every loss function has a probabilistic interpretation.`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 5. Hypothesis Testing ── */}
+        {/* ── 6. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 5</SectionLabel>
+          <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -503,9 +575,9 @@ CHI-SQUARED TEST (categorical data):
           </Insight>
         </Card>
 
-        {/* ── 6. Confidence Intervals ── */}
+        {/* ── 7. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 6</SectionLabel>
+          <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -556,9 +628,9 @@ Example: 500 visitors, 50 conversions
           </Insight>
         </Card>
 
-        {/* ── 7. A/B Testing ── */}
+        {/* ── 8. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -616,9 +688,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Bayesian Inference ── */}
+        {/* ── 9. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -726,9 +798,9 @@ This is why regularization has a Bayesian interpretation:
           </InterviewCallout>
         </Card>
 
-        {/* ── 9. Interview Q&A ── */}
+        {/* ── 10. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -763,9 +835,9 @@ This is why regularization has a Bayesian interpretation:
           </div>
         </Card>
 
-        {/* ── 10. Cheat Sheet ── */}
+        {/* ── 11. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
