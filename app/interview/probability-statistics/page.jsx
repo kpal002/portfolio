@@ -579,13 +579,91 @@ Poisson = limit of Binomial as N→∞, p→0, Np=λ
 Use Poisson when N is large and p is small.`}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Geometric — Geometric(p)</p>
+          <CodeBlock
+            label="Number of trials until first success"
+            code={`PMF: P(X = k) = (1-p)^(k-1) · p   for k = 1, 2, 3, ...
+
+  k=1: success on first try     → P = p
+  k=2: fail then succeed        → P = (1-p)·p
+  k=3: fail, fail, succeed      → P = (1-p)²·p
+
+E[X] = 1/p
+Var(X) = (1-p) / p²
+
+Example — supplier audit:
+  Each audit catches fraud with probability p = 0.20
+  X = number of audits until fraud is first detected
+  X ~ Geometric(0.20)
+  E[X] = 1/0.20 = 5 audits on average until detection
+  P(X = 1) = 0.20  (caught on first audit)
+  P(X > 3) = (1-0.20)³ = 0.512  (51% chance not caught in first 3)`}
+          />
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Memoryless property</p>
+            <p className="mt-1 text-sm text-ink/80">
+              P(X {">"} m+n | X {">"} m) = P(X {">"} n). If fraud hasn{"'"}t been caught in the first m audits,
+              the remaining wait has the same distribution as starting fresh. The past gives no information
+              about the future — each trial is independent.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Exponential — Exp(λ)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            The continuous counterpart of the geometric — models the <em>time</em> until the first event
+            in a Poisson process. Where geometric counts discrete trials, exponential measures continuous
+            waiting time.
+          </p>
+          <CodeBlock
+            label="Waiting time until first event"
+            code={`PDF: f(x) = λ · e^(-λx)   for x ≥ 0
+CDF: F(x) = 1 - e^(-λx)
+
+λ = rate (events per unit time)
+
+E[X] = 1/λ     ← average waiting time
+Var(X) = 1/λ²
+
+Example — server request handling:
+  A server receives λ = 10 requests per second
+  X = time until the next request arrives
+  X ~ Exp(10)
+  E[X] = 1/10 = 0.1 seconds average wait
+  P(X > 0.2) = e^(-10×0.2) = e^(-2) ≈ 0.135
+  (13.5% chance of waiting more than 0.2s for next request)`}
+          />
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Memoryless property — the exponential is unique</p>
+            <p className="mt-1 text-sm text-ink/80">
+              P(X {">"} s+t | X {">"} s) = P(X {">"} t). Having already waited s seconds tells you nothing
+              about how much longer you{"'"}ll wait — the exponential is the <em>only</em> continuous
+              distribution with this property. It is the continuous analogue of the geometric{"'"}s
+              memorylessness.
+            </p>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Geometric ↔ Exponential — The Discrete/Continuous Bridge</p>
+          <CompareTable
+            headers={["Geometric(p)", "Exponential(λ)"]}
+            rows={[
+              ["Discrete — counts trials", "Continuous — measures time"],
+              ["PMF: (1-p)^(k-1)·p", "PDF: λe^(-λx)"],
+              ["E[X] = 1/p", "E[X] = 1/λ"],
+              ["Var(X) = (1-p)/p²", "Var(X) = 1/λ²"],
+              ["Memoryless: past trials don't matter", "Memoryless: past wait time doesn't matter"],
+              ["Use: number of attempts until success", "Use: waiting time between Poisson events"],
+            ]}
+          />
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Distribution Comparison</p>
           <CompareTable
             headers={["Distribution", "Models", "E[X]", "Var(X)"]}
             rows={[
               ["Bernoulli(p)", "Single binary outcome", "p", "p(1-p)"],
               ["Binomial(N,p)", "Count of successes in N trials", "Np", "Np(1-p)"],
+              ["Geometric(p)", "Trials until first success (discrete)", "1/p", "(1-p)/p²"],
               ["Poisson(λ)", "Count of rare events in interval", "λ", "λ"],
+              ["Exponential(λ)", "Wait time until first event (continuous)", "1/λ", "1/λ²"],
               ["Gaussian(μ,σ²)", "Continuous symmetric outcomes", "μ", "σ²"],
             ]}
           />
