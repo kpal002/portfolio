@@ -263,6 +263,7 @@ Adjusted R²:  R²_adj = 1 - (1-R²)(N-1)/(N-p-1)   where p = num features
             cases — predicting supplier emissions values, estimating carbon footprint from product attributes
             — linear regression with feature engineering is often a strong, interpretable baseline.
           </InterviewCallout>
+
         </Card>
 
         {/* ── 2. Logistic Regression ── */}
@@ -1218,6 +1219,10 @@ Example: 'Does this intervention reduce supplier emissions?'
               {
                 q: "You have a dataset with 5,000 rows and 200 features. Which model do you start with?",
                 a: "I'd start with a Random Forest or XGBoost baseline. 5K rows is small enough that deep learning would likely overfit. I'd use 5-fold stratified cross-validation to evaluate, check OOB error as a sanity check, and use permutation importance to identify the most predictive features. If interpretability matters, I'd also fit a logistic regression with L2 regularization for comparison.",
+              },
+              {
+                q: "Can you fit non-linear data with linear regression?",
+                a: "Yes — by adding non-linear transformations of the features as new inputs. The model remains linear in its weights so all the math still works, but it can now fit curves. Common approaches: polynomial features (add x², x³), log transforms for exponential relationships, and explicit interaction terms. The risk is overfitting with high-degree polynomials and feature explosion with many inputs — degree-2 on 100 features produces 5,050 columns. This is why tree-based models are usually preferred for complex non-linear relationships: they learn interactions automatically without manual feature engineering.",
               },
             ].map((item, i) => (
               <div key={i} className="border-2 border-ink bg-bg p-5">
