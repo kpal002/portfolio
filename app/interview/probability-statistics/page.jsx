@@ -653,6 +653,67 @@ Example — server request handling:
             ]}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gamma — Gamma(α, β)</p>
+          <p className="text-sm text-ink/90 mb-3">
+            Generalises the exponential — models the waiting time until the <em>α-th</em> event in a
+            Poisson process. Where Exponential(λ) is the wait for the 1st event, Gamma(α, λ) is the
+            wait for the α-th event.
+          </p>
+          <CodeBlock
+            label="PDF and properties"
+            code={`PDF: f(x) = (β^α / Γ(α)) · x^(α-1) · e^(-βx)   for x ≥ 0
+
+Parameters:
+  α (shape) — number of events to wait for  (α > 0)
+  β (rate)  — event rate, same λ as Poisson  (β > 0)
+  1/β = θ (scale) — mean time between events
+
+E[X] = α/β
+Var(X) = α/β²
+
+Γ(α) = gamma function:
+  Γ(n) = (n-1)!   for positive integers
+  Γ(1/2) = √π     (key special value)
+  Γ(α+1) = α·Γ(α) (recursion)`}
+          />
+
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">Special cases</p>
+          <CodeBlock
+            label="How Gamma generalises other distributions"
+            code={`α = 1:          Gamma(1, β) = Exponential(β)
+                ← wait for 1st event = exponential
+
+α = k/2, β = 1/2: Gamma(k/2, 1/2) = Chi-squared(k)
+                ← sum of k squared standard normals
+
+α integer:      Erlang distribution
+                ← used in queueing theory (call centre wait times)
+
+As α → ∞:       Gamma → Gaussian  (by CLT — sum of α exponentials)`}
+          />
+
+          <CodeBlock
+            label="Example — time until 3rd audit failure"
+            code={`Supplier has audit failures at rate β = 2 per year → Poisson(2)
+X = time until the 3rd failure  →  X ~ Gamma(α=3, β=2)
+
+E[X] = 3/2 = 1.5 years until the 3rd failure
+Var(X) = 3/4 = 0.75,   Std = 0.87 years
+
+Compare to Exponential(2) — wait for 1st failure:
+  E[X] = 1/2 = 0.5 years
+  Each additional event adds 1/β = 0.5 years on average`}
+          />
+
+          <div className="border-l-4 border-accent pl-5 mt-4">
+            <p className="text-sm font-bold">Conjugate prior for Poisson and Exponential</p>
+            <p className="mt-1 text-sm text-ink/80">
+              Gamma is the conjugate prior for both the Poisson rate λ and the Exponential rate λ.
+              Prior Gamma(α, β) + n Poisson observations summing to Σxᵢ → Posterior Gamma(α + Σxᵢ, β + n).
+              This is why Gamma appears throughout Bayesian inference.
+            </p>
+          </div>
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Distribution Comparison</p>
           <CompareTable
             headers={["Distribution", "Models", "E[X]", "Var(X)"]}
@@ -662,6 +723,7 @@ Example — server request handling:
               ["Geometric(p)", "Trials until first success (discrete)", "1/p", "(1-p)/p²"],
               ["Poisson(λ)", "Count of rare events in interval", "λ", "λ"],
               ["Exponential(λ)", "Wait time until first event (continuous)", "1/λ", "1/λ²"],
+              ["Gamma(α,β)", "Wait time until α-th event", "α/β", "α/β²"],
               ["Gaussian(μ,σ²)", "Continuous symmetric outcomes", "μ", "σ²"],
             ]}
           />
