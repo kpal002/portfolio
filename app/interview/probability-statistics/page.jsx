@@ -101,6 +101,71 @@ function InterviewCallout({ label = "Interview Answer", children }) {
   );
 }
 
+function binomialPMF(n, p) {
+  const probs = new Array(n + 1);
+  probs[0] = Math.pow(1 - p, n);
+  for (let k = 0; k < n; k++) {
+    probs[k + 1] = probs[k] * ((n - k) / (k + 1)) * (p / (1 - p));
+  }
+  return probs;
+}
+
+function BinomialBarChart({ n, p, label, note }) {
+  const probs = binomialPMF(n, p);
+  const maxP = Math.max(...probs);
+  const W = 300;
+  const H = 80;
+  const padL = 4;
+  const padR = 4;
+  const padB = 4;
+  const chartW = W - padL - padR;
+  const barW = chartW / probs.length;
+
+  return (
+    <div className="border-2 border-ink bg-bg p-4">
+      <div className="flex items-baseline justify-between mb-2">
+        <p className="text-[10px] font-bold font-mono text-ink">{label}</p>
+        <p className="text-[10px] text-ink/50 font-mono">{note}</p>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H + padB}`} className="w-full" style={{ display: "block" }}>
+        {probs.map((prob, k) => {
+          const barH = (prob / maxP) * H;
+          const x = padL + k * barW;
+          const y = H - barH;
+          return (
+            <rect
+              key={k}
+              x={x + 0.5}
+              y={y}
+              width={Math.max(barW - 1, 0.5)}
+              height={barH}
+              fill="#0a0a0a"
+            />
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function BinomialConvergencePlot() {
+  return (
+    <div className="my-4 border-2 border-ink bg-bg p-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-4">
+        Visualising the convergence — Binomial(n, 0.5)
+      </p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <BinomialBarChart n={5}   p={0.5} label="n = 5"   note="discrete, lumpy" />
+        <BinomialBarChart n={20}  p={0.5} label="n = 20"  note="smoother bell" />
+        <BinomialBarChart n={100} p={0.5} label="n = 100" note="nearly Gaussian" />
+      </div>
+      <p className="mt-3 text-[11px] text-ink/50 font-mono">
+        As n ↑: discrete mass concentrates into a continuous bell curve
+      </p>
+    </div>
+  );
+}
+
 function Insight({ label = "Key Insight", children }) {
   return (
     <div className="mt-6 border-l-4 border-accent pl-5">
@@ -593,15 +658,7 @@ Examples:
   n=100, p=0.01: np=1  ← BAD — use Poisson instead`}
           />
 
-          <div className="my-4 border-2 border-ink bg-bg p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Visualising the convergence</p>
-            <div className="space-y-2 font-mono text-[11px] text-ink/80">
-              <p>Binomial(n=5,  p=0.5): <span className="text-ink">▁▄█▄▁</span>  — discrete, lumpy, symmetric</p>
-              <p>Binomial(n=20, p=0.5): <span className="text-ink">▁▂▄▆██▆▄▂▁</span>  — smoother bell</p>
-              <p>Binomial(n=100,p=0.5): <span className="text-ink">▁▂▄▆████▆▄▂▁</span>  — nearly Gaussian</p>
-              <p className="mt-2 text-ink/60">As n ↑: discrete mass concentrates into a continuous bell curve</p>
-            </div>
-          </div>
+          <BinomialConvergencePlot />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson → Gaussian</p>
           <p className="text-sm leading-relaxed text-ink/90 mb-3">
