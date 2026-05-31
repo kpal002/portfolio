@@ -378,9 +378,9 @@ Example — Binomial(3, 0.5):
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PDF — Probability Density Function (continuous)</p>
           <CodeBlock
             label="Definition and properties"
-            code={`PDF: f(x) ≥ 0,   ∫₋∞^∞ f(x) dx = 1
+            code={`PDF: f(x) ≥ 0,   integral from -inf to +inf of f(x) dx = 1
 
-P(a ≤ X ≤ b) = ∫ₐᵇ f(x) dx   ← area under the curve
+P(a ≤ X ≤ b) = integral from a to b of f(x) dx   ← area under the curve
 
 Key insight:
   f(x) is NOT a probability — it can be > 1
@@ -389,7 +389,7 @@ Key insight:
 
 Example — Gaussian N(0,1):
   f(x) = (1/√2π) · exp(-x²/2)
-  P(-1 ≤ X ≤ 1) = ∫₋₁¹ f(x) dx ≈ 0.68   ← 68% rule`}
+  P(-1 ≤ X ≤ 1) = integral from -1 to 1 of f(x) dx ≈ 0.68   ← 68% rule`}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF — Cumulative Distribution Function</p>
@@ -398,16 +398,16 @@ Example — Gaussian N(0,1):
             code={`CDF: F(x) = P(X ≤ x)
 
 For discrete:    F(x) = Σₖ≤ₓ p(k)   ← sum up to x
-For continuous:  F(x) = ∫₋∞ˣ f(t) dt ← area up to x
+For continuous:  F(x) = integral from -inf to x of f(t) dt   ← area up to x
 
 Properties:
-  F(-∞) = 0,   F(+∞) = 1
+  F(-inf) = 0,   F(+inf) = 1
   F is non-decreasing
   F is right-continuous
 
 Relationship between PDF and CDF:
   f(x) = dF(x)/dx   ← PDF is the derivative of the CDF
-  F(x) = ∫₋∞ˣ f(t) dt ← CDF is the integral of the PDF
+  F(x) = integral from -inf to x of f(t) dt   ← CDF is the integral of the PDF
 
 Computing probabilities from CDF:
   P(a ≤ X ≤ b) = F(b) - F(a)
