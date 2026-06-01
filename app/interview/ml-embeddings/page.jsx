@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import katex from "katex";
-import "katex/dist/katex.min.css";
 
 export const metadata = {
   title: "ML Embeddings & Representations — Kuntal Pal",
