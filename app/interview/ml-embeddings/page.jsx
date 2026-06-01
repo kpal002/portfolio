@@ -98,6 +98,29 @@ function CodeBlock({ code, label }) {
   );
 }
 
+function MathBlock({ label, lines }) {
+  return (
+    <div className="my-4 border-2 border-ink">
+      {label && (
+        <div className="border-b-2 border-ink bg-ink px-4 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{label}</span>
+        </div>
+      )}
+      <div className="bg-ink px-6 py-5 space-y-3 overflow-x-auto">
+        {lines.map((line, i) =>
+          line === "" ? (
+            <div key={i} className="h-2" />
+          ) : (
+            <p key={i} className="text-[15px] leading-relaxed text-accent font-mono whitespace-nowrap">
+              {line}
+            </p>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 function InterviewQ({ q, children }) {
   return (
     <div className="border-2 border-ink bg-bg p-5">
@@ -175,11 +198,13 @@ export default function MLEmbeddingsPage() {
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Skip-Gram Objective</p>
-          <CodeBlock
-            label="Objective"
-            code={`J = (1/T) * Σ_{t=1}^{T} Σ_{-c≤j≤c, j≠0} log P(w_{t+j} | w_t)
-
-P(w_O | w_I) = exp(v'_{w_O} · v_{w_I}) / Σ_w exp(v'_w · v_{w_I})`}
+          <MathBlock
+            label="Skip-Gram Objective"
+            lines={[
+              "J = (1/T) · Σ_{t=1}^{T}  Σ_{-c ≤ j ≤ c, j≠0}  log P(w_{t+j} | w_t)",
+              "",
+              "P(w_O | w_I) = exp(v′_{w_O} · v_{w_I})  /  Σ_w exp(v′_w · v_{w_I})",
+            ]}
           />
 
           <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Negative Sampling (NEG)</p>
@@ -188,13 +213,15 @@ P(w_O | w_I) = exp(v'_{w_O} · v_{w_I}) / Σ_w exp(v'_w · v_{w_I})`}
             classification task over K noise samples. Noise distribution P_n(w) = U(w)^3/4 / Z
             downsamples frequent words and upsamples rare ones.
           </p>
-          <CodeBlock
+          <MathBlock
             label="NEG Objective"
-            code={`J_NEG = log σ(v'_{w_O} · v_{w_I}) + Σ_{k=1}^{K} E_{w_k~P_n}[log σ(-v'_{w_k} · v_{w_I})]
-
-Gradient w.r.t. center word v_c:
-∂J/∂v_c = (σ(u_o · v_c) - 1)·u_o + Σ_k σ(u_{wk} · v_c)·u_{wk}
-           ↑ push toward positive    ↑ push away from negatives`}
+            lines={[
+              "J_NEG = log σ(v′_{w_O} · v_{w_I})  +  Σ_{k=1}^{K}  E_{w_k ~ P_n} [log σ(−v′_{w_k} · v_{w_I})]",
+              "",
+              "Gradient w.r.t. center word v_c:",
+              "∂J/∂v_c = (σ(u_o · v_c) − 1) · u_o  +  Σ_k  σ(u_{wk} · v_c) · u_{wk}",
+              "           ↑ push toward positive              ↑ push away from negatives",
+            ]}
           />
 
           <div className="mt-6 space-y-4">
@@ -281,14 +308,16 @@ Gradient w.r.t. center word v_c:
             probabilities encodes semantic relationships more reliably than raw counts.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="GloVe Objective"
-            code={`J = Σ_{i,j=1}^{V} f(X_{ij}) (w_i · w̃_j + b_i + b̃_j - log X_{ij})²
-
-Weighting function (caps frequent pairs):
-f(x) = (x/x_max)^α  if x < x_max, else 1   [α=0.75, x_max=100]
-
-Final vector: v_final = w + w̃  (average of word and context vectors)`}
+            lines={[
+              "J = Σ_{i,j=1}^{V}  f(X_{ij}) · (w_i · w̃_j  +  b_i  +  b̃_j  −  log X_{ij})²",
+              "",
+              "Weighting function — caps contribution of very frequent pairs:",
+              "f(x) = (x / x_max)^α   if x < x_max,   else 1     [α = 0.75,  x_max = 100]",
+              "",
+              "Final word vector:   v_final = w  +  w̃     (average of word + context vectors)",
+            ]}
           />
 
           <div className="mt-6 space-y-4">
@@ -349,13 +378,15 @@ Final vector: v_final = w + w̃  (average of word and context vectors)`}
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SBERT Architecture & Training Objectives</p>
-          <CodeBlock
-            label="Training objectives"
-            code={`Two sentences A and B → same BERT encoder (Siamese) → mean-pool → u, v
-
-Classification:  J = -log(softmax(W · [u; v; |u-v|]))
-Cosine loss:     J = MSE(cosine(u,v), gold_score)
-Triplet loss:    J = max(0, ||u - v_pos|| - ||u - v_neg|| + ε)`}
+          <MathBlock
+            label="SBERT Training Objectives"
+            lines={[
+              "Input:  sentence A, sentence B  →  shared BERT encoder  →  mean-pool  →  u,  v",
+              "",
+              "Classification:   J = −log softmax( W · [u ; v ; |u−v|] )",
+              "Cosine loss:      J = MSE( cosine(u, v),  gold_score )",
+              "Triplet loss:     J = max( 0,  ‖u − v_pos‖  −  ‖u − v_neg‖  +  ε )",
+            ]}
           />
 
           <div className="mt-6 space-y-4">
@@ -421,14 +452,16 @@ Triplet loss:    J = max(0, ||u - v_pos|| - ||u - v_neg|| + ε)`}
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SimCLR / InfoNCE Loss</p>
-          <CodeBlock
+          <MathBlock
             label="InfoNCE Loss"
-            code={`L_{i,j} = -log [ exp(sim(z_i, z_j)/τ) / Σ_{k=1}^{2N} 1[k≠i] exp(sim(z_i, z_k)/τ) ]
-
-where sim(u,v) = u^T v / (||u|| * ||v||)  (cosine similarity)
-      τ = temperature hyperparameter (~0.07 in SimCLR)
-
-InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
+            lines={[
+              "L_{i,j} = −log [  exp( sim(z_i, z_j) / τ )  /  Σ_{k=1}^{2N}  𝟙[k≠i] · exp( sim(z_i, z_k) / τ )  ]",
+              "",
+              "sim(u, v)  =  uᵀv / (‖u‖ · ‖v‖)     (cosine similarity)",
+              "τ          =  temperature hyperparameter  (~0.07 in SimCLR)",
+              "",
+              "InfoNCE as mutual information bound:   I(X ; Y)  ≥  log(N)  −  L_InfoNCE",
+            ]}
           />
 
           <div className="mt-6 space-y-4">
@@ -591,15 +624,17 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
             components capture the most variance, compressing the embedding while losing the least information.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="PCA Steps"
-            code={`1. Compute covariance matrix Σ = (1/N) * X^T X  [d × d]
-2. Eigendecompose: Σ = V Λ V^T
-3. Sort eigenvectors by eigenvalue (variance explained)
-4. Project: x_compressed = V_k^T x  [k-dimensional]
-
-Explained variance ratio: λ_i / Σ_j λ_j
-Typical threshold: keep k dims explaining 95% of variance`}
+            lines={[
+              "1.  Covariance matrix:      Σ  =  (1/N) · XᵀX          [d × d]",
+              "2.  Eigendecompose:         Σ  =  V Λ Vᵀ",
+              "3.  Sort eigenvectors by eigenvalue (descending variance)",
+              "4.  Project:               x_k  =  V_kᵀ · x            [k-dimensional]",
+              "",
+              "Explained variance ratio:   λ_i  /  Σ_j λ_j",
+              "Typical threshold: keep k dimensions explaining ≥ 95% of total variance",
+            ]}
           />
 
           <div className="mt-4 space-y-4">
