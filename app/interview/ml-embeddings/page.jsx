@@ -190,12 +190,54 @@ export default function MLEmbeddingsPage() {
         <Card>
           <SectionLabel>Section 1</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Word2Vec</h2>
-          <p className="text-sm leading-relaxed text-ink/90">
-            Word2Vec (Mikolov et al., 2013) learns dense word vectors by training a shallow neural
-            network to predict context from a target word (Skip-Gram) or predict a target from
-            context words (CBOW). The key insight: words appearing in similar contexts end up with
-            similar vectors.
-          </p>
+
+          {/* Intuition block */}
+          <div className="mb-8 space-y-4 border-l-4 border-accent pl-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent">Intuition first</p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              Word2Vec trains a shallow neural network on a simple prediction task: given a word, predict
+              its neighbors (Skip-Gram), or given neighbors, predict the center word (CBOW). The network
+              never actually uses its predictions — the weights themselves become the word vectors. Every
+              word gets two vectors: an input vector <strong>v</strong> (used at inference) and an output
+              vector <strong>u</strong> (discarded after training). A score between a center-context pair
+              is just their dot product: <code className="bg-ink/10 px-1">v_sat · u_cat</code>. High dot
+              product = model thinks they co-occur.
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              The full softmax over all V words is too slow (O(V) per step), so <strong>Negative
+              Sampling</strong> replaces it with binary classification: for each real pair (sat, cat),
+              sample K fake pairs — (sat, the), (sat, mat) — and train the model to score real pairs high
+              and fake pairs low. Cost drops to O(K).
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              <strong>The gradient is the engine.</strong> For a real pair (sat→cat):{" "}
+              <code className="bg-ink/10 px-1">∂J/∂v_sat = (σ(score) − 1) · u_cat</code>. If the model
+              is wrong (score is low, σ ≈ 0.1), the error is −0.9 — a large nudge pushing{" "}
+              <code className="bg-ink/10 px-1">v_sat</code> toward <code className="bg-ink/10 px-1">u_cat</code>.
+              For a fake pair (sat→the), the gradient pushes <code className="bg-ink/10 px-1">v_sat</code>{" "}
+              away from <code className="bg-ink/10 px-1">u_the</code>. Do this millions of times and
+              vectors self-organize: "cat" and "mat" both appear next to "the" and "a" constantly, so
+              both get nudged toward the same output vectors repeatedly — ending up geometrically close.
+              No labels needed. Similarity emerges purely from shared context.
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              At inference, cosine similarity between input vectors is your similarity score. The famous
+              result — <code className="bg-ink/10 px-1">king − man + woman ≈ queen</code> — works because
+              the "gender" relationship encodes as a consistent linear direction in the space (Levy {"&"}{" "}
+              Goldberg proved Word2Vec implicitly factorizes the PMI matrix, so linear structure in
+              co-occurrence statistics maps to linear offsets in vector space).
+            </p>
+            <div className="border-2 border-ink bg-bg p-4 text-sm">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-accent">Two things to nail in an interview</p>
+              <div className="space-y-2 text-ink/80">
+                <p><span className="font-bold text-accent">1.</span> You use the <strong>input matrix V</strong>, not U — the output matrix is discarded after training.</p>
+                <p><span className="font-bold text-accent">2.</span> The noise distribution is{" "}
+                  <code className="bg-ink/10 px-1">P_n(w) = f(w)^(3/4) / Z</code> — raising frequencies
+                  to the 3/4 power stops "the" and "a" from dominating negative samples by compressing
+                  the frequency range without flattening it entirely.</p>
+              </div>
+            </div>
+          </div>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Skip-Gram Objective</p>
           <MathBlock
