@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import katex from "katex";
 
 export const metadata = {
   title: "ML Embeddings & Representations — Kuntal Pal",
@@ -98,6 +99,16 @@ function CodeBlock({ code, label }) {
   );
 }
 
+function KatexLine({ tex }) {
+  const html = katex.renderToString(tex, { throwOnError: false, displayMode: false });
+  return (
+    <div
+      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent overflow-x-auto"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 function MathBlock({ label, lines }) {
   return (
     <div className="my-4 border-2 border-ink">
@@ -106,14 +117,12 @@ function MathBlock({ label, lines }) {
           <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{label}</span>
         </div>
       )}
-      <div className="bg-ink px-6 py-5 space-y-3 overflow-x-auto">
+      <div className="bg-ink px-6 py-5 space-y-4 overflow-x-auto">
         {lines.map((line, i) =>
           line === "" ? (
-            <div key={i} className="h-2" />
+            <div key={i} className="h-1" />
           ) : (
-            <p key={i} className="text-[15px] leading-relaxed text-accent font-mono whitespace-nowrap">
-              {line}
-            </p>
+            <KatexLine key={i} tex={line} />
           )
         )}
       </div>
@@ -190,20 +199,61 @@ export default function MLEmbeddingsPage() {
         <Card>
           <SectionLabel>Section 1</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Word2Vec</h2>
-          <p className="text-sm leading-relaxed text-ink/90">
-            Word2Vec (Mikolov et al., 2013) learns dense word vectors by training a shallow neural
-            network to predict context from a target word (Skip-Gram) or predict a target from
-            context words (CBOW). The key insight: words appearing in similar contexts end up with
-            similar vectors.
-          </p>
+
+          {/* Intuition block */}
+          <div className="mb-8 space-y-4 border-l-4 border-accent pl-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent">Intuition first</p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              Word2Vec trains a shallow neural network on a simple prediction task: given a word, predict
+              its neighbors (Skip-Gram), or given neighbors, predict the center word (CBOW). The network
+              never actually uses its predictions — the weights themselves become the word vectors. Every
+              word gets two vectors: an input vector <strong>v</strong> (used at inference) and an output
+              vector <strong>u</strong> (discarded after training). A score between a center-context pair
+              is just their dot product: <code className="bg-ink/10 px-1">v_sat · u_cat</code>. High dot
+              product = model thinks they co-occur.
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              The full softmax over all V words is too slow (O(V) per step), so <strong>Negative
+              Sampling</strong> replaces it with binary classification: for each real pair (sat, cat),
+              sample K fake pairs — (sat, the), (sat, mat) — and train the model to score real pairs high
+              and fake pairs low. Cost drops to O(K).
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              <strong>The gradient is the engine.</strong> For a real pair (sat→cat):{" "}
+              <code className="bg-ink/10 px-1">∂J/∂v_sat = (σ(score) − 1) · u_cat</code>. If the model
+              is wrong (score is low, σ ≈ 0.1), the error is −0.9 — a large nudge pushing{" "}
+              <code className="bg-ink/10 px-1">v_sat</code> toward <code className="bg-ink/10 px-1">u_cat</code>.
+              For a fake pair (sat→the), the gradient pushes <code className="bg-ink/10 px-1">v_sat</code>{" "}
+              away from <code className="bg-ink/10 px-1">u_the</code>. Do this millions of times and
+              vectors self-organize: "cat" and "mat" both appear next to "the" and "a" constantly, so
+              both get nudged toward the same output vectors repeatedly — ending up geometrically close.
+              No labels needed. Similarity emerges purely from shared context.
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              At inference, cosine similarity between input vectors is your similarity score. The famous
+              result — <code className="bg-ink/10 px-1">king − man + woman ≈ queen</code> — works because
+              the "gender" relationship encodes as a consistent linear direction in the space (Levy {"&"}{" "}
+              Goldberg proved Word2Vec implicitly factorizes the PMI matrix, so linear structure in
+              co-occurrence statistics maps to linear offsets in vector space).
+            </p>
+            <div className="border-2 border-ink bg-bg p-4 text-sm">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-accent">Two things to nail in an interview</p>
+              <div className="space-y-2 text-ink/80">
+                <p><span className="font-bold text-accent">1.</span> You use the <strong>input matrix V</strong>, not U — the output matrix is discarded after training.</p>
+                <p><span className="font-bold text-accent">2.</span> The noise distribution is{" "}
+                  <code className="bg-ink/10 px-1">P_n(w) = f(w)^(3/4) / Z</code> — raising frequencies
+                  to the 3/4 power stops "the" and "a" from dominating negative samples by compressing
+                  the frequency range without flattening it entirely.</p>
+              </div>
+            </div>
+          </div>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Skip-Gram Objective</p>
           <MathBlock
             label="Skip-Gram Objective"
             lines={[
-              "J = (1/T) · Σ_{t=1}^{T}  Σ_{-c ≤ j ≤ c, j≠0}  log P(w_{t+j} | w_t)",
-              "",
-              "P(w_O | w_I) = exp(v′_{w_O} · v_{w_I})  /  Σ_w exp(v′_w · v_{w_I})",
+              String.raw`J = \frac{1}{T} \sum_{t=1}^{T} \sum_{\substack{-c \leq j \leq c \\ j \neq 0}} \log P(w_{t+j} \mid w_t)`,
+              String.raw`P(w_O \mid w_I) = \frac{\exp({v'}_{w_O}^{\top} \, v_{w_I})}{\sum_{w} \exp({v'}_w^{\top} \, v_{w_I})}`,
             ]}
           />
 
@@ -216,11 +266,8 @@ export default function MLEmbeddingsPage() {
           <MathBlock
             label="NEG Objective"
             lines={[
-              "J_NEG = log σ(v′_{w_O} · v_{w_I})  +  Σ_{k=1}^{K}  E_{w_k ~ P_n} [log σ(−v′_{w_k} · v_{w_I})]",
-              "",
-              "Gradient w.r.t. center word v_c:",
-              "∂J/∂v_c = (σ(u_o · v_c) − 1) · u_o  +  Σ_k  σ(u_{wk} · v_c) · u_{wk}",
-              "           ↑ push toward positive              ↑ push away from negatives",
+              String.raw`J_\text{NEG} = \log \sigma({v'}_{w_O}^{\top} v_{w_I}) + \sum_{k=1}^{K} \mathbb{E}_{w_k \sim P_n}\!\left[\log \sigma(-{v'}_{w_k}^{\top} v_{w_I})\right]`,
+              String.raw`\frac{\partial J}{\partial v_c} = \underbrace{(\sigma(u_o \cdot v_c) - 1) \cdot u_o}_{\text{push toward positive}} + \underbrace{\sum_k \sigma(u_{w_k} \cdot v_c) \cdot u_{w_k}}_{\text{push away from negatives}}`,
             ]}
           />
 
@@ -311,12 +358,9 @@ export default function MLEmbeddingsPage() {
           <MathBlock
             label="GloVe Objective"
             lines={[
-              "J = Σ_{i,j=1}^{V}  f(X_{ij}) · (w_i · w̃_j  +  b_i  +  b̃_j  −  log X_{ij})²",
-              "",
-              "Weighting function — caps contribution of very frequent pairs:",
-              "f(x) = (x / x_max)^α   if x < x_max,   else 1     [α = 0.75,  x_max = 100]",
-              "",
-              "Final word vector:   v_final = w  +  w̃     (average of word + context vectors)",
+              String.raw`J = \sum_{i,j=1}^{V} f(X_{ij})\,\bigl(w_i^\top \tilde{w}_j + b_i + \tilde{b}_j - \log X_{ij}\bigr)^2`,
+              String.raw`f(x) = \begin{cases} (x/x_{\max})^\alpha & x < x_{\max} \\ 1 & \text{otherwise} \end{cases} \qquad \alpha = 0.75,\; x_{\max} = 100`,
+              String.raw`v_{\text{final}} = w + \tilde{w} \quad \text{(average of word + context vectors)}`,
             ]}
           />
 
@@ -381,11 +425,9 @@ export default function MLEmbeddingsPage() {
           <MathBlock
             label="SBERT Training Objectives"
             lines={[
-              "Input:  sentence A, sentence B  →  shared BERT encoder  →  mean-pool  →  u,  v",
-              "",
-              "Classification:   J = −log softmax( W · [u ; v ; |u−v|] )",
-              "Cosine loss:      J = MSE( cosine(u, v),  gold_score )",
-              "Triplet loss:     J = max( 0,  ‖u − v_pos‖  −  ‖u − v_neg‖  +  ε )",
+              String.raw`\text{Classification:} \quad J = -\log \operatorname{softmax}\!\bigl(W \cdot [u;\, v;\, |u-v|]\bigr)`,
+              String.raw`\text{Cosine loss:} \quad J = \operatorname{MSE}\!\bigl(\cos(u,v),\; \text{gold\_score}\bigr)`,
+              String.raw`\text{Triplet loss:} \quad J = \max\!\bigl(0,\; \|u - v_+\| - \|u - v_-\| + \varepsilon\bigr)`,
             ]}
           />
 
@@ -455,12 +497,9 @@ export default function MLEmbeddingsPage() {
           <MathBlock
             label="InfoNCE Loss"
             lines={[
-              "L_{i,j} = −log [  exp( sim(z_i, z_j) / τ )  /  Σ_{k=1}^{2N}  𝟙[k≠i] · exp( sim(z_i, z_k) / τ )  ]",
-              "",
-              "sim(u, v)  =  uᵀv / (‖u‖ · ‖v‖)     (cosine similarity)",
-              "τ          =  temperature hyperparameter  (~0.07 in SimCLR)",
-              "",
-              "InfoNCE as mutual information bound:   I(X ; Y)  ≥  log(N)  −  L_InfoNCE",
+              String.raw`\mathcal{L}_{i,j} = -\log \frac{\exp\!\bigl(\operatorname{sim}(z_i, z_j)/\tau\bigr)}{\sum_{k=1}^{2N} \mathbf{1}_{[k \neq i]}\exp\!\bigl(\operatorname{sim}(z_i, z_k)/\tau\bigr)}`,
+              String.raw`\operatorname{sim}(u,v) = \frac{u^\top v}{\|u\|\,\|v\|}, \quad \tau \approx 0.07 \text{ (SimCLR)}`,
+              String.raw`I(X;\,Y) \;\geq\; \log(N) - \mathcal{L}_\text{InfoNCE}`,
             ]}
           />
 
@@ -625,15 +664,12 @@ export default function MLEmbeddingsPage() {
           </p>
 
           <MathBlock
-            label="PCA Steps"
+            label="PCA"
             lines={[
-              "1.  Covariance matrix:      Σ  =  (1/N) · XᵀX          [d × d]",
-              "2.  Eigendecompose:         Σ  =  V Λ Vᵀ",
-              "3.  Sort eigenvectors by eigenvalue (descending variance)",
-              "4.  Project:               x_k  =  V_kᵀ · x            [k-dimensional]",
-              "",
-              "Explained variance ratio:   λ_i  /  Σ_j λ_j",
-              "Typical threshold: keep k dimensions explaining ≥ 95% of total variance",
+              String.raw`\Sigma = \frac{1}{N} X^\top X \quad [d \times d]`,
+              String.raw`\Sigma = V \Lambda V^\top \quad \text{(eigendecomposition)}`,
+              String.raw`x_k = V_k^\top x \quad \text{(k-dimensional projection)}`,
+              String.raw`\text{Explained variance ratio:} \quad \frac{\lambda_i}{\sum_j \lambda_j}`,
             ]}
           />
 
