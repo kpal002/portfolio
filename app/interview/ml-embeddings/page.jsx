@@ -241,7 +241,7 @@ Gradient w.r.t. center word v_c:
               </p>
             </InterviewQ>
 
-            <InterviewQ q="Q25 (Advanced): Levy & Goldberg (2014) proved Word2Vec with NEG implicitly factorizes the shifted PMI matrix. What does this imply about when analogy arithmetic fails?">
+            <InterviewQ q="Q4 (Advanced): Levy & Goldberg (2014) proved Word2Vec with NEG implicitly factorizes the shifted PMI matrix. What does this imply about when analogy arithmetic fails?">
               <p>
                 With K negatives, the optimal Word2Vec solution satisfies: v_w · v_c = PMI(w,c) - log K.
                 So Word2Vec performs a low-rank factorization of the shifted PMI matrix — the same family
@@ -317,7 +317,7 @@ Final vector: v_final = w + w̃  (average of word and context vectors)`}
               </p>
             </InterviewQ>
 
-            <InterviewQ q="Q27 (Advanced): GloVe often trains faster yet struggles more with rare words. Explain both from the objective function.">
+            <InterviewQ q="Q7 (Advanced): GloVe often trains faster yet struggles more with rare words. Explain both from the objective function.">
               <p>
                 <strong>Faster training:</strong> GloVe trains on non-zero entries of the sparse co-occurrence
                 matrix X — far fewer than T corpus tokens. Plus the weighted LS objective has better curvature
@@ -432,7 +432,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
           />
 
           <div className="mt-6 space-y-4">
-            <InterviewQ q="Q12: Derive why temperature τ in the InfoNCE loss matters. What happens as τ → 0 and τ → ∞?">
+            <InterviewQ q="Q11: Derive why temperature τ in the InfoNCE loss matters. What happens as τ → 0 and τ → ∞?">
               <p>
                 τ acts as a sharpness parameter on the similarity softmax.
               </p>
@@ -452,7 +452,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
               </div>
             </InterviewQ>
 
-            <InterviewQ q="Q13: SimCLR requires very large batch sizes (4096+). Explain why, and describe two methods to make contrastive learning work with small batches.">
+            <InterviewQ q="Q12: SimCLR requires very large batch sizes (4096+). Explain why, and describe two methods to make contrastive learning work with small batches.">
               <p>
                 The InfoNCE denominator sums over 2N-2 negatives. With small N, the hardest negative is far
                 from the positive (providing weak gradient). Also false negatives become proportionally larger
@@ -464,7 +464,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
               ]} />
             </InterviewQ>
 
-            <InterviewQ q="Q14: What is representation collapse? How do SimCLR, BYOL, and Barlow Twins each address it?">
+            <InterviewQ q="Q13: What is representation collapse? How do SimCLR, BYOL, and Barlow Twins each address it?">
               <p>
                 Collapse: the encoder maps all inputs to the same constant vector. The loss is minimized
                 trivially — positive and negative pairs are all at the same point.
@@ -483,7 +483,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
               </div>
             </InterviewQ>
 
-            <InterviewQ q="Q29 (Advanced): SimCLR discards the projection head g(·) at inference, keeping only f(·). Why does this consistently improve downstream task performance?">
+            <InterviewQ q="Q14 (Advanced): SimCLR discards the projection head g(·) at inference, keeping only f(·). Why does this consistently improve downstream task performance?">
               <p>
                 The projection head g(·) must make z = g(f(x)) invariant to augmentations. If augmentations
                 include color jitter, z must discard color information. If they include cropping, z discards
@@ -518,7 +518,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
           </p>
 
           <div className="mt-6 space-y-4">
-            <InterviewQ q="Q16: Explain the 'hubness' phenomenon in high-dimensional spaces. Derive why it occurs and describe two mitigations.">
+            <InterviewQ q="Q15: Explain the 'hubness' phenomenon in high-dimensional spaces. Derive why it occurs and describe two mitigations.">
               <p>
                 Hubness: as dimensionality d increases, a small fraction of points become the nearest neighbor
                 of O(N^{1/2}) other points. This causes top-K retrieval to return the same few hub points for
@@ -535,7 +535,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
               ]} />
             </InterviewQ>
 
-            <InterviewQ q="Q17: Your embedding model produces L2 norms that correlate strongly with word frequency. What geometric problem does this cause and how do you fix it?">
+            <InterviewQ q="Q16: Your embedding model produces L2 norms that correlate strongly with word frequency. What geometric problem does this cause and how do you fix it?">
               <p>
                 If ||v_w|| correlates with frequency, then dot product s(u,v) = u^T v ∝ ||u||·||v||·cos(θ).
                 High-frequency words get large dot products with everything, biasing retrieval toward frequent words.
@@ -563,7 +563,7 @@ InfoNCE as MI bound:  I(X;Y) ≥ log(N) - L_InfoNCE`}
           />
 
           <div className="mt-6 space-y-4">
-            <InterviewQ q="Q18: When does dot product outperform cosine similarity? Derive the condition formally.">
+            <InterviewQ q="Q17: When does dot product outperform cosine similarity? Derive the condition formally.">
               <p>
                 Dot product = ||u||·||v||·cos(θ). Cosine = cos(θ). Dot product adds the magnitude term
                 ||u||·||v||. So dot product outperforms cosine when magnitude carries task-relevant signal.
@@ -603,7 +603,7 @@ Typical threshold: keep k dims explaining 95% of variance`}
           />
 
           <div className="mt-4 space-y-4">
-            <InterviewQ q="Q19: When does PCA hurt retrieval quality rather than help it?">
+            <InterviewQ q="Q18: When does PCA hurt retrieval quality rather than help it?">
               <p>
                 PCA removes the directions of lowest variance. But low-variance dimensions can still be
                 semantically important for retrieval — a dimension that rarely varies across your corpus
@@ -643,7 +643,7 @@ Typical threshold: keep k dims explaining 95% of variance`}
           />
 
           <div className="mt-6 space-y-4">
-            <InterviewQ q="Q32 (Advanced): List the specific ways UMAP fails in production retrieval systems that PCA does not. When is Parametric UMAP a valid middle ground?">
+            <InterviewQ q="Q19 (Advanced): List the specific ways UMAP fails in production retrieval systems that PCA does not. When is Parametric UMAP a valid middle ground?">
               <div className="space-y-2">
                 {[
                   { n: "1", title: "Not parametric by default", body: "You cannot embed a new point without re-running the full algorithm (O(N log N) per batch). For a streaming system ingesting 1M new embeddings/day, completely infeasible. PCA: new point projection is a single O(d·k) matrix multiply." },
