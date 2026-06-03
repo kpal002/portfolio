@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import katex from "katex";
 
 export const metadata = {
   title: "Probability & Statistics — Interview Prep — Kuntal Pal",
@@ -86,6 +87,37 @@ function CodeBlock({ code, label }) {
       <pre className="overflow-x-auto bg-ink p-5 text-[12px] leading-relaxed text-accent">
         <code>{code}</code>
       </pre>
+    </div>
+  );
+}
+
+function KatexLine({ tex }) {
+  const html = katex.renderToString(tex, { throwOnError: false, displayMode: false });
+  return (
+    <div
+      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent overflow-x-auto"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function MathBlock({ label, lines }) {
+  return (
+    <div className="my-4 border-2 border-ink">
+      {label && (
+        <div className="border-b-2 border-ink bg-ink px-4 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{label}</span>
+        </div>
+      )}
+      <div className="bg-ink px-6 py-5 space-y-4 overflow-x-auto">
+        {lines.map((line, i) =>
+          line === "" ? (
+            <div key={i} className="h-1" />
+          ) : (
+            <KatexLine key={i} tex={line} />
+          )
+        )}
+      </div>
     </div>
   );
 }
@@ -223,14 +255,12 @@ export default function ProbabilityStatisticsPage() {
             given that B happened, how likely is A?
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="Definition"
-            code={`P(A | B) = P(A ∩ B) / P(B)
-
-Restrict the sample space to B, then ask what fraction of B also contains A.
-
-Rearranged → Multiplication Law:
-  P(A ∩ B) = P(A | B) · P(B)`}
+            lines={[
+              String.raw`P(A \mid B) = \frac{P(A \cap B)}{P(B)}`,
+              String.raw`P(A \cap B) = P(A \mid B) \cdot P(B) \quad \text{(Multiplication Law)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Inverse Problem — P(B|A) from P(A|B)</p>
@@ -238,16 +268,12 @@ Rearranged → Multiplication Law:
             Given P(A|B), how do you get P(B|A)? Apply the multiplication law to both orderings of the
             joint probability P(A∩B):
           </p>
-          <CodeBlock
+          <MathBlock
             label="Deriving Bayes' theorem from conditional probability"
-            code={`P(A ∩ B) = P(A | B) · P(B)   ← one way to write the joint
-P(A ∩ B) = P(B | A) · P(A)   ← the other way
-
-Set them equal:
-  P(A | B) · P(B) = P(B | A) · P(A)
-
-Solve for P(B | A):
-  P(B | A) = P(A | B) · P(B) / P(A)   ← Bayes' theorem ✓`}
+            lines={[
+              String.raw`P(A \cap B) = P(A \mid B) \cdot P(B) = P(B \mid A) \cdot P(A)`,
+              String.raw`P(B \mid A) = \frac{P(A \mid B) \cdot P(B)}{P(A)} \quad \text{(Bayes' theorem)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Law of Total Probability</p>
@@ -255,15 +281,13 @@ Solve for P(B | A):
             If events B₁, B₂, …, Bₙ partition the sample space Ω (they are mutually exclusive and
             exhaustive: Ω = ∪Bᵢ, Bᵢ ∩ Bⱼ = ∅ for i ≠ j), then:
           </p>
-          <CodeBlock
+          <MathBlock
             label="Law of total probability"
-            code={`P(A) = Σᵢ P(A | Bᵢ) · P(Bᵢ)
-
-Simplest case — B and Bᶜ partition Ω:
-  P(A) = P(A | B) · P(B) + P(A | Bᶜ) · P(Bᶜ)
-
-This is the P(B) denominator in Bayes' theorem:
-  P(A | B) = P(B | A) · P(A) / [P(B|A)·P(A) + P(B|¬A)·P(¬A)]`}
+            lines={[
+              String.raw`P(A) = \sum_i P(A \mid B_i) \cdot P(B_i)`,
+              String.raw`P(A) = P(A \mid B) \cdot P(B) + P(A \mid B^c) \cdot P(B^c) \quad \text{(simplest case)}`,
+              String.raw`P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B \mid A)\cdot P(A) + P(B \mid \neg A)\cdot P(\neg A)}`,
+            ]}
           />
 
           <Insight label="Why this matters for Bayes' theorem">
@@ -282,16 +306,12 @@ This is the P(B) denominator in Bayes' theorem:
             foundation of Bayesian inference, spam filters, medical diagnosis, and RAG fact verification.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="The formula"
-            code={`P(A | B) = P(B | A) · P(A) / P(B)
-
-P(A | B) = Posterior  — probability of A given we observed B
-P(B | A) = Likelihood — probability of observing B if A is true
-P(A)     = Prior      — our belief in A before seeing B
-P(B)     = Evidence   — total probability of observing B
-
-P(B) = P(B|A)·P(A) + P(B|¬A)·P(¬A)   ← law of total probability`}
+            lines={[
+              String.raw`P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}`,
+              String.raw`P(B) = P(B \mid A)\cdot P(A) + P(B \mid \neg A)\cdot P(\neg A) \quad \text{(law of total probability)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Worked Example — Supplier Fraud Detection</p>
@@ -343,13 +363,12 @@ The rarity of the disease dominates.`}
             information about the other.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="Definition — two equivalent forms"
-            code={`P(A | B) = P(A)   ← B gives no info about A
-P(B | A) = P(B)   ← A gives no info about B
-
-Plug into the multiplication law P(A∩B) = P(A|B)·P(B):
-  P(A ∩ B) = P(A) · P(B)   ← the product rule for independent events`}
+            lines={[
+              String.raw`P(A \mid B) = P(A) \;\Leftrightarrow\; P(B \mid A) = P(B)`,
+              String.raw`P(A \cap B) = P(A) \cdot P(B) \quad \text{(product rule for independent events)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Concrete Example — Cards</p>
@@ -427,74 +446,41 @@ PARALLEL — any one succeeding is enough:
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PMF — Probability Mass Function (discrete)</p>
-          <CodeBlock
-            label="Definition and properties"
-            code={`PMF: p(k) = P(X = k)
-
-Properties:
-  p(k) ≥ 0  for all k
-  Σₖ p(k) = 1   ← probabilities sum to 1
-
-Example — Binomial(3, 0.5):
-  P(X=0) = 1/8,  P(X=1) = 3/8,  P(X=2) = 3/8,  P(X=3) = 1/8
-  Sum = 8/8 = 1  ✓`}
+          <MathBlock
+            label="PMF — Definition and properties"
+            lines={[
+              String.raw`p(k) = P(X = k),\quad p(k) \geq 0,\quad \sum_k p(k) = 1`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">PDF — Probability Density Function (continuous)</p>
-          <CodeBlock
-            label="Definition and properties"
-            code={`PDF: f(x) ≥ 0,   integral from -inf to +inf of f(x) dx = 1
-
-P(a ≤ X ≤ b) = integral from a to b of f(x) dx   ← area under the curve
-
-Key insight:
-  f(x) is NOT a probability — it can be > 1
-  Only integrals (areas) are probabilities
-  P(X = x) = 0 for any single point
-
-Example — Gaussian N(0,1):
-  f(x) = (1/√2π) · exp(-x²/2)
-  P(-1 ≤ X ≤ 1) = integral from -1 to 1 of f(x) dx ≈ 0.68   ← 68% rule`}
+          <MathBlock
+            label="PDF — Definition and properties"
+            lines={[
+              String.raw`f(x) \geq 0,\quad \int_{-\infty}^{+\infty} f(x)\,dx = 1`,
+              String.raw`P(a \leq X \leq b) = \int_a^b f(x)\,dx \quad \text{(area under the curve)}`,
+              String.raw`f(x) = \frac{1}{\sqrt{2\pi}}\exp\!\left(-\frac{x^2}{2}\right) \quad \text{(Gaussian } N(0,1)\text{)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF — Cumulative Distribution Function</p>
-          <CodeBlock
-            label="Definition — works for both discrete and continuous"
-            code={`CDF: F(x) = P(X ≤ x)
-
-For discrete:    F(x) = Σₖ≤ₓ p(k)   ← sum up to x
-For continuous:  F(x) = integral from -inf to x of f(t) dt   ← area up to x
-
-Properties:
-  F(-inf) = 0,   F(+inf) = 1
-  F is non-decreasing
-  F is right-continuous
-
-Relationship between PDF and CDF:
-  f(x) = dF(x)/dx   ← PDF is the derivative of the CDF
-  F(x) = integral from -inf to x of f(t) dt   ← CDF is the integral of the PDF
-
-Computing probabilities from CDF:
-  P(a ≤ X ≤ b) = F(b) - F(a)
-  P(X > a)     = 1 - F(a)`}
+          <MathBlock
+            label="CDF — Definition"
+            lines={[
+              String.raw`F(x) = P(X \leq x)`,
+              String.raw`\text{Discrete:}\; F(x) = \sum_{k \leq x} p(k),\qquad \text{Continuous:}\; F(x) = \int_{-\infty}^{x} f(t)\,dt`,
+              String.raw`f(x) = \frac{dF(x)}{dx},\quad P(a \leq X \leq b) = F(b) - F(a),\quad P(X > a) = 1 - F(a)`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CDF in Practice</p>
-          <CodeBlock
+          <MathBlock
             label="Z-score and hypothesis testing"
-            code={`Standard Normal CDF: Φ(z) = P(Z ≤ z)
-
-Z-test: test statistic Z = (x̄ - μ₀) / (σ/√n)
-p-value (one-tailed) = 1 - Φ(Z)
-p-value (two-tailed) = 2·(1 - Φ(|Z|))
-
-Example: Z = 2.0
-  p-value (two-tailed) = 2·(1 - Φ(2.0)) = 2·(1 - 0.977) = 0.046
-  → Reject H₀ at α = 0.05
-
-Critical values come from the inverse CDF (quantile function):
-  Φ⁻¹(0.975) = 1.96  ← 95% CI uses ±1.96σ
-  Φ⁻¹(0.995) = 2.576 ← 99% CI uses ±2.576σ`}
+            lines={[
+              String.raw`\Phi(z) = P(Z \leq z) \quad \text{(Standard Normal CDF)}`,
+              String.raw`Z = \frac{\bar{x} - \mu_0}{\sigma/\sqrt{n}},\quad p\text{-value (two-tailed)} = 2(1 - \Phi(|Z|))`,
+              String.raw`\Phi^{-1}(0.975) = 1.96 \;\text{(95\% CI)},\quad \Phi^{-1}(0.995) = 2.576 \;\text{(99\% CI)}`,
+            ]}
           />
 
           <Insight label="Why PDF > 1 is not a problem">
@@ -511,18 +497,12 @@ Critical values come from the inverse CDF (quantile function):
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
 
           <p className="mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Gaussian (Normal) — N(μ, σ²)</p>
-          <CodeBlock
-            label="PDF and properties"
-            code={`PDF: f(x) = (1/σ√2π) · exp(-(x-μ)²/2σ²)
-
-68% of data within μ ± 1σ
-95% of data within μ ± 2σ         ← the 68-95-99.7 rule
-99.7% of data within μ ± 3σ
-
-Standard Normal: Z ~ N(0,1)   →   Z = (X - μ) / σ
-
-Central Limit Theorem: X̄ ~ N(μ, σ²/n) for large n
-regardless of the original distribution of X`}
+          <MathBlock
+            label="Gaussian PDF and properties"
+            lines={[
+              String.raw`f(x) = \frac{1}{\sigma\sqrt{2\pi}}\exp\!\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)`,
+              String.raw`Z = \frac{X - \mu}{\sigma} \sim N(0,1),\qquad \bar{X} \sim N\!\left(\mu,\,\frac{\sigma^2}{n}\right) \;\text{(CLT)}`,
+            ]}
           />
           <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70 mt-3">Gaussian in ML</p>
           <BulletList items={[
@@ -533,71 +513,39 @@ regardless of the original distribution of X`}
           ]} />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Bernoulli — Bernoulli(p)</p>
-          <CodeBlock
-            label="Single binary outcome"
-            code={`PMF: P(X=x) = pˣ(1-p)^(1-x)   for x ∈ {0, 1}
-
-E[X] = p
-Var(X) = p(1-p)   ← maximized at p=0.5
-
-Connection to logistic regression:
-  Each label y ~ Bernoulli(σ(wᵀx))
-  Log loss = -log likelihood of Bernoulli distribution`}
+          <MathBlock
+            label="Bernoulli PMF"
+            lines={[
+              String.raw`P(X=x) = p^x(1-p)^{1-x} \quad x \in \{0,1\}`,
+              String.raw`\mathbb{E}[X] = p,\quad \text{Var}(X) = p(1-p)`,
+            ]}
           />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Binomial — Binomial(N, p)</p>
-          <CodeBlock
-            label="Count of successes in N trials"
-            code={`PMF: P(X=k) = C(N,k) · pᵏ · (1-p)^(N-k)
-
-E[X] = Np
-Var(X) = Np(1-p)
-
-Example: audit 100 suppliers, each 15% chance of high-risk
-  X ~ Binomial(100, 0.15)
-  E[X] = 15,   Std = √12.75 ≈ 3.57
-
-A/B testing: Conversions ~ Binomial(N_visitors, p_conversion_rate)`}
+          <MathBlock
+            label="Binomial PMF"
+            lines={[
+              String.raw`P(X=k) = \binom{N}{k} p^k (1-p)^{N-k}`,
+              String.raw`\mathbb{E}[X] = Np,\quad \text{Var}(X) = Np(1-p)`,
+            ]}
           />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Poisson — Poisson(λ)</p>
-          <CodeBlock
-            label="Count of rare events in a fixed interval"
-            code={`PMF: P(X=k) = (λᵏ · e^(-λ)) / k!
-
-E[X] = λ
-Var(X) = λ   ← mean AND variance both equal λ (special property)
-
-Use when: count data, events are rare relative to opportunities,
-          events are independent.
-
-Example: supplier averages λ=2 audit violations per year
-  P(X=0) = e^(-2) ≈ 0.135   (13.5% chance zero violations)
-  P(X=2) = e^(-2)×4/2 ≈ 0.271
-
-Poisson = limit of Binomial as N→∞, p→0, Np=λ
-Use Poisson when N is large and p is small.`}
+          <MathBlock
+            label="Poisson PMF"
+            lines={[
+              String.raw`P(X=k) = \frac{\lambda^k e^{-\lambda}}{k!}`,
+              String.raw`\mathbb{E}[X] = \lambda,\quad \text{Var}(X) = \lambda \quad \text{(both equal }\lambda\text{)}`,
+            ]}
           />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Geometric — Geometric(p)</p>
-          <CodeBlock
-            label="Number of trials until first success"
-            code={`PMF: P(X = k) = (1-p)^(k-1) · p   for k = 1, 2, 3, ...
-
-  k=1: success on first try   → P = p
-  k=2: fail then succeed      → P = (1-p)·p
-  k=3: fail, fail, succeed    → P = (1-p)²·p
-
-E[X] = 1/p
-Var(X) = (1-p) / p²
-
-Example — supplier fraud detection:
-  Each audit catches fraud with probability p = 0.20
-  X = number of audits until fraud is first detected
-  X ~ Geometric(0.20)
-  E[X] = 1/0.20 = 5 audits on average until detection
-  P(X = 1) = 0.20  (caught on first audit)
-  P(X > 3) = (1-0.20)³ = 0.512  (51% chance not caught in first 3)`}
+          <MathBlock
+            label="Geometric PMF"
+            lines={[
+              String.raw`P(X = k) = (1-p)^{k-1} \cdot p \quad k = 1, 2, 3, \ldots`,
+              String.raw`\mathbb{E}[X] = \frac{1}{p},\quad \text{Var}(X) = \frac{1-p}{p^2}`,
+            ]}
           />
           <div className="border-l-4 border-accent pl-5 mt-4">
             <p className="text-sm font-bold">Memoryless property</p>
@@ -614,22 +562,12 @@ Example — supplier fraud detection:
             in a Poisson process. Where geometric counts discrete trials, exponential measures continuous
             waiting time.
           </p>
-          <CodeBlock
-            label="Waiting time until first event"
-            code={`PDF: f(x) = λ · e^(-λx)   for x ≥ 0
-CDF: F(x) = 1 - e^(-λx)
-
-λ = rate (events per unit time)
-
-E[X] = 1/λ     ← average waiting time
-Var(X) = 1/λ²
-
-Example — server request handling:
-  A server receives λ = 10 requests per second
-  X = time until the next request arrives  →  X ~ Exp(10)
-  E[X] = 1/10 = 0.1 seconds average wait
-  P(X > 0.2) = e^(-10×0.2) = e^(-2) ≈ 0.135
-  (13.5% chance of waiting more than 0.2s for the next request)`}
+          <MathBlock
+            label="Exponential PDF and CDF"
+            lines={[
+              String.raw`f(x) = \lambda e^{-\lambda x},\quad F(x) = 1 - e^{-\lambda x} \quad (x \geq 0)`,
+              String.raw`\mathbb{E}[X] = \frac{1}{\lambda},\quad \text{Var}(X) = \frac{1}{\lambda^2}`,
+            ]}
           />
           <div className="border-l-4 border-accent pl-5 mt-4">
             <p className="text-sm font-bold">Memoryless property — unique among continuous distributions</p>
@@ -659,22 +597,13 @@ Example — server request handling:
             Poisson process. Where Exponential(λ) is the wait for the 1st event, Gamma(α, λ) is the
             wait for the α-th event.
           </p>
-          <CodeBlock
-            label="PDF and properties"
-            code={`PDF: f(x) = (β^α / Γ(α)) · x^(α-1) · e^(-βx)   for x ≥ 0
-
-Parameters:
-  α (shape) — number of events to wait for  (α > 0)
-  β (rate)  — event rate, same λ as Poisson  (β > 0)
-  1/β = θ (scale) — mean time between events
-
-E[X] = α/β
-Var(X) = α/β²
-
-Γ(α) = gamma function:
-  Γ(n) = (n-1)!   for positive integers
-  Γ(1/2) = √π     (key special value)
-  Γ(α+1) = α·Γ(α) (recursion)`}
+          <MathBlock
+            label="Gamma PDF and properties"
+            lines={[
+              String.raw`f(x) = \frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha-1} e^{-\beta x} \quad (x \geq 0)`,
+              String.raw`\mathbb{E}[X] = \frac{\alpha}{\beta},\quad \text{Var}(X) = \frac{\alpha}{\beta^2}`,
+              String.raw`\Gamma(n) = (n-1)!\;,\quad \Gamma(1/2) = \sqrt{\pi}\;,\quad \Gamma(\alpha+1) = \alpha\,\Gamma(\alpha)`,
+            ]}
           />
 
           <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">Special cases</p>
@@ -818,23 +747,13 @@ Critical value χ²(0.05, df=2) = 5.99
             know the underlying distribution.
           </p>
 
-          <CodeBlock
-            label="The theorem"
-            code={`Let X₁, X₂, ..., Xₙ be iid random variables with:
-  E[Xᵢ] = μ   (finite mean)
-  Var(Xᵢ) = σ²  (finite variance)
-
-Define the sample mean: X̄ₙ = (1/n) Σᵢ Xᵢ
-
-Then as n → ∞:
-
-  √n · (X̄ₙ - μ) / σ  →  N(0, 1)   in distribution
-
-Or equivalently:
-  X̄ₙ ~ N(μ, σ²/n)   approximately, for large n
-
-The distribution of the MEAN converges to Gaussian,
-regardless of the original distribution of Xᵢ.`}
+          <MathBlock
+            label="The CLT theorem"
+            lines={[
+              String.raw`\bar{X}_n = \frac{1}{n}\sum_i X_i,\quad \mathbb{E}[X_i]=\mu,\quad \text{Var}(X_i)=\sigma^2`,
+              String.raw`\frac{\sqrt{n}(\bar{X}_n - \mu)}{\sigma} \xrightarrow{d} N(0,1) \quad \text{as } n \to \infty`,
+              String.raw`\bar{X}_n \sim N\!\left(\mu,\,\frac{\sigma^2}{n}\right) \quad \text{(approximately, large }n\text{)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Why It Matters</p>
@@ -1004,49 +923,32 @@ Examples:
             most ML training — log loss, MSE, and cross-entropy all derive from MLE.
           </p>
 
-          <CodeBlock
-            label="Core idea"
-            code={`Given: data X = {x₁,...,xₙ}, model P(X|θ) parameterized by θ
-Find:  θ* = argmax P(X | θ)
-               θ
-
-Likelihood:     L(θ) = ∏ᵢ P(xᵢ | θ)   ← assumes independence
-Log-likelihood: ℓ(θ) = Σᵢ log P(xᵢ | θ)
-
-Why log-likelihood?
-  1. Log turns products into sums (easier to differentiate)
-  2. Same maximizer (log is monotonically increasing)
-  3. Products of small probabilities underflow numerically`}
+          <MathBlock
+            label="MLE core idea"
+            lines={[
+              String.raw`\theta^* = \arg\max_\theta P(X \mid \theta)`,
+              String.raw`L(\theta) = \prod_i P(x_i \mid \theta) \quad \text{(likelihood)}`,
+              String.raw`\ell(\theta) = \sum_i \log P(x_i \mid \theta) \quad \text{(log-likelihood)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MLE for Gaussian — Deriving Mean and Variance</p>
-          <CodeBlock
-            label="Result"
-            code={`Data: x₁,...,xₙ iid from N(μ, σ²)
-
-Maximize ℓ(μ,σ²) w.r.t. μ:
-  ∂ℓ/∂μ = 0   →   μ_MLE = (1/n)Σᵢ xᵢ = x̄   ← sample mean ✓
-
-Maximize w.r.t. σ²:
-  ∂ℓ/∂σ² = 0  →   σ²_MLE = (1/n)Σᵢ(xᵢ-x̄)²   ← biased (uses n, not n-1)
-
-MLE gives sample mean and biased variance.
-Unbiased variance uses n-1 (Bessel's correction).`}
+          <MathBlock
+            label="MLE for Gaussian"
+            lines={[
+              String.raw`\mu_{\text{MLE}} = \frac{1}{n}\sum_i x_i = \bar{x}`,
+              String.raw`\sigma^2_{\text{MLE}} = \frac{1}{n}\sum_i (x_i - \bar{x})^2 \quad \text{(biased; unbiased uses }n{-}1\text{)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MLE for Bernoulli — Why Log Loss</p>
-          <CodeBlock
-            label="MLE on binary labels → binary cross-entropy"
-            code={`Model: P(yᵢ=1|xᵢ) = σ(wᵀxᵢ) = ŷᵢ
-Each label: P(yᵢ|xᵢ) = ŷᵢ^yᵢ · (1-ŷᵢ)^(1-yᵢ)   ← Bernoulli
-
-Log-likelihood:  ℓ(w) = Σᵢ [yᵢ log(ŷᵢ) + (1-yᵢ)log(1-ŷᵢ)]
-
-Minimize negative log-likelihood:
-  Loss = -(1/n)Σᵢ [yᵢ log(ŷᵢ) + (1-yᵢ)log(1-ŷᵢ)]
-       = Binary Cross-Entropy ✓
-
-Every loss function has a probabilistic interpretation.`}
+          <MathBlock
+            label="MLE for Bernoulli → binary cross-entropy"
+            lines={[
+              String.raw`P(y_i \mid x_i) = \hat{y}_i^{y_i}(1-\hat{y}_i)^{1-y_i} \quad \text{(Bernoulli)}`,
+              String.raw`\ell(w) = \sum_i \bigl[y_i \log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`,
+              String.raw`\text{Loss} = -\frac{1}{n}\sum_i \bigl[y_i \log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr] = \text{Binary Cross-Entropy}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Properties of MLE</p>
@@ -1117,23 +1019,15 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Common Test Statistics</p>
-          <CodeBlock
-            label="Key tests to know"
-            code={`ONE-SAMPLE Z-TEST (known σ, large n):
-  Z = (x̄ - μ₀) / (σ/√n)   ~  N(0,1) under H₀
-
-ONE-SAMPLE T-TEST (unknown σ, small n):
-  t = (x̄ - μ₀) / (s/√n)   ~  t(n-1) under H₀
-
-TWO-SAMPLE T-TEST (compare two means):
-  t = (x̄₁ - x̄₂) / √(s₁²/n₁ + s₂²/n₂)   ~  t(df) under H₀
-
-TWO-PROPORTION Z-TEST (A/B testing — most common):
-  p̂ = (x₁+x₂)/(n₁+n₂)   ← pooled proportion
-  Z = (p̂₁-p̂₂) / √(p̂(1-p̂)(1/n₁+1/n₂))   ~  N(0,1) under H₀
-
-CHI-SQUARED TEST (categorical data):
-  χ² = Σ (observed-expected)²/expected   ~  χ²(df) under H₀`}
+          <MathBlock
+            label="Key test statistics"
+            lines={[
+              String.raw`Z = \frac{\bar{x} - \mu_0}{\sigma/\sqrt{n}} \sim N(0,1) \quad \text{(Z-test, known }\sigma\text{)}`,
+              String.raw`t = \frac{\bar{x} - \mu_0}{s/\sqrt{n}} \sim t(n-1) \quad \text{(t-test, unknown }\sigma\text{)}`,
+              String.raw`t = \frac{\bar{x}_1 - \bar{x}_2}{\sqrt{s_1^2/n_1 + s_2^2/n_2}} \quad \text{(two-sample t-test)}`,
+              String.raw`Z = \frac{\hat{p}_1 - \hat{p}_2}{\sqrt{\hat{p}(1-\hat{p})(1/n_1+1/n_2)}},\quad \hat{p} = \frac{x_1+x_2}{n_1+n_2} \quad \text{(proportions)}`,
+              String.raw`\chi^2 = \sum \frac{(\text{observed}-\text{expected})^2}{\text{expected}} \sim \chi^2(\text{df}) \quad \text{(chi-squared)}`,
+            ]}
           />
 
           <Insight label="p-value Misconception">
@@ -1152,23 +1046,13 @@ CHI-SQUARED TEST (categorical data):
             would contain the true parameter. Not a probability statement about a single interval.
           </p>
 
-          <CodeBlock
-            label="Formulas"
-            code={`Mean, known σ (Z-interval):
-  CI = x̄ ± z_(α/2) · σ/√n
-  z = 1.645 (90%),  z = 1.960 (95%),  z = 2.576 (99%)
-
-Mean, unknown σ (t-interval):
-  CI = x̄ ± t_(α/2, n-1) · s/√n
-  Use t(n-1); for n > 30: t ≈ z
-
-Proportion (A/B testing):
-  CI = p̂ ± z_(α/2) · √(p̂(1-p̂)/n)
-
-Example: 500 visitors, 50 conversions
-  p̂ = 0.10,  SE = √(0.10×0.90/500) = 0.0134
-  95% CI = 0.10 ± 1.96×0.0134 = (0.074, 0.126)
-  → True conversion rate is between 7.4% and 12.6%`}
+          <MathBlock
+            label="Confidence interval formulas"
+            lines={[
+              String.raw`\text{Mean (known }\sigma\text{):}\quad \bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}`,
+              String.raw`\text{Mean (unknown }\sigma\text{):}\quad \bar{x} \pm t_{\alpha/2,\,n-1} \cdot \frac{s}{\sqrt{n}}`,
+              String.raw`\text{Proportion:}\quad \hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Correct Interpretation</p>
@@ -1339,22 +1223,13 @@ Advantages over frequentist:
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MAP — Maximum A Posteriori</p>
-          <CodeBlock
+          <MathBlock
             label="MAP = MLE + regularization"
-            code={`θ_MAP = argmax P(θ|X) = argmax P(X|θ)·P(θ)
-           θ               θ
-
-MLE:          maximize P(X|θ)            — no prior
-MAP:          maximize P(X|θ)·P(θ)       — point estimate with prior
-Full Bayesian: compute full P(θ|X)       — distribution over θ
-
-MAP connection to regularization:
-  Gaussian prior on weights  →  L2 regularization (Ridge)
-  Laplace prior on weights   →  L1 regularization (Lasso)
-
-This is why regularization has a Bayesian interpretation:
-  Adding a prior = adding regularization
-  Strong prior (large λ) = heavy regularization`}
+            lines={[
+              String.raw`\theta_{\text{MAP}} = \arg\max_\theta P(\theta \mid X) = \arg\max_\theta P(X \mid \theta)\cdot P(\theta)`,
+              String.raw`\text{Gaussian prior} \Rightarrow L_2 \text{ regularization (Ridge)}`,
+              String.raw`\text{Laplace prior} \Rightarrow L_1 \text{ regularization (Lasso)}`,
+            ]}
           />
 
           <InterviewCallout>

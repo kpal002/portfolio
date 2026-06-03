@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import katex from "katex";
 
 export const metadata = {
   title: "Classical ML — Interview Prep — Kuntal Pal",
@@ -98,6 +99,37 @@ function CodeBlock({ code, label }) {
   );
 }
 
+function KatexLine({ tex }) {
+  const html = katex.renderToString(tex, { throwOnError: false, displayMode: false });
+  return (
+    <div
+      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent overflow-x-auto"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function MathBlock({ label, lines }) {
+  return (
+    <div className="my-4 border-2 border-ink">
+      {label && (
+        <div className="border-b-2 border-ink bg-ink px-4 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{label}</span>
+        </div>
+      )}
+      <div className="bg-ink px-6 py-5 space-y-4 overflow-x-auto">
+        {lines.map((line, i) =>
+          line === "" ? (
+            <div key={i} className="h-1" />
+          ) : (
+            <KatexLine key={i} tex={line} />
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 function InterviewCallout({ label = "Interview Answer", children }) {
   return (
     <div className="mt-6 border-l-4 border-accent pl-5">
@@ -171,46 +203,32 @@ export default function ClassicalMLPage() {
             statistical thinking behind ML.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="The model"
-            code={`ŷ = w₁x₁ + w₂x₂ + ... + wₙxₙ + b  =  wᵀx + b
-
-Simple linear regression (1 feature):   ŷ = wx + b  →  a straight line
-Multiple linear regression (n features): ŷ = wᵀx + b  →  hyperplane in n+1 dims`}
+            lines={[
+              String.raw`\hat{y} = w_1 x_1 + w_2 x_2 + \cdots + w_n x_n + b \;=\; w^\top x + b`,
+              String.raw`\text{Simple (1 feature):}\quad \hat{y} = wx + b \;\to\; \text{a straight line}`,
+              String.raw`\text{Multiple (}n\text{ features):}\quad \hat{y} = w^\top x + b \;\to\; \text{hyperplane in }n{+}1\text{ dims}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Loss Function — MSE vs MAE</p>
-          <CodeBlock
+          <MathBlock
             label="Loss functions"
-            code={`MSE = (1/N) · Σᵢ (yᵢ - ŷᵢ)²
-
-Why squared error?
-  1. Always positive — error in either direction is penalized
-  2. Differentiable everywhere — easy to optimize
-  3. Penalizes large errors more than small ones
-  4. Convex → guaranteed global minimum
-
-MAE = (1/N) · Σᵢ |yᵢ - ŷᵢ|
-  → More robust to outliers (no squaring amplification)
-  → Not differentiable at 0 (harder to optimize)
-  → Use when outliers are present and meaningful`}
+            lines={[
+              String.raw`\text{MSE} = \frac{1}{N} \sum_i (y_i - \hat{y}_i)^2`,
+              String.raw`\text{MAE} = \frac{1}{N} \sum_i |y_i - \hat{y}_i|`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Solving — Two Approaches</p>
-          <CodeBlock
+          <MathBlock
             label="Normal Equation vs Gradient Descent"
-            code={`APPROACH 1: Normal Equation (closed-form)
-  w* = (XᵀX)⁻¹ Xᵀy
-  Pros: exact solution, no learning rate to tune
-  Cons: O(n³) to invert XᵀX — infeasible for n > ~10,000 features
-        Fails if XᵀX is singular (collinear features)
-
-APPROACH 2: Gradient Descent
-  ∂MSE/∂w = (-2/N) · Xᵀ(y - Xw)
-  w ← w - η · ∂MSE/∂w
-  b ← b - η · ∂MSE/∂b
-  Pros: scales to millions of features and samples
-  Cons: requires learning rate tuning, may need many iterations`}
+            lines={[
+              String.raw`\textbf{Approach 1 — Normal Equation:}\quad w^* = (X^\top X)^{-1} X^\top y`,
+              String.raw`\textbf{Approach 2 — Gradient Descent:}\quad \frac{\partial \text{MSE}}{\partial w} = \frac{-2}{N} X^\top(y - Xw)`,
+              String.raw`w \leftarrow w - \eta \cdot \frac{\partial \text{MSE}}{\partial w}, \qquad b \leftarrow b - \eta \cdot \frac{\partial \text{MSE}}{\partial b}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Assumptions (LINE)</p>
@@ -223,24 +241,15 @@ APPROACH 2: Gradient Descent
           ]} />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Evaluation Metrics</p>
-          <CodeBlock
+          <MathBlock
             label="Regression metrics"
-            code={`MSE  = (1/N) Σ(y - ŷ)²          ← in squared units, penalizes outliers hard
-RMSE = √MSE                      ← in original units, interpretable
-MAE  = (1/N) Σ|y - ŷ|           ← robust to outliers
-
-R² (R-squared):
-  R² = 1 - SS_res / SS_tot
-  SS_res = Σ(y - ŷ)²   (residual sum of squares)
-  SS_tot = Σ(y - ȳ)²   (total sum of squares)
-
-  R² = 1.0  → perfect fit
-  R² = 0.0  → no better than predicting the mean
-  R² < 0    → worse than predicting the mean
-
-Adjusted R²:  R²_adj = 1 - (1-R²)(N-1)/(N-p-1)   where p = num features
-  Penalizes adding irrelevant features.
-  Always use Adjusted R² when comparing models with different feature counts.`}
+            lines={[
+              String.raw`\text{MSE} = \frac{1}{N}\sum(y - \hat{y})^2`,
+              String.raw`\text{RMSE} = \sqrt{\text{MSE}}`,
+              String.raw`\text{MAE} = \frac{1}{N}\sum|y - \hat{y}|`,
+              String.raw`R^2 = 1 - \frac{SS_{\text{res}}}{SS_{\text{tot}}}, \quad SS_{\text{res}} = \sum(y-\hat{y})^2,\quad SS_{\text{tot}} = \sum(y-\bar{y})^2`,
+              String.raw`R^2_{\text{adj}} = 1 - \frac{(1-R^2)(N-1)}{N-p-1} \quad (p = \text{num features})`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Linear vs Logistic Regression</p>
@@ -276,20 +285,14 @@ Adjusted R²:  R²_adj = 1 - (1-R²)(N-1)/(N-p-1)   where p = num features
             standard strong baseline.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="How it works — the math"
-            code={`Linear step:  z = w₁x₁ + w₂x₂ + ... + wₙxₙ + b  =  wᵀx + b
-
-Sigmoid:      σ(z) = 1 / (1 + e⁻ᶻ)   →   output ∈ (0, 1)  =  P(y=1|x)
-
-Decision:     predict 1 if σ(z) ≥ 0.5  →  z ≥ 0
-              predict 0 if σ(z) < 0.5  →  z < 0
-
-Loss:         Binary Cross-Entropy (Log Loss)
-              L = -[y·log(ŷ) + (1-y)·log(1-ŷ)]
-              Penalizes confident wrong predictions heavily.
-
-Gradient:     ∂L/∂w = (ŷ - y) · x   ← clean, convenient form`}
+            lines={[
+              String.raw`z = w^\top x + b`,
+              String.raw`\sigma(z) = \frac{1}{1 + e^{-z}} \;\in\; (0,1) \;=\; P(y=1 \mid x)`,
+              String.raw`L = -\bigl[y \log(\hat{y}) + (1-y)\log(1-\hat{y})\bigr] \quad \text{(Binary Cross-Entropy)}`,
+              String.raw`\frac{\partial L}{\partial w} = (\hat{y} - y) \cdot x`,
+            ]}
           />
 
           <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Properties</p>
@@ -325,12 +328,12 @@ For non-linear boundaries:
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Multiclass Extension — Softmax</p>
-          <CodeBlock
+          <MathBlock
             label="Softmax regression (K > 2 classes)"
-            code={`P(y=k|x) = exp(wₖᵀx) / Σⱼ exp(wⱼᵀx)
-
-Loss: Categorical cross-entropy
-L = -Σₖ yₖ · log(P(y=k|x))`}
+            lines={[
+              String.raw`P(y=k \mid x) = \frac{\exp(w_k^\top x)}{\sum_j \exp(w_j^\top x)}`,
+              String.raw`L = -\sum_k y_k \cdot \log P(y=k \mid x) \quad \text{(Categorical cross-entropy)}`,
+            ]}
           />
 
           <InterviewCallout>
@@ -558,24 +561,19 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Splitting Criterion</p>
-          <CodeBlock
+          <MathBlock
             label="Gini impurity (sklearn default)"
-            code={`Gini(S) = 1 - Σₖ pₖ²      where pₖ = fraction of class k at this node
-
-Pure node (all one class):  Gini = 1 - 1² = 0   ← perfect
-50/50 split (binary):       Gini = 1 - (0.5²+0.5²) = 0.5  ← worst
-
-Split gain = Gini(parent) - [|left|/|S|·Gini(left) + |right|/|S|·Gini(right)]`}
+            lines={[
+              String.raw`\text{Gini}(S) = 1 - \sum_k p_k^2 \quad (p_k = \text{fraction of class } k)`,
+              String.raw`\text{Split gain} = \text{Gini}(\text{parent}) - \left[\frac{|\text{left}|}{|S|}\text{Gini}(\text{left}) + \frac{|\text{right}|}{|S|}\text{Gini}(\text{right})\right]`,
+            ]}
           />
-          <CodeBlock
+          <MathBlock
             label="Entropy / Information Gain (alternative)"
-            code={`H(S) = -Σₖ pₖ·log₂(pₖ)
-
-Pure node: H = 0    Mixed node: H = 1 (binary case)
-Information Gain = H(parent) - weighted H(children)
-
-Gini is faster (no log). Entropy slightly more principled.
-In practice, results are nearly identical.`}
+            lines={[
+              String.raw`H(S) = -\sum_k p_k \log_2(p_k)`,
+              String.raw`\text{Information Gain} = H(\text{parent}) - \text{weighted } H(\text{children})`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Overfitting — The Main Problem</p>
@@ -785,32 +783,23 @@ Connection to gradient descent:
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Maximum Margin — Hard Margin SVM</p>
-          <CodeBlock
+          <MathBlock
             label="Optimization objective"
-            code={`Many hyperplanes correctly separate the classes.
-SVM picks the ONE that maximizes the margin.
-
-Margin = 2 / ||w||
-
-Optimization (hard margin):
-  minimize:    ½ ||w||²
-  subject to:  yᵢ(wᵀxᵢ + b) ≥ 1  for all training points
-
-Support vectors: points where yᵢ(wᵀxᵢ + b) = 1
-Only these points determine the solution.
-Remove any other point → boundary doesn't change.`}
+            lines={[
+              String.raw`\text{Margin} = \frac{2}{\|w\|}`,
+              String.raw`\text{minimize:}\quad \tfrac{1}{2}\|w\|^2`,
+              String.raw`\text{subject to:}\quad y_i(w^\top x_i + b) \geq 1 \quad \forall i`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Soft Margin — Handling Non-Separable Data</p>
-          <CodeBlock
+          <MathBlock
             label="Soft margin with slack variables"
-            code={`minimize:    ½||w||² + C·Σᵢ ξᵢ
-subject to:  yᵢ(wᵀxᵢ + b) ≥ 1 - ξᵢ,  ξᵢ ≥ 0
-
-C = regularization parameter:
-  Large C  → small margin, fewer misclassifications  (low bias, high variance)
-  Small C  → large margin, more misclassifications   (high bias, low variance)
-  Think of C as 1/λ where λ is regularization strength.`}
+            lines={[
+              String.raw`\text{minimize:}\quad \tfrac{1}{2}\|w\|^2 + C \sum_i \xi_i`,
+              String.raw`\text{subject to:}\quad y_i(w^\top x_i + b) \geq 1 - \xi_i,\quad \xi_i \geq 0`,
+              String.raw`C = 1/\lambda \;\text{(think of }C\text{ as inverse regularization strength)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Kernel Trick — Non-Linear Boundaries</p>
@@ -867,36 +856,21 @@ RBF/Gaussian: K(x,z) = exp(-γ||x-z||²)          → infinite-dimensional space
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">L2 Regularization — Ridge</p>
-          <CodeBlock
+          <MathBlock
             label="L2 math"
-            code={`Loss = Original Loss + λ · Σᵢ wᵢ²   =   Original Loss + λ · ||w||²
-
-Weight update: wᵢ ← wᵢ(1 - 2ηλ) - η·gradient   ← weight decay every step
-
-Key properties:
-  Weights shrink but rarely reach exactly zero
-  All features kept — just with smaller weights
-  Penalty grows with w² — large weights punished hard
-  Smooth, differentiable → easy to optimize
-  Works well when many features all contribute a little`}
+            lines={[
+              String.raw`\text{Loss} = \text{Original Loss} + \lambda \sum_i w_i^2 = \text{Original Loss} + \lambda \|w\|^2`,
+              String.raw`w_i \leftarrow w_i(1 - 2\eta\lambda) - \eta \cdot \nabla \quad \text{(weight decay every step)}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">L1 Regularization — Lasso</p>
-          <CodeBlock
+          <MathBlock
             label="L1 math"
-            code={`Loss = Original Loss + λ · Σᵢ |wᵢ|   =   Original Loss + λ · ||w||₁
-
-Gradient: ∂L/∂wᵢ += λ·sign(wᵢ)   where sign(wᵢ) = +1 if wᵢ>0, -1 if wᵢ<0
-
-Key properties:
-  Weights CAN reach exactly zero → sparse solutions
-  Acts as automatic feature selection
-  Works well when most features are irrelevant
-  Non-differentiable at zero (use subgradient methods)
-
-Geometric intuition:
-  L1 constraint = diamond shape → corners sit on axes → zero weights
-  L2 constraint = sphere shape  → no corners → rarely zero`}
+            lines={[
+              String.raw`\text{Loss} = \text{Original Loss} + \lambda \sum_i |w_i| = \text{Original Loss} + \lambda \|w\|_1`,
+              String.raw`\frac{\partial L}{\partial w_i} \mathrel{+}= \lambda \cdot \text{sign}(w_i) \quad (\text{sign}(w_i) = +1 \text{ if } w_i > 0,\; -1 \text{ if } w_i < 0)`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">L1 vs L2 vs Elastic Net</p>
@@ -940,22 +914,11 @@ print(gs.best_params_)`}
             (high variance). Every modeling decision involves this trade-off.
           </p>
 
-          <CodeBlock
+          <MathBlock
             label="The decomposition"
-            code={`Expected test error = Bias² + Variance + Irreducible Noise
-
-BIAS:
-  Error from wrong model assumptions.
-  High bias = model too simple to capture the pattern.
-  Symptom: high training error AND high test error.
-
-VARIANCE:
-  Error from sensitivity to small fluctuations in training data.
-  High variance = model learned noise instead of signal.
-  Symptom: low training error, HIGH test error.
-
-IRREDUCIBLE NOISE:
-  Inherent noise in the data. Sets the lower bound on error.`}
+            lines={[
+              String.raw`\mathbb{E}[\text{test error}] = \text{Bias}^2 + \text{Variance} + \text{Irreducible Noise}`,
+            ]}
           />
 
           <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Proof</p>

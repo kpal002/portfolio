@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import katex from "katex";
 
 export const metadata = {
   title: "RAG Architecture & Evaluation — Kuntal Pal",
@@ -114,6 +115,37 @@ function Insight({ label = "Key Insight", children }) {
     <div className="mt-6 border-l-4 border-accent pl-5">
       <p className="text-sm font-bold">{label}</p>
       <p className="mt-1 text-sm leading-relaxed text-ink/80">{children}</p>
+    </div>
+  );
+}
+
+function KatexLine({ tex }) {
+  const html = katex.renderToString(tex, { throwOnError: false, displayMode: false });
+  return (
+    <div
+      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent overflow-x-auto"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
+function MathBlock({ label, lines }) {
+  return (
+    <div className="my-4 border-2 border-ink">
+      {label && (
+        <div className="border-b-2 border-ink bg-ink px-4 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{label}</span>
+        </div>
+      )}
+      <div className="bg-ink px-6 py-5 space-y-4 overflow-x-auto">
+        {lines.map((line, i) =>
+          line === "" ? (
+            <div key={i} className="h-1" />
+          ) : (
+            <KatexLine key={i} tex={line} />
+          )
+        )}
+      </div>
     </div>
   );
 }
@@ -777,13 +809,11 @@ export default function RAGStudyNotesPage() {
             { label: "TF-IDF", desc: "Term Frequency × Inverse Document Frequency. Upweights rare terms that are specific to a document. Downweights common words. Simple but no length normalization." },
             { label: "BM25", desc: "The dominant sparse retrieval model. Extends TF-IDF with saturation (TF gains diminish as term frequency increases) and length normalization. Parameters: k1 (TF saturation, typically 1.2–2.0) and b (length normalization, typically 0.75)." },
           ]} />
-          <CodeBlock
+          <MathBlock
             label="BM25 Formula"
-            code={`score(D,Q) = Σ IDF(qᵢ) × [f(qᵢ,D) × (k1+1)] / [f(qᵢ,D) + k1 × (1 - b + b × |D|/avgdl)]
-
-f(qᵢ,D) = term frequency of query term qᵢ in doc D
-|D|      = document length
-avgdl    = average document length in corpus`}
+            lines={[
+              String.raw`\text{score}(D,Q) = \sum_i \text{IDF}(q_i) \cdot \frac{f(q_i,D)\cdot(k_1+1)}{f(q_i,D) + k_1\!\left(1 - b + b\cdot\dfrac{|D|}{\text{avgdl}}\right)}`,
+            ]}
           />
           <p className="text-sm leading-relaxed text-ink/80">
             <strong>Strength:</strong> Exact keyword matching — critical when domain has specialized
