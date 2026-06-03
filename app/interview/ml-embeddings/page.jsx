@@ -493,13 +493,63 @@ export default function MLEmbeddingsPage() {
             negative pairs, without hand-labeled classes. SimCLR and InfoNCE are the foundational frameworks.
           </p>
 
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SimCLR / InfoNCE Loss</p>
+          <div className="mt-6 border-l-4 border-accent pl-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Core Idea</p>
+            <p className="text-sm leading-relaxed text-ink/90">
+              For each anchor, define a positive (same sample, different augmentation) and negatives (different
+              samples). The loss maximizes similarity to the positive while minimizing similarity to all negatives.
+              Structurally identical to cross-entropy softmax, but with no fixed labels — the{" "}
+              <em>"correct class"</em> is dynamically defined per anchor.
+            </p>
+          </div>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SimCLR — NT-Xent Loss</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">
+            Given a batch of N samples, create 2 augmented views each → 2N total. For anchor{" "}
+            <em>z_i</em>, its positive is <em>z_j</em> (other view of same sample). Negatives are all other
+            2N−2 samples in the batch. Loss is computed symmetrically (both <em>z_i→z_j</em> and{" "}
+            <em>z_j→z_i</em>) then averaged.
+          </p>
           <MathBlock
-            label="InfoNCE Loss"
+            label="SimCLR NT-Xent Loss"
             lines={[
-              String.raw`\mathcal{L}_{i,j} = -\log \frac{\exp\!\bigl(\operatorname{sim}(z_i, z_j)/\tau\bigr)}{\sum_{k=1}^{2N} \mathbf{1}_{[k \neq i]}\exp\!\bigl(\operatorname{sim}(z_i, z_k)/\tau\bigr)}`,
-              String.raw`\operatorname{sim}(u,v) = \frac{u^\top v}{\|u\|\,\|v\|}, \quad \tau \approx 0.07 \text{ (SimCLR)}`,
-              String.raw`I(X;\,Y) \;\geq\; \log(N) - \mathcal{L}_\text{InfoNCE}`,
+              String.raw`\mathcal{L}_{i,j} = -\log \frac{\exp\!\bigl(\operatorname{sim}(z_i, z_j)/\tau\bigr)}{\displaystyle\sum_{k=1,\, k\neq i}^{2N} \exp\!\bigl(\operatorname{sim}(z_i, z_k)/\tau\bigr)}`,
+              String.raw`\operatorname{sim}(u,v) = \frac{u^\top v}{\|u\|\,\|v\|}, \quad \tau \approx 0.07`,
+            ]}
+          />
+          <BulletList items={[
+            "Same encoder for both views",
+            "Nonlinear projection head on top of encoder before loss — key finding from the SimCLR paper",
+            "Requires large batches (4096+) for enough negatives",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">InfoNCE — as used in MoCo</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">
+            Query <em>q</em> is contrasted against 1 positive key <em>k⁺</em> and K negatives from a memory
+            bank. Loss is computed in one direction only (query → key).
+          </p>
+          <MathBlock
+            label="InfoNCE Loss (MoCo)"
+            lines={[
+              String.raw`\mathcal{L} = -\log \frac{\exp\!\bigl(\operatorname{sim}(q, k^+)/\tau\bigr)}{\exp\!\bigl(\operatorname{sim}(q, k^+)/\tau\bigr) + \displaystyle\sum_{i=1}^{K}\exp\!\bigl(\operatorname{sim}(q, k_i)/\tau\bigr)}`,
+            ]}
+          />
+          <BulletList items={[
+            "Asymmetric: query encoder updated by backprop, key encoder updated by momentum (moving average)",
+            "Memory bank stores negatives from previous batches → K can be 65 536+",
+            "Loss computed in one direction only (query → key)",
+            "Negatives more diverse but slightly stale",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SimCLR vs InfoNCE / MoCo</p>
+          <CompareTable
+            headers={["", "SimCLR", "InfoNCE / MoCo"]}
+            rows={[
+              ["Negatives", "In-batch (2N−2)", "Memory bank (65 536+)"],
+              ["Encoder", "Symmetric, same weights", "Asymmetric, momentum key encoder"],
+              ["Loss direction", "Symmetric (both views)", "Asymmetric (query → key only)"],
+              ["Projection head", "Yes — key contribution of SimCLR paper", "MoCo v2+ borrowed this from SimCLR"],
+              ["Compute requirement", "Large batch / TPUs needed", "Scalable; smaller batches fine"],
             ]}
           />
 
