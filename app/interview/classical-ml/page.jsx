@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import katex from "katex";
 
 export const metadata = {
-  title: "Classical ML — Interview Prep — Kuntal Pal",
+  title: "Classical ML — Deep Dives — Kuntal Pal",
   description:
     "Complete classical machine learning study notes: Decision Trees, Random Forests, Gradient Boosting, SVMs, Logistic Regression, Regularization, Bias-Variance, Cross-Validation, Feature Engineering.",
 };
@@ -180,9 +180,9 @@ export default function ClassicalMLPage() {
             Classical Machine Learning
           </h1>
           <p className="mb-6 text-base leading-relaxed text-ink/80">
-            Complete interview prep covering the algorithms that still dominate tabular data and
-            production ML: decision trees, random forests, gradient boosting, SVMs, logistic regression,
-            regularization, bias-variance, cross-validation, and feature engineering.
+            The algorithms that still dominate tabular data and production ML: decision trees,
+            random forests, gradient boosting, SVMs, logistic regression, regularization,
+            bias-variance, cross-validation, and feature engineering.
           </p>
           <ul className="flex flex-wrap gap-2">
             {["Linear Regression", "Logistic Regression", "Decision Trees", "Random Forests", "XGBoost", "LightGBM", "SVMs", "L1/L2", "Bias-Variance", "Cross-Validation", "Feature Engineering"].map((t) => (

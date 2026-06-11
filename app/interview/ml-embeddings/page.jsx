@@ -5,7 +5,7 @@ import katex from "katex";
 export const metadata = {
   title: "ML Embeddings & Representations — Kuntal Pal",
   description:
-    "FAANG-level interview preparation: Word2Vec, GloVe, Sentence Transformers, contrastive learning, embedding geometry, similarity metrics, PCA, and UMAP.",
+    "Word2Vec, GloVe, Sentence Transformers, contrastive learning, embedding geometry, similarity metrics, PCA, and UMAP — with worked exercises.",
 };
 
 function SectionLabel({ children }) {
@@ -176,15 +176,15 @@ export default function MLEmbeddingsPage() {
         {/* ── Hero ── */}
         <Card>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
-            <span className="text-accent">{">"} </span>study notes · faang-level interview prep
+            <span className="text-accent">{">"} </span>study notes · ml fundamentals
           </p>
           <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl">
             ML Embeddings {"&"} Representations
           </h1>
           <p className="mb-6 text-base leading-relaxed text-ink/80">
-            Deep dives on Word2Vec, GloVe, Sentence Transformers, contrastive learning, embedding
-            geometry, similarity metrics, PCA, and UMAP. Every section opens with core theory then
-            moves into hard interview questions at the depth expected in a 45-minute technical screen.
+            Word2Vec, GloVe, Sentence Transformers, contrastive learning, embedding geometry,
+            similarity metrics, PCA, and UMAP. Every section opens with core theory then moves
+            into worked exercises that test whether you actually understand it.
           </p>
           <ul className="flex flex-wrap gap-2">
             {["Word2Vec", "GloVe", "SBERT", "SimCLR", "InfoNCE", "Hubness", "PCA", "UMAP", "Matryoshka", "CLIP"].map((t) => (

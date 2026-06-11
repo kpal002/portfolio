@@ -3,7 +3,7 @@ import { ArrowLeft } from "lucide-react";
 import katex from "katex";
 
 export const metadata = {
-  title: "Probability & Statistics — Interview Prep — Kuntal Pal",
+  title: "Probability & Statistics — Deep Dives — Kuntal Pal",
   description:
     "Complete probability and statistics study notes: Bayes' theorem, distributions, MLE, hypothesis testing, confidence intervals, A/B testing, Bayesian inference.",
 };
