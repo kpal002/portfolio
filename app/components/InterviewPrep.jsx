@@ -38,7 +38,7 @@ export default function InterviewPrep() {
           {interviewTopics.map((topic, i) => (
             <Link
               key={topic.slug}
-              href={`/interview/${topic.slug}`}
+              href={`/deep-dives/${topic.slug}`}
               className="group relative flex flex-col border-2 border-ink bg-surface shadow-brutal transition hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg"
             >
               {/* Diagram area */}
