@@ -30,8 +30,8 @@ export default function InterviewPrep() {
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           index="03"
-          title="Interview Prep"
-          subtitle="open ./prep/ — deep dives on ML & AI concepts"
+          title="Deep Dives"
+          subtitle="open ./deep-dives/ — ML & AI fundamentals, explained properly"
         />
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

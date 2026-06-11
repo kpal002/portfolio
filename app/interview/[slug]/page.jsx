@@ -11,7 +11,7 @@ export function generateMetadata({ params }) {
   const topic = interviewTopics.find((t) => t.slug === params.slug);
   if (!topic) return {};
   return {
-    title: `${topic.title} — Interview Prep — Kuntal Pal`,
+    title: `${topic.title} — Deep Dives — Kuntal Pal`,
     description: topic.description,
   };
 }
@@ -80,7 +80,7 @@ export default function InterviewTopicPage({ params }) {
             Back
           </Link>
           <span className="text-sm font-bold text-muted">
-            <span className="text-accent">$</span> interview prep
+            <span className="text-accent">$</span> deep dives
           </span>
         </div>
       </header>
@@ -90,7 +90,7 @@ export default function InterviewTopicPage({ params }) {
         {/* Hero */}
         <Card>
           <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">
-            <span className="text-accent">{">"} </span>interview prep · deep dive
+            <span className="text-accent">{">"} </span>deep dives · ml fundamentals
           </p>
           <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl">
             {topic.title}
