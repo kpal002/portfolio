@@ -26,7 +26,7 @@ function PipelineDiagram({ nodes }) {
 
 export default function InterviewPrep() {
   return (
-    <section id="interview-prep" className="scroll-mt-24 border-t-2 border-ink py-24">
+    <section id="deep-dives" className="scroll-mt-24 border-t-2 border-ink py-24">
       <div className="mx-auto max-w-6xl px-6">
         <SectionHeading
           index="03"

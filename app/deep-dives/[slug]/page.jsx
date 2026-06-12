@@ -73,7 +73,7 @@ export default function InterviewTopicPage({ params }) {
       <header className="sticky top-0 z-50 border-b-2 border-ink bg-bg/95 backdrop-blur">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link
-            href="/#interview-prep"
+            href="/#deep-dives"
             className="flex items-center gap-2 border-2 border-ink px-3 py-1.5 text-sm font-bold transition hover:bg-accent hover:shadow-brutal-sm"
           >
             <ArrowLeft size={14} />
@@ -146,7 +146,7 @@ export default function InterviewTopicPage({ params }) {
         {/* Footer */}
         <div className="flex items-center justify-between border-t-2 border-ink pt-8">
           <Link
-            href="/#interview-prep"
+            href="/#deep-dives"
             className="flex items-center gap-2 text-sm font-bold text-ink transition hover:text-accent"
           >
             <ArrowLeft size={14} />
