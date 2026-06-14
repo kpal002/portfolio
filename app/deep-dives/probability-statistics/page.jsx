@@ -95,7 +95,7 @@ function KatexLine({ tex }) {
   const html = katex.renderToString(tex, { throwOnError: false, displayMode: false });
   return (
     <div
-      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent overflow-x-auto"
+      className="text-accent [&_.katex]:text-accent [&_.katex-html]:text-accent"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
