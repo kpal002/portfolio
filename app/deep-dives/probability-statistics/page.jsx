@@ -914,9 +914,209 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. MLE ── */}
+        {/* ── 7. Information Theory ── */}
         <Card>
           <SectionLabel>Section 7</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            The mathematical backbone of cross-entropy loss, KL divergence, decision tree splits, and
+            feature selection. Understanding these concepts lets you derive why standard ML losses
+            are the right ones, not just memorize them.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">1. Information Content (Surprise)</p>
+          <MathBlock
+            label="Information content"
+            lines={[String.raw`I(x) = -\log p(x)`]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2 mb-2">
+            Three axioms uniquely determine this formula: certain events carry zero information <em>I(1)=0</em>;
+            rarer events carry more; independent events are additive <em>I(p₁·p₂) = I(p₁)+I(p₂)</em>.
+            Only −log p satisfies all three. Log base 2 → bits. Natural log → nats.
+          </p>
+          <CompareTable
+            headers={["Event", "p", "Surprise (bits)"]}
+            rows={[
+              ["Fair coin heads", "0.5", "1.0"],
+              ["Rolling a 6", "0.167", "2.58"],
+              ["1-in-1000 event", "0.001", "9.97"],
+              ["Certain event", "1.0", "0.0"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">2. Entropy — Average Surprise</p>
+          <MathBlock
+            label="Shannon entropy"
+            lines={[
+              String.raw`H(P) = -\sum_x p(x)\log p(x) = \mathbb{E}_P[-\log p(x)]`,
+              String.raw`\text{Fair coin: } H = -(0.5\log_2 0.5 + 0.5\log_2 0.5) = 1.0 \text{ bit}`,
+              String.raw`\text{Biased coin (99/1): } H = -(0.99\log_2 0.99 + 0.01\log_2 0.01) \approx 0.08 \text{ bits}`,
+            ]}
+          />
+          <BulletList items={[
+            "H(P) ≥ 0 always",
+            "H(P) = 0 when outcome is certain",
+            "H(P) maximized when distribution is uniform — maximum uncertainty",
+            "Irreducible: you cannot compress data below H(P) (Shannon's source coding theorem)",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">3. Cross-Entropy — Cost of Being Wrong</p>
+          <MathBlock
+            label="Cross-entropy"
+            lines={[
+              String.raw`H(P, Q) = -\sum_x p(x)\log q(x)`,
+              String.raw`\text{One-hot P collapses to: } H(P,Q) = -\log q(y_{\text{true}})`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Measures average surprise when model Q encodes events from true distribution P. Equal to H(P) only when Q=P exactly. Three equivalent justifications for using it as the classification loss:
+          </p>
+          <BoldBulletList items={[
+            { label: "Information theory", desc: "Minimizes bits wasted encoding reality with your model." },
+            { label: "Maximum likelihood", desc: "Minimizing cross-entropy = maximizing likelihood — same objective, two framings." },
+            { label: "Gradient", desc: "Gradient of cross-entropy w.r.t. logits after softmax is simply (ŷ − y) — clean and stable." },
+          ]} />
+          <MathBlock
+            label="Cross-entropy = MLE"
+            lines={[
+              String.raw`\mathcal{L} = \prod_i q(y_i) \;\Rightarrow\; \log\mathcal{L} = \sum_i \log q(y_i) \;\Rightarrow\; \text{NLL} = -\sum_i \log q(y_i) = H(P,Q)`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">4. NLL — Negative Log-Likelihood</p>
+          <MathBlock
+            label="NLL"
+            lines={[
+              String.raw`\text{NLL} = -\log P(D|\theta) = -\sum_{i=1}^{N}\log q_\theta(y_i|x_i)`,
+            ]}
+          />
+          <BoldBulletList items={[
+            { label: "NLL = Cross-Entropy for classification", desc: "Identical formula — MLE framing vs information theory framing." },
+            { label: "NLL = MSE for regression", desc: "Under Gaussian noise assumption: taking the log of the Gaussian PDF and negating yields MSE plus a constant. If residuals aren't Gaussian, MSE is the wrong loss." },
+          ]} />
+          <MathBlock
+            label="NLL = MSE under Gaussian assumption"
+            lines={[
+              String.raw`q_\theta(y_i|x_i) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(y_i-\hat{y}_i)^2}{2\sigma^2}\right)`,
+              String.raw`\text{NLL} = \frac{N}{2}\log(2\pi\sigma^2) + \frac{1}{2\sigma^2}\sum_{i=1}^{N}(y_i-\hat{y}_i)^2`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">5. KL Divergence — Distance Between Distributions</p>
+          <MathBlock
+            label="KL divergence"
+            lines={[
+              String.raw`D_{KL}(P\|Q) = \sum_x p(x)\log\frac{p(x)}{q(x)} = H(P,Q) - H(P)`,
+              String.raw`\min H(P,Q) \;\equiv\; \min D_{KL}(P\|Q) \quad \text{(H(P) is constant during training)}`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2 mb-2">
+            Extra surprise from using Q instead of P. <strong>Not symmetric:</strong> D<sub>KL</sub>(P‖Q) ≠ D<sub>KL</sub>(Q‖P) — not a true distance metric.
+          </p>
+          <MathBlock
+            label="Asymmetry proof — P=[0.99,0.01], Q=[0.5,0.5]"
+            lines={[
+              String.raw`D_{KL}(P\|Q) = 0.99\log\tfrac{0.99}{0.5} + 0.01\log\tfrac{0.01}{0.5} \approx 0.637 \text{ nats}`,
+              String.raw`D_{KL}(Q\|P) = 0.5\log\tfrac{0.5}{0.99} + 0.5\log\tfrac{0.5}{0.01} \approx 1.615 \text{ nats}`,
+            ]}
+          />
+          <BoldBulletList items={[
+            { label: "min D_KL(P‖Q)", desc: "Q covers all modes of P — mean seeking, spreads mass everywhere P has mass." },
+            { label: "min D_KL(Q‖P)", desc: "Q collapses onto one mode of P — mode seeking, ignores regions where Q is near zero. VAEs minimize this direction." },
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">6. Conditional Entropy & Information Gain</p>
+          <MathBlock
+            label="Conditional entropy"
+            lines={[
+              String.raw`H(Y|X) = H(X,Y) - H(X)`,
+              String.raw`\text{IG}(X) = H(Y) - H(Y|X)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Decision trees: at each node pick the feature X that maximizes IG — maximum label uncertainty removed.
+            H(Y|X)=0 when X fully determines Y; H(Y|X)=H(Y) when X tells you nothing.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">7. Mutual Information</p>
+          <MathBlock
+            label="Mutual information"
+            lines={[
+              String.raw`I(X;Y) = H(X) - H(X|Y) = H(X)+H(Y)-H(X,Y) = \sum_{x,y}p(x,y)\log\frac{p(x,y)}{p(x)p(y)}`,
+            ]}
+          />
+          <BulletList items={[
+            "I(X;Y) ≥ 0 always",
+            "I(X;Y) = 0 iff X and Y are independent — joint factorizes into product of marginals",
+            "I(X;Y) = I(Y;X) — symmetric, unlike KL",
+            "I(X;X) = H(X) — a variable shares all information with itself",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Pearson Correlation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">Measures linear relationship between X and Y:</p>
+          <MathBlock
+            label="Pearson ρ"
+            lines={[
+              String.raw`\rho_{XY} = \frac{\text{Cov}(X,Y)}{\sigma_X\sigma_Y} = \frac{\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum(x_i-\bar{x})^2}\sqrt{\sum(y_i-\bar{y})^2}}`,
+            ]}
+          />
+          <BulletList items={[
+            "Range: [−1, 1]  —  ρ=1 perfect positive linear, ρ=0 no linear relationship (nonlinear dependence can still exist)",
+            "Assumes continuous variables; sensitive to outliers",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Spearman Correlation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">Pearson applied to ranks instead of raw values:</p>
+          <MathBlock
+            label="Spearman ρₛ"
+            lines={[
+              String.raw`\rho_s = 1 - \frac{6\sum_{i=1}^{N}d_i^2}{N(N^2-1)}, \quad d_i = \text{rank}(x_i) - \text{rank}(y_i)`,
+            ]}
+          />
+          <BulletList items={[
+            "Catches any monotonic relationship — if X goes up, Y consistently goes up or down, regardless of linearity",
+            "Robust to outliers (ranks are bounded); works on ordinal data",
+            "Example: Y = X³ — perfectly monotonic, ρₛ = 1.0, but Pearson ρ < 1 because the relationship is nonlinear",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Feature selection comparison</p>
+          <CompareTable
+            headers={["Method", "Formula", "Detects", "Categorical?", "Outlier Robust?"]}
+            rows={[
+              ["Pearson", "Cov(X,Y) / σₓσᵧ", "Linear only", "No", "No"],
+              ["Spearman", "Pearson on ranks", "Monotonic", "Ordinal only", "Yes"],
+              ["Mutual Information", "Σ p(x,y) log p(x,y)/p(x)p(y)", "Any dependency", "Yes", "Yes"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">8. Label Smoothing — Entropy as Regularization</p>
+          <MathBlock
+            label="Label smoothing"
+            lines={[
+              String.raw`\tilde{p}(k) = (1-\varepsilon)\cdot\mathbf{1}[k=y] + \frac{\varepsilon}{K}`,
+              String.raw`\mathcal{L} = (1-\varepsilon)\cdot H(P_{\text{hard}},Q) + \varepsilon\cdot H(P_{\text{uniform}},Q)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Hard one-hot targets have H(P)=0 — cross-entropy pushes logits toward infinity, causing overconfidence.
+            Label smoothing (ε=0.1) softens targets: [0,0,1,0] → [0.025, 0.025, 0.925, 0.025].
+            The second term directly penalizes overconfident predictions — regularization through entropy.
+            Prevents logits growing unbounded, improves calibration, reduces train/inference gap.
+          </p>
+
+          <div className="mt-6 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold mb-1">Everything connected in one line</p>
+            <MathBlock label="" lines={[String.raw`H(P,Q) = H(P) + D_{KL}(P\|Q)`]} />
+            <p className="text-sm leading-relaxed text-ink/80">
+              Cross-entropy = irreducible uncertainty + cost of model being wrong. Training minimizes
+              the second term. H(P) is the floor you can never beat.
+            </p>
+          </div>
+        </Card>
+
+        {/* ── 8. MLE ── */}
+        <Card>
+          <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -968,9 +1168,9 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Hypothesis Testing ── */}
+        {/* ── 9. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -1037,9 +1237,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 9. Confidence Intervals ── */}
+        {/* ── 10. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -1080,9 +1280,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 10. A/B Testing ── */}
+        {/* ── 11. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -1140,9 +1340,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 11. Bayesian Inference ── */}
+        {/* ── 12. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -1241,9 +1441,9 @@ Advantages over frequentist:
           </InterviewCallout>
         </Card>
 
-        {/* ── 12. Interview Q&A ── */}
+        {/* ── 13. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1278,9 +1478,9 @@ Advantages over frequentist:
           </div>
         </Card>
 
-        {/* ── 13. Cheat Sheet ── */}
+        {/* ── 14. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
