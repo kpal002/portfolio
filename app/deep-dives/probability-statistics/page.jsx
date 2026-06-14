@@ -246,7 +246,47 @@ export default function ProbabilityStatisticsPage() {
           </ul>
         </Card>
 
+        {/* ── Table of Contents ── */}
+        <Card>
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">
+            <span className="text-accent">{">"} </span>Table of Contents
+          </p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {[
+              { n: 1,  label: "Conditional Probability",         id: "sec-1"  },
+              { n: 2,  label: "Bayes' Theorem",                  id: "sec-2"  },
+              { n: 3,  label: "Independence",                    id: "sec-3"  },
+              { n: 4,  label: "PDF and CDF",                     id: "sec-4"  },
+              { n: 5,  label: "Key Distributions",               id: "sec-5"  },
+              { n: 6,  label: "Concentration Inequalities",      id: "sec-6"  },
+              { n: 7,  label: "Law of Large Numbers",            id: "sec-7"  },
+              { n: 8,  label: "Moment Generating Functions",     id: "sec-8"  },
+              { n: 9,  label: "Central Limit Theorem",           id: "sec-9"  },
+              { n: 10, label: "Information Theory",              id: "sec-10" },
+              { n: 11, label: "Maximum Likelihood (MLE)",        id: "sec-11" },
+              { n: 12, label: "Hypothesis Testing",              id: "sec-12" },
+              { n: 13, label: "Confidence Intervals",            id: "sec-13" },
+              { n: 14, label: "A/B Testing",                     id: "sec-14" },
+              { n: 15, label: "Bayesian Inference",              id: "sec-15" },
+              { n: 16, label: "Interview Q&A",                   id: "sec-16" },
+              { n: 17, label: "Cheat Sheet",                     id: "sec-17" },
+            ].map(({ n, label, id }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="flex items-baseline gap-2 py-1 text-sm text-ink/70 transition hover:text-accent"
+              >
+                <span className="shrink-0 text-[11px] font-bold text-accent/60 font-mono">
+                  {String(n).padStart(2, "0")}
+                </span>
+                <span className="leading-snug">{label}</span>
+              </a>
+            ))}
+          </div>
+        </Card>
+
         {/* ── 1. Conditional Probability ── */}
+        <div id="sec-1" />
         <Card>
           <SectionLabel>Section 1</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Conditional Probability</h2>
@@ -298,6 +338,7 @@ export default function ProbabilityStatisticsPage() {
         </Card>
 
         {/* ── 2. Bayes' Theorem ── */}
+        <div id="sec-2" />
         <Card>
           <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayes{"'"} Theorem</h2>
@@ -355,6 +396,7 @@ The rarity of the disease dominates.`}
         </Card>
 
         {/* ── 3. Independence ── */}
+        <div id="sec-3" />
         <Card>
           <SectionLabel>Section 3</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Independence</h2>
@@ -426,6 +468,7 @@ PARALLEL — any one succeeding is enough:
         </Card>
 
         {/* ── 4. PDF and CDF ── */}
+        <div id="sec-4" />
         <Card>
           <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">PDF and CDF</h2>
@@ -492,6 +535,7 @@ PARALLEL — any one succeeding is enough:
         </Card>
 
         {/* ── 5. Key Distributions ── */}
+        <div id="sec-5" />
         <Card>
           <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
@@ -737,9 +781,219 @@ Critical value χ²(0.05, df=2) = 5.99
           />
         </Card>
 
-        {/* ── 6. Central Limit Theorem ── */}
+        {/* ── 6. Concentration Inequalities ── */}
+        <div id="sec-6" />
         <Card>
           <SectionLabel>Section 6</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Concentration Inequalities: Markov {"&"} Chebyshev</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Concentration inequalities answer: how likely is a random variable to deviate far from its mean?
+            Markov and Chebyshev form the base of a chain that leads all the way to the CLT — each step
+            uses more information about the distribution to get a tighter bound.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Markov{"'"}s Inequality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For any <em>non-negative</em> random variable X and any constant a {">"} 0:
+          </p>
+          <MathBlock
+            label="Markov's Inequality"
+            lines={[
+              String.raw`P(X \geq a) \leq \frac{\mathbb{E}[X]}{a}`,
+            ]}
+          />
+          <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Define the indicator 1&#123;X ≥ a&#125; = 1 if X ≥ a, else 0. Since X ≥ 0 and a {">"} 0:
+          </p>
+          <MathBlock
+            label="One-line indicator proof"
+            lines={[
+              String.raw`a \cdot \mathbf{1}\{X \geq a\} \leq X \cdot \mathbf{1}\{X \geq a\} \leq X`,
+              String.raw`\text{Take expectations: } a \cdot P(X \geq a) \leq \mathbb{E}[X] \implies P(X \geq a) \leq \frac{\mathbb{E}[X]}{a}`,
+            ]}
+          />
+          <Insight label="Geometric intuition">
+            Think of E[X] as the total probability mass spread across the real line. Markov asks: how much
+            of that mass can possibly live at or beyond position a? At most E[X]/a of it. If the mean is
+            10 and you ask about a = 100, at most 10% of mass can be there. Deliberately loose — it knows
+            only the mean, nothing about the shape. That is the point.
+          </Insight>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "Generalization bounds: bounding P(empirical risk deviates from expected risk) — the starting point for PAC learning theory",
+            "Union bound arguments: combine Markov with union bound to bound any bad event across multiple hypotheses",
+            "Any tail bound where only the mean of a non-negative quantity (loss, error) is known",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chebyshev{"'"}s Inequality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For any random variable X with finite mean μ and variance σ², and any k {">"} 0:
+          </p>
+          <MathBlock
+            label="Chebyshev's Inequality"
+            lines={[
+              String.raw`P(|X - \mu| \geq k) \leq \frac{\text{Var}(X)}{k^2} = \frac{\sigma^2}{k^2}`,
+              String.raw`\text{Equivalently, for } k = c\sigma: \quad P(|X - \mu| \geq c\sigma) \leq \frac{1}{c^2}`,
+            ]}
+          />
+          <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof — Chebyshev is Markov applied to (X − μ)²</p>
+          <MathBlock
+            label="Derivation"
+            lines={[
+              String.raw`\text{Step 1: Apply Markov to } (X-\mu)^2 \text{ with } a = k^2:`,
+              String.raw`P\!\left((X-\mu)^2 \geq k^2\right) \leq \frac{\mathbb{E}[(X-\mu)^2]}{k^2}`,
+              String.raw`\text{Step 2: LHS} = P(|X-\mu| \geq k), \quad \text{Step 3: } \mathbb{E}[(X-\mu)^2] = \sigma^2`,
+              String.raw`\therefore\; P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2} \quad \square`,
+            ]}
+          />
+          <Insight label="Quadratic improvement over Markov">
+            Markov decays as 1/k (linear). Chebyshev decays as 1/k² (quadratic) — each standard deviation
+            of distance you move out, the probability bound drops as the square. Chebyshev also applies to
+            variables that can be negative, unlike Markov. It holds for ANY distribution with finite mean
+            and variance — Gaussian, heavy-tailed, discrete, skewed. The cost of this generality is
+            looseness: for N(0,1), Chebyshev gives P(|X|≥3) ≤ 1/9 ≈ 0.11 versus the true value 0.003.
+          </Insight>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "Confidence intervals without distributional assumptions: any estimator with known variance satisfies Chebyshev bounds",
+            "Bias-variance tradeoff: Var(estimator) controls how concentrated estimates are around the mean",
+            "Dropout as variance reduction: Chebyshev explains why reducing prediction variance improves worst-case guarantees",
+            "Online learning: bounding regret in terms of variance of loss functions",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Markov vs Chebyshev — Head-to-Head</p>
+          <CompareTable
+            headers={["Property", "Markov", "Chebyshev"]}
+            rows={[
+              ["Requires", "X ≥ 0 and E[X]", "Finite μ and σ² (any sign)"],
+              ["Bound form", "E[X] / a", "σ² / k²"],
+              ["Decay rate", "1/k (linear)", "1/k² (quadratic)"],
+              ["Sign restriction", "X must be non-negative", "No restriction"],
+              ["Generalizes to", "Chernoff bounds (via MGF)", "LLN (applied to X̄)"],
+            ]}
+          />
+        </Card>
+
+        {/* ── 7. Law of Large Numbers ── */}
+        <div id="sec-7" />
+        <Card>
+          <SectionLabel>Section 7</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Law of Large Numbers</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            The formal guarantee that more data always helps. As the sample size grows, the sample mean
+            concentrates around the true mean — this is the theoretical foundation of every supervised
+            learning algorithm.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Statement</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Let X₁, X₂, …, Xₙ be i.i.d. with mean μ and finite variance σ². Define the sample mean:
+          </p>
+          <MathBlock
+            label="WLLN and SLLN"
+            lines={[
+              String.raw`\bar{X}_n = \frac{1}{n}\sum_{i=1}^{n} X_i`,
+              String.raw`\textbf{WLLN (Weak Law): } \forall\,\epsilon > 0,\quad P(|\bar{X}_n - \mu| \geq \epsilon) \to 0 \text{ as } n \to \infty`,
+              String.raw`\textbf{SLLN (Strong Law): } P\!\left(\lim_{n\to\infty} \bar{X}_n = \mu\right) = 1`,
+            ]}
+          />
+          <p className="text-sm text-ink/80 mt-2">
+            WLLN: convergence in probability. SLLN: almost sure convergence (strictly stronger). For
+            interviews, WLLN is the one to prove.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof of WLLN via Chebyshev</p>
+          <MathBlock
+            label="3-step proof"
+            lines={[
+              String.raw`\text{Step 1: } \mathbb{E}[\bar{X}_n] = \frac{1}{n}\sum \mathbb{E}[X_i] = \mu`,
+              String.raw`\text{Step 2 (independence, covariance terms vanish): } \text{Var}(\bar{X}_n) = \frac{1}{n^2}\sum \text{Var}(X_i) = \frac{\sigma^2}{n}`,
+              String.raw`\text{Step 3 (Chebyshev on } \bar{X}_n \text{): } P(|\bar{X}_n - \mu| \geq \epsilon) \leq \frac{\sigma^2}{n\,\epsilon^2} \xrightarrow{n\to\infty} 0 \quad \square`,
+            ]}
+          />
+          <Insight label="The key structural insight">
+            Averaging n i.i.d. variables does two things simultaneously: (1) preserves the mean — E[X̄ₙ] = μ
+            always; (2) shrinks the variance at rate 1/n. This is why more data always helps — not a
+            heuristic, a theorem. The distribution of X̄ₙ does not shift; it collapses onto a single point μ.
+          </Insight>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">ML Applications</p>
+          <BoldBulletList items={[
+            { label: "Empirical risk minimization", desc: "E_empirical[loss] → E_true[loss] as dataset size grows. The entire foundation of supervised learning." },
+            { label: "Monte Carlo estimation", desc: "Averaging n samples of f(X) converges to E[f(X)]. Used everywhere in RL, variational inference, MCMC." },
+            { label: "Mini-batch gradient descent", desc: "The mini-batch gradient is an unbiased estimator of the full-batch gradient. LLN says it concentrates as batch size grows." },
+            { label: "Why validation sets work", desc: "Empirical accuracy on held-out data converges to true accuracy. LLN is the formal justification." },
+          ]} />
+        </Card>
+
+        {/* ── 8. Moment Generating Functions ── */}
+        <div id="sec-8" />
+        <Card>
+          <SectionLabel>Section 8</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Moment Generating Functions (MGF)</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            A function that encodes all moments of a distribution in one compact object. MGFs are the
+            backbone of the CLT proof and the source of exponentially tight Chernoff bounds.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Definition</p>
+          <MathBlock
+            label="MGF"
+            lines={[
+              String.raw`M_X(t) = \mathbb{E}[e^{tX}] = \int_{-\infty}^{\infty} e^{tx} f(x)\,dx`,
+              String.raw`\text{Expanding } e^{tX}: \quad M_X(t) = 1 + t\,\mathbb{E}[X] + \frac{t^2}{2!}\mathbb{E}[X^2] + \frac{t^3}{3!}\mathbb{E}[X^3] + \cdots`,
+              String.raw`M_X^{(n)}(0) = \mathbb{E}[X^n] \quad \text{(n-th derivative at 0 gives the n-th moment)}`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Properties</p>
+          <BoldBulletList items={[
+            { label: "Uniqueness", desc: "If two distributions have the same MGF in a neighborhood of 0, they are identical. MGF uniquely identifies a distribution." },
+            { label: "Independence → multiplication", desc: "If X and Y are independent, M_{X+Y}(t) = Mₓ(t) · M_Y(t). Convolution in distribution space becomes multiplication in MGF space." },
+            { label: "Scaling", desc: "M_{aX+b}(t) = e^{bt} · Mₓ(at)" },
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MGFs of Common Distributions</p>
+          <CompareTable
+            headers={["Distribution", "MGF M_X(t)"]}
+            rows={[
+              ["Bernoulli(p)", "1 − p + p·eᵗ"],
+              ["Binomial(n, p)", "(1 − p + p·eᵗ)ⁿ"],
+              ["Poisson(λ)", "exp(λ(eᵗ − 1))"],
+              ["Normal(μ, σ²)", "exp(μt + σ²t²/2)"],
+              ["Exponential(λ)", "λ/(λ − t),  t < λ"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chernoff Bounds — Exponential Tails</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Apply Markov to e^&#123;tX&#125; rather than X itself — since e^&#123;tX&#125; is non-negative, Markov applies,
+            and optimizing over t gives exponentially tight tail bounds:
+          </p>
+          <MathBlock
+            label="Chernoff bound derivation"
+            lines={[
+              String.raw`P(X \geq a) = P(e^{tX} \geq e^{ta}) \leq \frac{\mathbb{E}[e^{tX}]}{e^{ta}} = \frac{M_X(t)}{e^{ta}} \quad \forall\,t > 0`,
+              String.raw`P(X \geq a) \leq \min_{t > 0}\, M_X(t)\cdot e^{-ta} \quad \text{(optimize over } t \text{)}`,
+            ]}
+          />
+          <p className="text-sm text-ink/80 mt-2 mb-4">
+            Chernoff bounds decay <strong>exponentially</strong> in a, vs Chebyshev{"'"}s polynomial 1/a².
+            Tightness ladder: Markov (1/a) ≪ Chebyshev (1/a²) ≪ Chernoff (e^&#123;−ca&#125;).
+          </p>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "PAC learning and boosting theory (AdaBoost proof): Chernoff bounds give exponentially tight generalization guarantees",
+            "Log partition function in exponential family models: log M_X(t) is the cumulant generating function; its derivatives give mean and variance",
+            "Variational inference: KL divergence between exponential family distributions derives from MGF structure",
+          ]} />
+        </Card>
+
+        {/* ── 9. Central Limit Theorem ── */}
+        <div id="sec-9" />
+        <Card>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Central Limit Theorem</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             One of the most powerful results in probability theory. It explains why the Gaussian
@@ -904,19 +1158,263 @@ Examples:
             ]}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof via MGFs</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            This is the cleanest proof. It assumes the MGF exists in a neighborhood of 0.
+          </p>
+          <MathBlock
+            label="5-step MGF proof"
+            lines={[
+              String.raw`\textbf{Step 1:} \text{ Standardize. Define } Y_i = (X_i-\mu)/\sigma, \text{ so } \mathbb{E}[Y_i]=0,\, \text{Var}(Y_i)=1.`,
+              String.raw`Z_n = \frac{1}{\sqrt{n}}\sum_{i=1}^n Y_i`,
+              String.raw`\textbf{Step 2:} \text{ By independence and scaling, } M_{Z_n}(t) = \left[M_Y\!\left(\tfrac{t}{\sqrt{n}}\right)\right]^n`,
+              String.raw`\textbf{Step 3:} \text{ Taylor expand (since } \mathbb{E}[Y]=0,\,\mathbb{E}[Y^2]=1\text{):}`,
+              String.raw`M_Y(s) = 1 + s\cdot\mathbb{E}[Y] + \tfrac{s^2}{2}\mathbb{E}[Y^2] + O(s^3) = 1 + \tfrac{s^2}{2} + O(s^3)`,
+              String.raw`\textbf{Step 4:} \text{ Substitute } s = t/\sqrt{n}\text{:}\quad M_Y\!\left(\tfrac{t}{\sqrt{n}}\right) = 1 + \frac{t^2}{2n} + O(n^{-3/2})`,
+              String.raw`\textbf{Step 5:} \lim_{n\to\infty} M_{Z_n}(t) = \lim_{n\to\infty}\!\left(1 + \frac{t^2}{2n}\right)^{\!n} = e^{t^2/2}`,
+              String.raw`e^{t^2/2} \text{ is exactly the MGF of } N(0,1)\text{. By MGF uniqueness: } Z_n \xrightarrow{d} N(0,1)\quad\square`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">What the CLT Does NOT Say</p>
+          <BulletList items={[
+            "It does NOT say the distribution of individual Xᵢ is Gaussian — inputs can be anything",
+            "It does NOT say convergence is fast — heavy-tailed distributions may need very large n",
+            "It does NOT apply without finite variance — Cauchy distribution (no finite variance) does not satisfy CLT",
+            "The Berry-Esseen theorem quantifies the finite-n error: sup_z |P(Zₙ ≤ z) − Φ(z)| ≤ C·E[|Y|³]/√n ≈ 0.48/√n",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Full Chain: Markov → CLT</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            All five results are answers to the same question: how concentrated is a random variable around its mean?
+          </p>
+          <CompareTable
+            headers={["Result", "Role in the Chain"]}
+            rows={[
+              ["Markov", "Tail bound from mean alone. Requires only E[X] ≥ 0. Most primitive."],
+              ["Chebyshev", "Markov applied to (X−μ)². Quadratic improvement using variance."],
+              ["Law of Large Numbers", "Chebyshev on X̄ₙ, whose variance is σ²/n → 0. Shows X̄ₙ → μ."],
+              ["MGF", "Encodes all moments. Converts distributional convergence into pointwise function convergence."],
+              ["CLT", "MGF of standardized sum → e^{t²/2}. Fluctuations around μ are always Gaussian at rate 1/√n."],
+            ]}
+          />
+
           <InterviewCallout>
             CLT states that the sample mean of n iid variables with mean μ and variance σ² converges
             to N(μ, σ²/n) regardless of the original distribution. This is why normal approximations
             work: Binomial(n,p) → N(np, np(1-p)) when np≥5 and n(1-p)≥5, and Poisson(λ) → N(λ,λ)
             when λ≥10. In both cases the discrete distribution becomes a continuous bell curve because
             the sum of many small independent contributions — however distributed — always converges
-            to Gaussian.
+            to Gaussian. The MGF proof shows WHY: the MGF of the standardized sum converges pointwise
+            to e^&#123;t²/2&#125;, the unique MGF of the standard normal.
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. MLE ── */}
+        {/* ── 10. Information Theory ── */}
+        <div id="sec-10" />
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            The mathematical backbone of cross-entropy loss, KL divergence, decision tree splits, and
+            feature selection. Understanding these concepts lets you derive why standard ML losses
+            are the right ones, not just memorize them.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">1. Information Content (Surprise)</p>
+          <MathBlock
+            label="Information content"
+            lines={[String.raw`I(x) = -\log p(x)`]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2 mb-2">
+            Three axioms uniquely determine this formula: certain events carry zero information <em>I(1)=0</em>;
+            rarer events carry more; independent events are additive <em>I(p₁·p₂) = I(p₁)+I(p₂)</em>.
+            Only −log p satisfies all three. Log base 2 → bits. Natural log → nats.
+          </p>
+          <CompareTable
+            headers={["Event", "p", "Surprise (bits)"]}
+            rows={[
+              ["Fair coin heads", "0.5", "1.0"],
+              ["Rolling a 6", "0.167", "2.58"],
+              ["1-in-1000 event", "0.001", "9.97"],
+              ["Certain event", "1.0", "0.0"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">2. Entropy — Average Surprise</p>
+          <MathBlock
+            label="Shannon entropy"
+            lines={[
+              String.raw`H(P) = -\sum_x p(x)\log p(x) = \mathbb{E}_P[-\log p(x)]`,
+              String.raw`\text{Fair coin: } H = -(0.5\log_2 0.5 + 0.5\log_2 0.5) = 1.0 \text{ bit}`,
+              String.raw`\text{Biased coin (99/1): } H = -(0.99\log_2 0.99 + 0.01\log_2 0.01) \approx 0.08 \text{ bits}`,
+            ]}
+          />
+          <BulletList items={[
+            "H(P) ≥ 0 always",
+            "H(P) = 0 when outcome is certain",
+            "H(P) maximized when distribution is uniform — maximum uncertainty",
+            "Irreducible: you cannot compress data below H(P) (Shannon's source coding theorem)",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">3. Cross-Entropy — Cost of Being Wrong</p>
+          <MathBlock
+            label="Cross-entropy"
+            lines={[
+              String.raw`H(P, Q) = -\sum_x p(x)\log q(x)`,
+              String.raw`\text{One-hot P collapses to: } H(P,Q) = -\log q(y_{\text{true}})`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Measures average surprise when model Q encodes events from true distribution P. Equal to H(P) only when Q=P exactly. Three equivalent justifications for using it as the classification loss:
+          </p>
+          <BoldBulletList items={[
+            { label: "Information theory", desc: "Minimizes bits wasted encoding reality with your model." },
+            { label: "Maximum likelihood", desc: "Minimizing cross-entropy = maximizing likelihood — same objective, two framings." },
+            { label: "Gradient", desc: "Gradient of cross-entropy w.r.t. logits after softmax is simply (ŷ − y) — clean and stable." },
+          ]} />
+          <MathBlock
+            label="Cross-entropy = MLE"
+            lines={[
+              String.raw`\mathcal{L} = \prod_i q(y_i) \;\Rightarrow\; \log\mathcal{L} = \sum_i \log q(y_i) \;\Rightarrow\; \text{NLL} = -\sum_i \log q(y_i) = H(P,Q)`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">4. NLL — Negative Log-Likelihood</p>
+          <MathBlock
+            label="NLL"
+            lines={[
+              String.raw`\text{NLL} = -\log P(D|\theta) = -\sum_{i=1}^{N}\log q_\theta(y_i|x_i)`,
+            ]}
+          />
+          <BoldBulletList items={[
+            { label: "NLL = Cross-Entropy for classification", desc: "Identical formula — MLE framing vs information theory framing." },
+            { label: "NLL = MSE for regression", desc: "Under Gaussian noise assumption: taking the log of the Gaussian PDF and negating yields MSE plus a constant. If residuals aren't Gaussian, MSE is the wrong loss." },
+          ]} />
+          <MathBlock
+            label="NLL = MSE under Gaussian assumption"
+            lines={[
+              String.raw`q_\theta(y_i|x_i) = \frac{1}{\sqrt{2\pi\sigma^2}}\exp\!\left(-\frac{(y_i-\hat{y}_i)^2}{2\sigma^2}\right)`,
+              String.raw`\text{NLL} = \frac{N}{2}\log(2\pi\sigma^2) + \frac{1}{2\sigma^2}\sum_{i=1}^{N}(y_i-\hat{y}_i)^2`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">5. KL Divergence — Distance Between Distributions</p>
+          <MathBlock
+            label="KL divergence"
+            lines={[
+              String.raw`D_{KL}(P\|Q) = \sum_x p(x)\log\frac{p(x)}{q(x)} = H(P,Q) - H(P)`,
+              String.raw`\min H(P,Q) \;\equiv\; \min D_{KL}(P\|Q) \quad \text{(H(P) is constant during training)}`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2 mb-2">
+            Extra surprise from using Q instead of P. <strong>Not symmetric:</strong> D<sub>KL</sub>(P‖Q) ≠ D<sub>KL</sub>(Q‖P) — not a true distance metric.
+          </p>
+          <MathBlock
+            label="Asymmetry proof — P=[0.99,0.01], Q=[0.5,0.5]"
+            lines={[
+              String.raw`D_{KL}(P\|Q) = 0.99\log\tfrac{0.99}{0.5} + 0.01\log\tfrac{0.01}{0.5} \approx 0.637 \text{ nats}`,
+              String.raw`D_{KL}(Q\|P) = 0.5\log\tfrac{0.5}{0.99} + 0.5\log\tfrac{0.5}{0.01} \approx 1.615 \text{ nats}`,
+            ]}
+          />
+          <BoldBulletList items={[
+            { label: "min D_KL(P‖Q)", desc: "Q covers all modes of P — mean seeking, spreads mass everywhere P has mass." },
+            { label: "min D_KL(Q‖P)", desc: "Q collapses onto one mode of P — mode seeking, ignores regions where Q is near zero. VAEs minimize this direction." },
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">6. Conditional Entropy & Information Gain</p>
+          <MathBlock
+            label="Conditional entropy"
+            lines={[
+              String.raw`H(Y|X) = H(X,Y) - H(X)`,
+              String.raw`\text{IG}(X) = H(Y) - H(Y|X)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Decision trees: at each node pick the feature X that maximizes IG — maximum label uncertainty removed.
+            H(Y|X)=0 when X fully determines Y; H(Y|X)=H(Y) when X tells you nothing.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">7. Mutual Information</p>
+          <MathBlock
+            label="Mutual information"
+            lines={[
+              String.raw`I(X;Y) = H(X) - H(X|Y) = H(X)+H(Y)-H(X,Y) = \sum_{x,y}p(x,y)\log\frac{p(x,y)}{p(x)p(y)}`,
+            ]}
+          />
+          <BulletList items={[
+            "I(X;Y) ≥ 0 always",
+            "I(X;Y) = 0 iff X and Y are independent — joint factorizes into product of marginals",
+            "I(X;Y) = I(Y;X) — symmetric, unlike KL",
+            "I(X;X) = H(X) — a variable shares all information with itself",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Pearson Correlation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">Measures linear relationship between X and Y:</p>
+          <MathBlock
+            label="Pearson ρ"
+            lines={[
+              String.raw`\rho_{XY} = \frac{\text{Cov}(X,Y)}{\sigma_X\sigma_Y} = \frac{\sum_{i=1}^{N}(x_i-\bar{x})(y_i-\bar{y})}{\sqrt{\sum(x_i-\bar{x})^2}\sqrt{\sum(y_i-\bar{y})^2}}`,
+            ]}
+          />
+          <BulletList items={[
+            "Range: [−1, 1]  —  ρ=1 perfect positive linear, ρ=0 no linear relationship (nonlinear dependence can still exist)",
+            "Assumes continuous variables; sensitive to outliers",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Spearman Correlation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-2">Pearson applied to ranks instead of raw values:</p>
+          <MathBlock
+            label="Spearman ρₛ"
+            lines={[
+              String.raw`\rho_s = 1 - \frac{6\sum_{i=1}^{N}d_i^2}{N(N^2-1)}, \quad d_i = \text{rank}(x_i) - \text{rank}(y_i)`,
+            ]}
+          />
+          <BulletList items={[
+            "Catches any monotonic relationship — if X goes up, Y consistently goes up or down, regardless of linearity",
+            "Robust to outliers (ranks are bounded); works on ordinal data",
+            "Example: Y = X³ — perfectly monotonic, ρₛ = 1.0, but Pearson ρ < 1 because the relationship is nonlinear",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Feature selection comparison</p>
+          <CompareTable
+            headers={["Method", "Formula", "Detects", "Categorical?", "Outlier Robust?"]}
+            rows={[
+              ["Pearson", "Cov(X,Y) / σₓσᵧ", "Linear only", "No", "No"],
+              ["Spearman", "Pearson on ranks", "Monotonic", "Ordinal only", "Yes"],
+              ["Mutual Information", "Σ p(x,y) log p(x,y)/p(x)p(y)", "Any dependency", "Yes", "Yes"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">8. Label Smoothing — Entropy as Regularization</p>
+          <MathBlock
+            label="Label smoothing"
+            lines={[
+              String.raw`\tilde{p}(k) = (1-\varepsilon)\cdot\mathbf{1}[k=y] + \frac{\varepsilon}{K}`,
+              String.raw`\mathcal{L} = (1-\varepsilon)\cdot H(P_{\text{hard}},Q) + \varepsilon\cdot H(P_{\text{uniform}},Q)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mt-2">
+            Hard one-hot targets have H(P)=0 — cross-entropy pushes logits toward infinity, causing overconfidence.
+            Label smoothing (ε=0.1) softens targets: [0,0,1,0] → [0.025, 0.025, 0.925, 0.025].
+            The second term directly penalizes overconfident predictions — regularization through entropy.
+            Prevents logits growing unbounded, improves calibration, reduces train/inference gap.
+          </p>
+
+          <div className="mt-6 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold mb-1">Everything connected in one line</p>
+            <MathBlock label="" lines={[String.raw`H(P,Q) = H(P) + D_{KL}(P\|Q)`]} />
+            <p className="text-sm leading-relaxed text-ink/80">
+              Cross-entropy = irreducible uncertainty + cost of model being wrong. Training minimizes
+              the second term. H(P) is the floor you can never beat.
+            </p>
+          </div>
+        </Card>
+
+        {/* ── 11. MLE ── */}
+        <div id="sec-11" />
+        <Card>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -968,9 +1466,10 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 8. Hypothesis Testing ── */}
+        {/* ── 12. Hypothesis Testing ── */}
+        <div id="sec-12" />
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -1037,9 +1536,10 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 9. Confidence Intervals ── */}
+        {/* ── 13. Confidence Intervals ── */}
+        <div id="sec-13" />
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -1080,9 +1580,10 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 10. A/B Testing ── */}
+        {/* ── 14. A/B Testing ── */}
+        <div id="sec-14" />
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -1140,9 +1641,10 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 11. Bayesian Inference ── */}
+        {/* ── 15. Bayesian Inference ── */}
+        <div id="sec-15" />
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -1241,9 +1743,10 @@ Advantages over frequentist:
           </InterviewCallout>
         </Card>
 
-        {/* ── 12. Interview Q&A ── */}
+        {/* ── 16. Interview Q&A ── */}
+        <div id="sec-16" />
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 16</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1278,9 +1781,10 @@ Advantages over frequentist:
           </div>
         </Card>
 
-        {/* ── 13. Cheat Sheet ── */}
+        {/* ── 17. Cheat Sheet ── */}
+        <div id="sec-17" />
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 17</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
