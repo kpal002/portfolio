@@ -737,9 +737,215 @@ Critical value χ²(0.05, df=2) = 5.99
           />
         </Card>
 
-        {/* ── 6. Central Limit Theorem ── */}
+        {/* ── 6. Concentration Inequalities ── */}
         <Card>
           <SectionLabel>Section 6</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Concentration Inequalities: Markov {"&"} Chebyshev</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Concentration inequalities answer: how likely is a random variable to deviate far from its mean?
+            Markov and Chebyshev form the base of a chain that leads all the way to the CLT — each step
+            uses more information about the distribution to get a tighter bound.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Markov{"'"}s Inequality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For any <em>non-negative</em> random variable X and any constant a {">"} 0:
+          </p>
+          <MathBlock
+            label="Markov's Inequality"
+            lines={[
+              String.raw`P(X \geq a) \leq \frac{\mathbb{E}[X]}{a}`,
+            ]}
+          />
+          <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Define the indicator 1&#123;X ≥ a&#125; = 1 if X ≥ a, else 0. Since X ≥ 0 and a {">"} 0:
+          </p>
+          <MathBlock
+            label="One-line indicator proof"
+            lines={[
+              String.raw`a \cdot \mathbf{1}\{X \geq a\} \leq X \cdot \mathbf{1}\{X \geq a\} \leq X`,
+              String.raw`\text{Take expectations: } a \cdot P(X \geq a) \leq \mathbb{E}[X] \implies P(X \geq a) \leq \frac{\mathbb{E}[X]}{a}`,
+            ]}
+          />
+          <Insight label="Geometric intuition">
+            Think of E[X] as the total probability mass spread across the real line. Markov asks: how much
+            of that mass can possibly live at or beyond position a? At most E[X]/a of it. If the mean is
+            10 and you ask about a = 100, at most 10% of mass can be there. Deliberately loose — it knows
+            only the mean, nothing about the shape. That is the point.
+          </Insight>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "Generalization bounds: bounding P(empirical risk deviates from expected risk) — the starting point for PAC learning theory",
+            "Union bound arguments: combine Markov with union bound to bound any bad event across multiple hypotheses",
+            "Any tail bound where only the mean of a non-negative quantity (loss, error) is known",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chebyshev{"'"}s Inequality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For any random variable X with finite mean μ and variance σ², and any k {">"} 0:
+          </p>
+          <MathBlock
+            label="Chebyshev's Inequality"
+            lines={[
+              String.raw`P(|X - \mu| \geq k) \leq \frac{\text{Var}(X)}{k^2} = \frac{\sigma^2}{k^2}`,
+              String.raw`\text{Equivalently, for } k = c\sigma: \quad P(|X - \mu| \geq c\sigma) \leq \frac{1}{c^2}`,
+            ]}
+          />
+          <p className="mt-4 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof — Chebyshev is Markov applied to (X − μ)²</p>
+          <MathBlock
+            label="Derivation"
+            lines={[
+              String.raw`\text{Step 1: Apply Markov to } (X-\mu)^2 \text{ with } a = k^2:`,
+              String.raw`P\!\left((X-\mu)^2 \geq k^2\right) \leq \frac{\mathbb{E}[(X-\mu)^2]}{k^2}`,
+              String.raw`\text{Step 2: LHS} = P(|X-\mu| \geq k), \quad \text{Step 3: } \mathbb{E}[(X-\mu)^2] = \sigma^2`,
+              String.raw`\therefore\; P(|X - \mu| \geq k) \leq \frac{\sigma^2}{k^2} \quad \square`,
+            ]}
+          />
+          <Insight label="Quadratic improvement over Markov">
+            Markov decays as 1/k (linear). Chebyshev decays as 1/k² (quadratic) — each standard deviation
+            of distance you move out, the probability bound drops as the square. Chebyshev also applies to
+            variables that can be negative, unlike Markov. It holds for ANY distribution with finite mean
+            and variance — Gaussian, heavy-tailed, discrete, skewed. The cost of this generality is
+            looseness: for N(0,1), Chebyshev gives P(|X|≥3) ≤ 1/9 ≈ 0.11 versus the true value 0.003.
+          </Insight>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "Confidence intervals without distributional assumptions: any estimator with known variance satisfies Chebyshev bounds",
+            "Bias-variance tradeoff: Var(estimator) controls how concentrated estimates are around the mean",
+            "Dropout as variance reduction: Chebyshev explains why reducing prediction variance improves worst-case guarantees",
+            "Online learning: bounding regret in terms of variance of loss functions",
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Markov vs Chebyshev — Head-to-Head</p>
+          <CompareTable
+            headers={["Property", "Markov", "Chebyshev"]}
+            rows={[
+              ["Requires", "X ≥ 0 and E[X]", "Finite μ and σ² (any sign)"],
+              ["Bound form", "E[X] / a", "σ² / k²"],
+              ["Decay rate", "1/k (linear)", "1/k² (quadratic)"],
+              ["Sign restriction", "X must be non-negative", "No restriction"],
+              ["Generalizes to", "Chernoff bounds (via MGF)", "LLN (applied to X̄)"],
+            ]}
+          />
+        </Card>
+
+        {/* ── 7. Law of Large Numbers ── */}
+        <Card>
+          <SectionLabel>Section 7</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Law of Large Numbers</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            The formal guarantee that more data always helps. As the sample size grows, the sample mean
+            concentrates around the true mean — this is the theoretical foundation of every supervised
+            learning algorithm.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Statement</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Let X₁, X₂, …, Xₙ be i.i.d. with mean μ and finite variance σ². Define the sample mean:
+          </p>
+          <MathBlock
+            label="WLLN and SLLN"
+            lines={[
+              String.raw`\bar{X}_n = \frac{1}{n}\sum_{i=1}^{n} X_i`,
+              String.raw`\textbf{WLLN (Weak Law): } \forall\,\epsilon > 0,\quad P(|\bar{X}_n - \mu| \geq \epsilon) \to 0 \text{ as } n \to \infty`,
+              String.raw`\textbf{SLLN (Strong Law): } P\!\left(\lim_{n\to\infty} \bar{X}_n = \mu\right) = 1`,
+            ]}
+          />
+          <p className="text-sm text-ink/80 mt-2">
+            WLLN: convergence in probability. SLLN: almost sure convergence (strictly stronger). For
+            interviews, WLLN is the one to prove.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof of WLLN via Chebyshev</p>
+          <MathBlock
+            label="3-step proof"
+            lines={[
+              String.raw`\text{Step 1: } \mathbb{E}[\bar{X}_n] = \frac{1}{n}\sum \mathbb{E}[X_i] = \mu`,
+              String.raw`\text{Step 2 (independence, covariance terms vanish): } \text{Var}(\bar{X}_n) = \frac{1}{n^2}\sum \text{Var}(X_i) = \frac{\sigma^2}{n}`,
+              String.raw`\text{Step 3 (Chebyshev on } \bar{X}_n \text{): } P(|\bar{X}_n - \mu| \geq \epsilon) \leq \frac{\sigma^2}{n\,\epsilon^2} \xrightarrow{n\to\infty} 0 \quad \square`,
+            ]}
+          />
+          <Insight label="The key structural insight">
+            Averaging n i.i.d. variables does two things simultaneously: (1) preserves the mean — E[X̄ₙ] = μ
+            always; (2) shrinks the variance at rate 1/n. This is why more data always helps — not a
+            heuristic, a theorem. The distribution of X̄ₙ does not shift; it collapses onto a single point μ.
+          </Insight>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">ML Applications</p>
+          <BoldBulletList items={[
+            { label: "Empirical risk minimization", desc: "E_empirical[loss] → E_true[loss] as dataset size grows. The entire foundation of supervised learning." },
+            { label: "Monte Carlo estimation", desc: "Averaging n samples of f(X) converges to E[f(X)]. Used everywhere in RL, variational inference, MCMC." },
+            { label: "Mini-batch gradient descent", desc: "The mini-batch gradient is an unbiased estimator of the full-batch gradient. LLN says it concentrates as batch size grows." },
+            { label: "Why validation sets work", desc: "Empirical accuracy on held-out data converges to true accuracy. LLN is the formal justification." },
+          ]} />
+        </Card>
+
+        {/* ── 8. Moment Generating Functions ── */}
+        <Card>
+          <SectionLabel>Section 8</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Moment Generating Functions (MGF)</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            A function that encodes all moments of a distribution in one compact object. MGFs are the
+            backbone of the CLT proof and the source of exponentially tight Chernoff bounds.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Definition</p>
+          <MathBlock
+            label="MGF"
+            lines={[
+              String.raw`M_X(t) = \mathbb{E}[e^{tX}] = \int_{-\infty}^{\infty} e^{tx} f(x)\,dx`,
+              String.raw`\text{Expanding } e^{tX}: \quad M_X(t) = 1 + t\,\mathbb{E}[X] + \frac{t^2}{2!}\mathbb{E}[X^2] + \frac{t^3}{3!}\mathbb{E}[X^3] + \cdots`,
+              String.raw`M_X^{(n)}(0) = \mathbb{E}[X^n] \quad \text{(n-th derivative at 0 gives the n-th moment)}`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Properties</p>
+          <BoldBulletList items={[
+            { label: "Uniqueness", desc: "If two distributions have the same MGF in a neighborhood of 0, they are identical. MGF uniquely identifies a distribution." },
+            { label: "Independence → multiplication", desc: "If X and Y are independent, M_{X+Y}(t) = Mₓ(t) · M_Y(t). Convolution in distribution space becomes multiplication in MGF space." },
+            { label: "Scaling", desc: "M_{aX+b}(t) = e^{bt} · Mₓ(at)" },
+          ]} />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MGFs of Common Distributions</p>
+          <CompareTable
+            headers={["Distribution", "MGF M_X(t)"]}
+            rows={[
+              ["Bernoulli(p)", "1 − p + p·eᵗ"],
+              ["Binomial(n, p)", "(1 − p + p·eᵗ)ⁿ"],
+              ["Poisson(λ)", "exp(λ(eᵗ − 1))"],
+              ["Normal(μ, σ²)", "exp(μt + σ²t²/2)"],
+              ["Exponential(λ)", "λ/(λ − t),  t < λ"],
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Chernoff Bounds — Exponential Tails</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Apply Markov to e^&#123;tX&#125; rather than X itself — since e^&#123;tX&#125; is non-negative, Markov applies,
+            and optimizing over t gives exponentially tight tail bounds:
+          </p>
+          <MathBlock
+            label="Chernoff bound derivation"
+            lines={[
+              String.raw`P(X \geq a) = P(e^{tX} \geq e^{ta}) \leq \frac{\mathbb{E}[e^{tX}]}{e^{ta}} = \frac{M_X(t)}{e^{ta}} \quad \forall\,t > 0`,
+              String.raw`P(X \geq a) \leq \min_{t > 0}\, M_X(t)\cdot e^{-ta} \quad \text{(optimize over } t \text{)}`,
+            ]}
+          />
+          <p className="text-sm text-ink/80 mt-2 mb-4">
+            Chernoff bounds decay <strong>exponentially</strong> in a, vs Chebyshev{"'"}s polynomial 1/a².
+            Tightness ladder: Markov (1/a) ≪ Chebyshev (1/a²) ≪ Chernoff (e^&#123;−ca&#125;).
+          </p>
+          <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
+          <BulletList items={[
+            "PAC learning and boosting theory (AdaBoost proof): Chernoff bounds give exponentially tight generalization guarantees",
+            "Log partition function in exponential family models: log M_X(t) is the cumulant generating function; its derivatives give mean and variance",
+            "Variational inference: KL divergence between exponential family distributions derives from MGF structure",
+          ]} />
+        </Card>
+
+        {/* ── 9. Central Limit Theorem ── */}
+        <Card>
+          <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Central Limit Theorem</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             One of the most powerful results in probability theory. It explains why the Gaussian
@@ -904,19 +1110,61 @@ Examples:
             ]}
           />
 
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof via MGFs</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            This is the cleanest proof. It assumes the MGF exists in a neighborhood of 0.
+          </p>
+          <MathBlock
+            label="5-step MGF proof"
+            lines={[
+              String.raw`\textbf{Step 1:} \text{ Standardize. Define } Y_i = (X_i-\mu)/\sigma, \text{ so } \mathbb{E}[Y_i]=0,\, \text{Var}(Y_i)=1.`,
+              String.raw`Z_n = \frac{1}{\sqrt{n}}\sum_{i=1}^n Y_i`,
+              String.raw`\textbf{Step 2:} \text{ By independence and scaling, } M_{Z_n}(t) = \left[M_Y\!\left(\tfrac{t}{\sqrt{n}}\right)\right]^n`,
+              String.raw`\textbf{Step 3:} \text{ Taylor expand (since } \mathbb{E}[Y]=0,\,\mathbb{E}[Y^2]=1\text{):}`,
+              String.raw`M_Y(s) = 1 + s\cdot\mathbb{E}[Y] + \tfrac{s^2}{2}\mathbb{E}[Y^2] + O(s^3) = 1 + \tfrac{s^2}{2} + O(s^3)`,
+              String.raw`\textbf{Step 4:} \text{ Substitute } s = t/\sqrt{n}\text{:}\quad M_Y\!\left(\tfrac{t}{\sqrt{n}}\right) = 1 + \frac{t^2}{2n} + O(n^{-3/2})`,
+              String.raw`\textbf{Step 5:} \lim_{n\to\infty} M_{Z_n}(t) = \lim_{n\to\infty}\!\left(1 + \frac{t^2}{2n}\right)^{\!n} = e^{t^2/2}`,
+              String.raw`e^{t^2/2} \text{ is exactly the MGF of } N(0,1)\text{. By MGF uniqueness: } Z_n \xrightarrow{d} N(0,1)\quad\square`,
+            ]}
+          />
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">What the CLT Does NOT Say</p>
+          <BulletList items={[
+            "It does NOT say the distribution of individual Xᵢ is Gaussian — inputs can be anything",
+            "It does NOT say convergence is fast — heavy-tailed distributions may need very large n",
+            "It does NOT apply without finite variance — Cauchy distribution (no finite variance) does not satisfy CLT",
+            "The Berry-Esseen theorem quantifies the finite-n error: sup_z |P(Zₙ ≤ z) − Φ(z)| ≤ C·E[|Y|³]/√n ≈ 0.48/√n",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">The Full Chain: Markov → CLT</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            All five results are answers to the same question: how concentrated is a random variable around its mean?
+          </p>
+          <CompareTable
+            headers={["Result", "Role in the Chain"]}
+            rows={[
+              ["Markov", "Tail bound from mean alone. Requires only E[X] ≥ 0. Most primitive."],
+              ["Chebyshev", "Markov applied to (X−μ)². Quadratic improvement using variance."],
+              ["Law of Large Numbers", "Chebyshev on X̄ₙ, whose variance is σ²/n → 0. Shows X̄ₙ → μ."],
+              ["MGF", "Encodes all moments. Converts distributional convergence into pointwise function convergence."],
+              ["CLT", "MGF of standardized sum → e^{t²/2}. Fluctuations around μ are always Gaussian at rate 1/√n."],
+            ]}
+          />
+
           <InterviewCallout>
             CLT states that the sample mean of n iid variables with mean μ and variance σ² converges
             to N(μ, σ²/n) regardless of the original distribution. This is why normal approximations
             work: Binomial(n,p) → N(np, np(1-p)) when np≥5 and n(1-p)≥5, and Poisson(λ) → N(λ,λ)
             when λ≥10. In both cases the discrete distribution becomes a continuous bell curve because
             the sum of many small independent contributions — however distributed — always converges
-            to Gaussian.
+            to Gaussian. The MGF proof shows WHY: the MGF of the standardized sum converges pointwise
+            to e^&#123;t²/2&#125;, the unique MGF of the standard normal.
           </InterviewCallout>
         </Card>
 
-        {/* ── 7. Information Theory ── */}
+        {/* ── 10. Information Theory ── */}
         <Card>
-          <SectionLabel>Section 7</SectionLabel>
+          <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The mathematical backbone of cross-entropy loss, KL divergence, decision tree splits, and
@@ -1114,9 +1362,9 @@ Examples:
           </div>
         </Card>
 
-        {/* ── 8. MLE ── */}
+        {/* ── 11. MLE ── */}
         <Card>
-          <SectionLabel>Section 8</SectionLabel>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -1168,9 +1416,9 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 9. Hypothesis Testing ── */}
+        {/* ── 12. Hypothesis Testing ── */}
         <Card>
-          <SectionLabel>Section 9</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -1237,9 +1485,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 10. Confidence Intervals ── */}
+        {/* ── 13. Confidence Intervals ── */}
         <Card>
-          <SectionLabel>Section 10</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -1280,9 +1528,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           </Insight>
         </Card>
 
-        {/* ── 11. A/B Testing ── */}
+        {/* ── 14. A/B Testing ── */}
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -1340,9 +1588,9 @@ Step 6: Ship if p < α AND guardrails ok`}
           </InterviewCallout>
         </Card>
 
-        {/* ── 12. Bayesian Inference ── */}
+        {/* ── 15. Bayesian Inference ── */}
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -1441,9 +1689,9 @@ Advantages over frequentist:
           </InterviewCallout>
         </Card>
 
-        {/* ── 13. Interview Q&A ── */}
+        {/* ── 16. Interview Q&A ── */}
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 16</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1478,9 +1726,9 @@ Advantages over frequentist:
           </div>
         </Card>
 
-        {/* ── 14. Cheat Sheet ── */}
+        {/* ── 17. Cheat Sheet ── */}
         <Card>
-          <SectionLabel>Section 14</SectionLabel>
+          <SectionLabel>Section 17</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
