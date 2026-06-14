@@ -246,7 +246,47 @@ export default function ProbabilityStatisticsPage() {
           </ul>
         </Card>
 
+        {/* ── Table of Contents ── */}
+        <Card>
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">
+            <span className="text-accent">{">"} </span>Table of Contents
+          </p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {[
+              { n: 1,  label: "Conditional Probability",         id: "sec-1"  },
+              { n: 2,  label: "Bayes' Theorem",                  id: "sec-2"  },
+              { n: 3,  label: "Independence",                    id: "sec-3"  },
+              { n: 4,  label: "PDF and CDF",                     id: "sec-4"  },
+              { n: 5,  label: "Key Distributions",               id: "sec-5"  },
+              { n: 6,  label: "Concentration Inequalities",      id: "sec-6"  },
+              { n: 7,  label: "Law of Large Numbers",            id: "sec-7"  },
+              { n: 8,  label: "Moment Generating Functions",     id: "sec-8"  },
+              { n: 9,  label: "Central Limit Theorem",           id: "sec-9"  },
+              { n: 10, label: "Information Theory",              id: "sec-10" },
+              { n: 11, label: "Maximum Likelihood (MLE)",        id: "sec-11" },
+              { n: 12, label: "Hypothesis Testing",              id: "sec-12" },
+              { n: 13, label: "Confidence Intervals",            id: "sec-13" },
+              { n: 14, label: "A/B Testing",                     id: "sec-14" },
+              { n: 15, label: "Bayesian Inference",              id: "sec-15" },
+              { n: 16, label: "Interview Q&A",                   id: "sec-16" },
+              { n: 17, label: "Cheat Sheet",                     id: "sec-17" },
+            ].map(({ n, label, id }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="flex items-baseline gap-2 py-1 text-sm text-ink/70 transition hover:text-accent"
+              >
+                <span className="shrink-0 text-[11px] font-bold text-accent/60 font-mono">
+                  {String(n).padStart(2, "0")}
+                </span>
+                <span className="leading-snug">{label}</span>
+              </a>
+            ))}
+          </div>
+        </Card>
+
         {/* ── 1. Conditional Probability ── */}
+        <div id="sec-1" />
         <Card>
           <SectionLabel>Section 1</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Conditional Probability</h2>
@@ -298,6 +338,7 @@ export default function ProbabilityStatisticsPage() {
         </Card>
 
         {/* ── 2. Bayes' Theorem ── */}
+        <div id="sec-2" />
         <Card>
           <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayes{"'"} Theorem</h2>
@@ -355,6 +396,7 @@ The rarity of the disease dominates.`}
         </Card>
 
         {/* ── 3. Independence ── */}
+        <div id="sec-3" />
         <Card>
           <SectionLabel>Section 3</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Independence</h2>
@@ -426,6 +468,7 @@ PARALLEL — any one succeeding is enough:
         </Card>
 
         {/* ── 4. PDF and CDF ── */}
+        <div id="sec-4" />
         <Card>
           <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">PDF and CDF</h2>
@@ -492,6 +535,7 @@ PARALLEL — any one succeeding is enough:
         </Card>
 
         {/* ── 5. Key Distributions ── */}
+        <div id="sec-5" />
         <Card>
           <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Key Probability Distributions</h2>
@@ -738,6 +782,7 @@ Critical value χ²(0.05, df=2) = 5.99
         </Card>
 
         {/* ── 6. Concentration Inequalities ── */}
+        <div id="sec-6" />
         <Card>
           <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Concentration Inequalities: Markov {"&"} Chebyshev</h2>
@@ -831,6 +876,7 @@ Critical value χ²(0.05, df=2) = 5.99
         </Card>
 
         {/* ── 7. Law of Large Numbers ── */}
+        <div id="sec-7" />
         <Card>
           <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Law of Large Numbers</h2>
@@ -882,6 +928,7 @@ Critical value χ²(0.05, df=2) = 5.99
         </Card>
 
         {/* ── 8. Moment Generating Functions ── */}
+        <div id="sec-8" />
         <Card>
           <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Moment Generating Functions (MGF)</h2>
@@ -944,6 +991,7 @@ Critical value χ²(0.05, df=2) = 5.99
         </Card>
 
         {/* ── 9. Central Limit Theorem ── */}
+        <div id="sec-9" />
         <Card>
           <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Central Limit Theorem</h2>
@@ -1163,6 +1211,7 @@ Examples:
         </Card>
 
         {/* ── 10. Information Theory ── */}
+        <div id="sec-10" />
         <Card>
           <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
@@ -1363,6 +1412,7 @@ Examples:
         </Card>
 
         {/* ── 11. MLE ── */}
+        <div id="sec-11" />
         <Card>
           <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
@@ -1417,6 +1467,7 @@ Examples:
         </Card>
 
         {/* ── 12. Hypothesis Testing ── */}
+        <div id="sec-12" />
         <Card>
           <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
@@ -1486,6 +1537,7 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
         </Card>
 
         {/* ── 13. Confidence Intervals ── */}
+        <div id="sec-13" />
         <Card>
           <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
@@ -1529,6 +1581,7 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
         </Card>
 
         {/* ── 14. A/B Testing ── */}
+        <div id="sec-14" />
         <Card>
           <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
@@ -1589,6 +1642,7 @@ Step 6: Ship if p < α AND guardrails ok`}
         </Card>
 
         {/* ── 15. Bayesian Inference ── */}
+        <div id="sec-15" />
         <Card>
           <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
@@ -1690,6 +1744,7 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 16. Interview Q&A ── */}
+        <div id="sec-16" />
         <Card>
           <SectionLabel>Section 16</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
@@ -1727,6 +1782,7 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 17. Cheat Sheet ── */}
+        <div id="sec-17" />
         <Card>
           <SectionLabel>Section 17</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
