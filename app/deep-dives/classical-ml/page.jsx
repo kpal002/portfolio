@@ -292,6 +292,66 @@ export default function ClassicalMLPage() {
             ]}
           />
 
+          {/* Normal Equation derivation */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Normal Equation — Full Derivation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-3">
+            Where <em>X ∈ ℝⁿˣᵈ</em> is the design matrix, <em>y ∈ ℝⁿ</em> the target vector, and <em>θ ∈ ℝᵈ</em> the parameters.
+          </p>
+
+          <MathBlock
+            label="Step 1 — Setup: minimize MSE loss"
+            lines={[
+              String.raw`L(\theta) = \|y - X\theta\|^2 = (y - X\theta)^\top(y - X\theta)`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 2 — Expand"
+            lines={[
+              String.raw`L(\theta) = y^\top y - y^\top X\theta - (X\theta)^\top y + (X\theta)^\top X\theta`,
+              String.raw`= y^\top y - 2\theta^\top X^\top y + \theta^\top X^\top X\theta`,
+            ]}
+          />
+          <p className="text-[11px] text-ink/60 mb-2 pl-1">
+            (Since <em>y⊤Xθ</em> is a scalar it equals its own transpose, so the two middle terms merge.)
+          </p>
+
+          <MathBlock
+            label="Step 3 — Gradient w.r.t. θ  (using ∂/∂θ(θᵀAθ) = 2Aθ for symmetric A)"
+            lines={[
+              String.raw`\frac{\partial L}{\partial \theta} = -2X^\top y + 2X^\top X\theta`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 4 — Set to zero → Normal Equations"
+            lines={[
+              String.raw`-2X^\top y + 2X^\top X\theta = 0`,
+              String.raw`X^\top X\theta = X^\top y`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 5 — Solve (assuming XᵀX invertible)"
+            lines={[
+              String.raw`\boxed{\hat{\theta} = (X^\top X)^{-1} X^\top y}`,
+            ]}
+          />
+
+          <div className="mt-4 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold mb-1">Geometric intuition</p>
+            <p className="text-sm leading-relaxed text-ink/80">
+              <em>X⊤X</em> is invertible only when X has full column rank — no multicollinearity.
+              Geometrically, <em>ŷ = Xθ̂</em> is the <strong>orthogonal projection</strong> of y onto
+              the column space of X. The residual <em>y − Xθ̂</em> is perpendicular to every column of
+              X, which is exactly what the normal equations encode:
+            </p>
+            <MathBlock
+              label=""
+              lines={[String.raw`X^\top(y - X\hat{\theta}) = 0`]}
+            />
+          </div>
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Assumptions (LINE)</p>
           <BoldBulletList items={[
             { label: "Linearity", desc: "Relationship between X and y is linear. Check: residual plot should show no pattern." },
