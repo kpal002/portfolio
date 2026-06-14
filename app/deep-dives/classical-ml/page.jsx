@@ -221,7 +221,68 @@ export default function ClassicalMLPage() {
             ]}
           />
 
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Solving — Two Approaches</p>
+          <p className="mt-6 mb-2 text-[11px] font-bold uppercase tracking-widest text-muted">What each optimizes toward</p>
+          <CompareTable
+            headers={["", "MSE", "MAE"]}
+            rows={[
+              ["Optimal estimator", "Mean of target distribution", "Median of target distribution"],
+              ["Sensitivity to outliers", "High — squares large errors", "Low — linear penalty"],
+              ["Gradient behavior", "Smooth everywhere", "Non-differentiable at zero"],
+              ["Optimization", "Easier — smooth gradients", "Harder — needs subgradients or IRLS"],
+            ]}
+          />
+
+          <p className="mt-4 text-sm leading-relaxed text-ink/80">
+            Gradient behavior matters for linear regression specifically:
+          </p>
+          <MathBlock
+            label="MSE gradient (smooth)"
+            lines={[
+              String.raw`\frac{\partial \,\text{MSE}}{\partial \hat{y}} = -\frac{2}{n}(y_i - \hat{y}_i)`,
+            ]}
+          />
+          <p className="mt-2 mb-4 text-sm leading-relaxed text-ink/80">
+            MAE gradient is discontinuous at zero — requires subgradient methods or iterative reweighted
+            least squares (IRLS). This makes closed-form solutions unavailable for MAE.
+          </p>
+          <MathBlock
+            label="MSE — closed-form normal equation"
+            lines={[
+              String.raw`\hat{\theta} = (X^\top X)^{-1} X^\top y`,
+            ]}
+          />
+          <p className="mt-2 mb-4 text-sm leading-relaxed text-ink/80">MAE has no closed-form equivalent.</p>
+
+          <div className="mt-4 border-2 border-ink bg-bg p-5">
+            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-accent">Sustainability angle — when this comes up in interviews</p>
+            <p className="text-sm leading-relaxed text-ink/80 mb-3">
+              <em>"We're predicting carbon emissions per shipment but some routes have extreme outliers due to air freight."</em>
+            </p>
+            <ul className="space-y-2">
+              <li className="flex items-start gap-3 text-sm text-ink/90">
+                <span className="shrink-0 font-bold text-accent">→</span>
+                <span>If air freight outliers are <strong>real and important</strong> → use MSE, you want the model to take them seriously</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-ink/90">
+                <span className="shrink-0 font-bold text-accent">→</span>
+                <span>If air freight outliers are <strong>data quality issues</strong> → use MAE, you don't want them distorting your model</span>
+              </li>
+            </ul>
+          </div>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Huber loss — the practical middle ground</p>
+          <MathBlock
+            label="Huber Loss"
+            lines={[
+              String.raw`L_\delta(y, \hat{y}) = \begin{cases} \tfrac{1}{2}(y - \hat{y})^2 & |y - \hat{y}| \leq \delta \\ \delta\,|y - \hat{y}| - \tfrac{1}{2}\delta^2 & \text{otherwise} \end{cases}`,
+            ]}
+          />
+          <p className="mt-2 text-sm leading-relaxed text-ink/80">
+            Quadratic for small errors like MSE, linear for large errors like MAE. Smooth gradients +
+            outlier robustness. <em>δ</em> is a tunable threshold that defines what counts as a "small" error.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Solving — Two Approaches</p>
           <MathBlock
             label="Normal Equation vs Gradient Descent"
             lines={[
@@ -230,6 +291,66 @@ export default function ClassicalMLPage() {
               String.raw`w \leftarrow w - \eta \cdot \frac{\partial \text{MSE}}{\partial w}, \qquad b \leftarrow b - \eta \cdot \frac{\partial \text{MSE}}{\partial b}`,
             ]}
           />
+
+          {/* Normal Equation derivation */}
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Normal Equation — Full Derivation</p>
+          <p className="text-sm leading-relaxed text-ink/80 mb-3">
+            Where <em>X ∈ ℝⁿˣᵈ</em> is the design matrix, <em>y ∈ ℝⁿ</em> the target vector, and <em>θ ∈ ℝᵈ</em> the parameters.
+          </p>
+
+          <MathBlock
+            label="Step 1 — Setup: minimize MSE loss"
+            lines={[
+              String.raw`L(\theta) = \|y - X\theta\|^2 = (y - X\theta)^\top(y - X\theta)`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 2 — Expand"
+            lines={[
+              String.raw`L(\theta) = y^\top y - y^\top X\theta - (X\theta)^\top y + (X\theta)^\top X\theta`,
+              String.raw`= y^\top y - 2\theta^\top X^\top y + \theta^\top X^\top X\theta`,
+            ]}
+          />
+          <p className="text-[11px] text-ink/60 mb-2 pl-1">
+            (Since <em>y⊤Xθ</em> is a scalar it equals its own transpose, so the two middle terms merge.)
+          </p>
+
+          <MathBlock
+            label="Step 3 — Gradient w.r.t. θ  (using ∂/∂θ(θᵀAθ) = 2Aθ for symmetric A)"
+            lines={[
+              String.raw`\frac{\partial L}{\partial \theta} = -2X^\top y + 2X^\top X\theta`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 4 — Set to zero → Normal Equations"
+            lines={[
+              String.raw`-2X^\top y + 2X^\top X\theta = 0`,
+              String.raw`X^\top X\theta = X^\top y`,
+            ]}
+          />
+
+          <MathBlock
+            label="Step 5 — Solve (assuming XᵀX invertible)"
+            lines={[
+              String.raw`\boxed{\hat{\theta} = (X^\top X)^{-1} X^\top y}`,
+            ]}
+          />
+
+          <div className="mt-4 border-l-4 border-accent pl-5">
+            <p className="text-sm font-bold mb-1">Geometric intuition</p>
+            <p className="text-sm leading-relaxed text-ink/80">
+              <em>X⊤X</em> is invertible only when X has full column rank — no multicollinearity.
+              Geometrically, <em>ŷ = Xθ̂</em> is the <strong>orthogonal projection</strong> of y onto
+              the column space of X. The residual <em>y − Xθ̂</em> is perpendicular to every column of
+              X, which is exactly what the normal equations encode:
+            </p>
+            <MathBlock
+              label=""
+              lines={[String.raw`X^\top(y - X\hat{\theta}) = 0`]}
+            />
+          </div>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Assumptions (LINE)</p>
           <BoldBulletList items={[
