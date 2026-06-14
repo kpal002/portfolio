@@ -933,8 +933,9 @@ Critical value χ²(0.05, df=2) = 5.99
           <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Moment Generating Functions (MGF)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
-            A function that encodes all moments of a distribution in one compact object. MGFs are the
-            backbone of the CLT proof and the source of exponentially tight Chernoff bounds.
+            The MGF is the expectation E[e^&#123;tX&#125;], a single function whose n-th derivative at t=0
+            returns the n-th moment. Because it turns sums of independent variables into products,
+            it drives both the CLT proof and exponentially tight Chernoff bounds.
           </p>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Definition</p>
@@ -948,11 +949,27 @@ Critical value χ²(0.05, df=2) = 5.99
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Key Properties</p>
-          <BoldBulletList items={[
-            { label: "Uniqueness", desc: "If two distributions have the same MGF in a neighborhood of 0, they are identical. MGF uniquely identifies a distribution." },
-            { label: "Independence → multiplication", desc: "If X and Y are independent, M_{X+Y}(t) = Mₓ(t) · M_Y(t). Convolution in distribution space becomes multiplication in MGF space." },
-            { label: "Scaling", desc: "M_{aX+b}(t) = e^{bt} · Mₓ(at)" },
-          ]} />
+          <ul className="mt-4 space-y-4">
+            <li className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+              <span className="mt-0.5 shrink-0 font-bold text-accent">→</span>
+              <span><strong>Uniqueness:</strong> If two distributions have the same MGF in a neighborhood of 0, they are identical. MGF uniquely identifies a distribution.</span>
+            </li>
+            <li className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+              <span className="mt-0.5 shrink-0 font-bold text-accent">→</span>
+              <div className="min-w-0">
+                <strong>Independence → multiplication:</strong> If X and Y are independent:
+                <MathBlock label="" lines={[String.raw`M_{X+Y}(t) = M_X(t) \cdot M_Y(t)`]} />
+                <span className="text-ink/80">Convolution in distribution space becomes multiplication in MGF space.</span>
+              </div>
+            </li>
+            <li className="flex items-start gap-3 text-sm leading-relaxed text-ink/90">
+              <span className="mt-0.5 shrink-0 font-bold text-accent">→</span>
+              <div className="min-w-0">
+                <strong>Scaling:</strong>
+                <MathBlock label="" lines={[String.raw`M_{aX+b}(t) = e^{bt} \cdot M_X(at)`]} />
+              </div>
+            </li>
+          </ul>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">MGFs of Common Distributions</p>
           <CompareTable
@@ -985,7 +1002,7 @@ Critical value χ²(0.05, df=2) = 5.99
           <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">ML applications</p>
           <BulletList items={[
             "PAC learning and boosting theory (AdaBoost proof): Chernoff bounds give exponentially tight generalization guarantees",
-            "Log partition function in exponential family models: log M_X(t) is the cumulant generating function; its derivatives give mean and variance",
+            "Log partition function in exponential family models: log M_X(t) — the cumulant generating function — has derivatives that give the mean and variance directly",
             "Variational inference: KL divergence between exponential family distributions derives from MGF structure",
           ]} />
         </Card>
