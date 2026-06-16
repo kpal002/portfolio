@@ -150,6 +150,23 @@ function Insight({ label = "Key Insight", children }) {
   );
 }
 
+function QABlock({ items, title = "Q&A" }) {
+  return (
+    <div className="mt-8 border-t-2 border-ink pt-8">
+      <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">{title}</p>
+      <div className="space-y-5">
+        {items.map((item, i) => (
+          <div key={i} className="border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Q{i + 1}</p>
+            <p className="text-sm font-bold mb-3">{item.q}</p>
+            <div className="text-sm leading-relaxed text-ink/80">{item.a}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ClassicalMLPage() {
   return (
     <div className="min-h-screen bg-bg font-mono text-ink">
@@ -193,7 +210,42 @@ export default function ClassicalMLPage() {
           </ul>
         </Card>
 
+        {/* ── Table of Contents ── */}
+        <Card>
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-muted">
+            <span className="text-accent">{">"} </span>Table of Contents
+          </p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {[
+              { n: 1,  label: "Linear Regression",              id: "sec-1"  },
+              { n: 2,  label: "Logistic Regression",             id: "sec-2"  },
+              { n: 3,  label: "Decision Trees",                  id: "sec-3"  },
+              { n: 4,  label: "Random Forests",                  id: "sec-4"  },
+              { n: 5,  label: "Gradient Boosting",                id: "sec-5"  },
+              { n: 6,  label: "Support Vector Machines",          id: "sec-6"  },
+              { n: 7,  label: "Regularization",                  id: "sec-7"  },
+              { n: 8,  label: "Bias-Variance Trade-off",          id: "sec-8"  },
+              { n: 9,  label: "Cross-Validation",                 id: "sec-9"  },
+              { n: 10, label: "Feature Engineering",              id: "sec-10" },
+              { n: 11, label: "Classical ML vs Deep Learning",    id: "sec-11" },
+              { n: 12, label: "Cheat Sheet",                      id: "sec-12" },
+            ].map(({ n, label, id }) => (
+              <a
+                key={id}
+                href={`#${id}`}
+                className="flex items-baseline gap-2 py-1 text-sm text-ink/70 transition hover:text-accent"
+              >
+                <span className="shrink-0 text-[11px] font-bold text-accent/60 font-mono">
+                  {String(n).padStart(2, "0")}
+                </span>
+                <span className="leading-snug">{label}</span>
+              </a>
+            ))}
+          </div>
+        </Card>
+
         {/* ── 1. Linear Regression ── */}
+        <div id="sec-1" />
         <Card>
           <SectionLabel>Section 1</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Linear Regression</h2>
@@ -394,9 +446,16 @@ export default function ClassicalMLPage() {
             — linear regression with feature engineering is often a strong, interpretable baseline.
           </InterviewCallout>
 
+          <QABlock items={[
+            {
+              q: "Can you fit non-linear data with linear regression?",
+              a: "Yes — by adding non-linear transformations of the features as new inputs. The model remains linear in its weights so all the math still works, but it can now fit curves. Common approaches: polynomial features (add x², x³), log transforms for exponential relationships, and explicit interaction terms. The risk is overfitting with high-degree polynomials and feature explosion with many inputs — degree-2 on 100 features produces 5,050 columns. This is why tree-based models are usually preferred for complex non-linear relationships: they learn interactions automatically without manual feature engineering.",
+            },
+          ]} />
         </Card>
 
         {/* ── 2. Logistic Regression ── */}
+        <div id="sec-2" />
         <Card>
           <SectionLabel>Section 2</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Logistic Regression</h2>
@@ -799,9 +858,49 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               </p>
             </div>
           </div>
+
+          <QABlock items={[
+            {
+              q: "Why can't logistic regression be solved in closed form?",
+              a: (<>
+                <p className="mb-2">Setting the gradient of cross-entropy loss to zero gives:</p>
+                <MathBlock math={String.raw`\frac{1}{m}X^\top(\sigma(X\theta)-y)=0`} />
+                <p className="mt-2">Unlike linear regression where the equivalent equation is linear in θ (giving the Normal Equation), σ(Xθ) is a nonlinear function of θ. There is no algebraic way to isolate θ — this is a transcendental equation. Gradient descent is the only option.</p>
+              </>),
+            },
+            {
+              q: "What happens if you predict exactly 0 or 1 in cross-entropy loss?",
+              a: (<>
+                <p className="mb-2">The loss becomes infinite. Cross-entropy is defined as:</p>
+                <MathBlock math={String.raw`L = -\bigl[y\log\hat{y} + (1-y)\log(1-\hat{y})\bigr]`} />
+                <p className="mt-2">If y=1 and ŷ=0: L = −log(0) = +∞. The sigmoid σ(z) approaches 0 or 1 only as z→±∞, so in practice the loss never literally diverges — but it grows without bound as the model becomes over-confident in a wrong prediction. This is the mechanism that makes cross-entropy aggressively penalize confident mistakes.</p>
+              </>),
+            },
+            {
+              q: "Why does gradient descent on cross-entropy give exactly (ŷ − y) per example?",
+              a: (<>
+                <p className="mb-2">This is a consequence of the GLM canonical link structure, not a coincidence. In exponential family notation, the log-partition function A(η) satisfies:</p>
+                <MathBlock math={String.raw`\frac{\partial A}{\partial \eta} = \mathbb{E}[y] = \hat{y}`} />
+                <p className="mt-2">The negative log-likelihood gradient is always (Ê[y]−y)·x = (ŷ−y)·x. The logistic function is exactly the canonical link for the Bernoulli family, so the gradient telescopes cleanly. This same pattern holds for Poisson regression with log-link and Gaussian with identity-link — each produces (prediction − target) as the error signal.</p>
+              </>),
+            },
+            {
+              q: "What happens when logistic regression trains on perfectly linearly separable data?",
+              a: (<>
+                <p className="mb-2">Weights diverge to ±∞. A separating hyperplane exists, so the loss can always be decreased by scaling weights up:</p>
+                <MathBlock math={String.raw`\lim_{\|\theta\|\to\infty} \sigma(\theta^\top x_i) \to \begin{cases}1 & y_i=1 \\ 0 & y_i=0\end{cases}`} />
+                <p className="mt-2">Gradient descent never converges — it keeps growing the weights. L2 regularization fixes this by adding a competing term λ‖θ‖² that makes the total objective convex with a finite minimizer. L1 has the same effect. SVMs handle separable data naturally because their objective directly maximizes the margin rather than minimizing a probabilistic loss.</p>
+              </>),
+            },
+            {
+              q: "How do you make the output of binary logistic regression better reflect confidence?",
+              a: "Raw logistic regression outputs are probabilities but they are not well-calibrated — especially when regularization is strong or training data is small. Two fixes: (1) Platt scaling: train a logistic regression on the model's output scores on a held-out set. (2) Isotonic regression: a non-parametric monotonic transform fitted on held-out outputs. Use calibration curves (reliability diagrams) to diagnose the problem: a well-calibrated model should have predicted probability ≈ actual frequency in each probability bin.",
+            },
+          ]} />
         </Card>
 
         {/* ── 3. Decision Trees ── */}
+        <div id="sec-3" />
         <Card>
           <SectionLabel>Section 3</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Decision Trees</h2>
@@ -858,6 +957,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
         </Card>
 
         {/* ── 4. Random Forests ── */}
+        <div id="sec-4" />
         <Card>
           <SectionLabel>Section 4</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Random Forests</h2>
@@ -938,9 +1038,21 @@ result = permutation_importance(rf, X_val, y_val)
             Key advantages: OOB error estimate, built-in feature importance, robust to outliers, no scaling needed.
             Disadvantage: less interpretable than a single tree, can still overfit noisy data.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: "What is the difference between bagging and boosting?",
+              a: "Bagging (Bootstrap Aggregating) trains many models in parallel on random bootstrap samples and averages their outputs. Each model is independent — the goal is to reduce variance. Random Forest is bagging over decision trees with an extra twist: each split also samples a random feature subset, which de-correlates the trees further. Boosting trains models sequentially: each new model focuses on examples the previous ensemble got wrong. The goal is to reduce bias. Both reduce total error, but through opposite mechanisms — bagging for high-variance (overfitting) models, boosting for high-bias (underfitting) models.",
+            },
+            {
+              q: "Why does Random Forest reduce variance but not bias?",
+              a: "Each tree in a Random Forest is an unbiased (or near-unbiased) estimator on its training data — grown deep, it fits the data closely. Averaging N uncorrelated estimators reduces the variance of the mean by a factor of N, but it doesn't change the expected value of each estimator. So bias stays the same (whatever the single-tree bias was) and variance drops. Boosting attacks bias instead: each weak learner has high bias, and sequential fitting of residuals iteratively corrects systematic errors, trading some variance for lower bias.",
+            },
+          ]} />
         </Card>
 
         {/* ── 5. Gradient Boosting ── */}
+        <div id="sec-5" />
         <Card>
           <SectionLabel>Section 5</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Gradient Boosting — XGBoost {"&"} LightGBM</h2>
@@ -1021,9 +1133,21 @@ Connection to gradient descent:
             convergence. LightGBM uses histogram-based splitting and leaf-wise growth for 10–100× speedup on
             large datasets. In practice gradient boosting almost always outperforms Random Forests on tabular data.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: "How does XGBoost handle missing values?",
+              a: "XGBoost learns a default direction for missing values at each split. During training, it tries sending all missing values left and right at each split and picks whichever direction reduces the objective more. This learned default is stored per node. At prediction time, any missing value follows that stored direction automatically. The result: XGBoost doesn't need imputation and often handles missing values better than median/mean filling, because the missingness pattern itself can be informative (e.g., a missing income field correlates with income below a reporting threshold).",
+            },
+            {
+              q: "Does boosting work with linear models as the base learner?",
+              a: "Yes, but the result is just regularized linear regression. Boosting with linear base learners sums up many linear functions, which is still linear — there's no capacity gain. The only benefit is implicit regularization from early stopping. In practice this is rarely done because a single well-tuned linear model achieves the same result. The reason boosting is powerful is that it combines weak non-linear learners (shallow trees) into a strong non-linear ensemble. The non-linearity and interaction-capturing of trees is what makes gradient boosting effective on tabular data.",
+            },
+          ]} />
         </Card>
 
         {/* ── 6. SVMs ── */}
+        <div id="sec-6" />
         <Card>
           <SectionLabel>Section 6</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Support Vector Machines</h2>
@@ -1094,9 +1218,20 @@ RBF/Gaussian: K(x,z) = exp(-γ||x-z||²)          → infinite-dimensional space
             small-to-medium datasets with high-dimensional features (e.g., text). They scale poorly to large
             datasets (O(N²) to O(N³) training time) — use gradient boosting or neural networks instead.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: "What is the kernel trick in SVMs?",
+              a: (<>
+                <p className="mb-2">SVMs find a linear boundary in feature space. For non-linear data you can map inputs to a higher-dimensional space where a linear boundary exists — but computing those coordinates explicitly is expensive. The kernel trick avoids this: SVM optimization only ever needs dot products between points. If a function K(x,z) computes the dot product in the high-dimensional space without constructing that space, you can substitute K(x,z) everywhere and never explicitly map to high dimensions.</p>
+                <p className="mt-2">Common kernels: <strong>RBF</strong> K(x,z)=exp(−γ‖x−z‖²) maps to infinite-dimensional space; <strong>polynomial</strong> K(x,z)=(x·z+c)^d; <strong>linear</strong> K(x,z)=x·z (recovers standard SVM). The key insight: Mercer's theorem guarantees that any positive semi-definite function can be a valid kernel — it corresponds to a dot product in some feature space.</p>
+              </>),
+            },
+          ]} />
         </Card>
 
         {/* ── 7. Regularization ── */}
+        <div id="sec-7" />
         <Card>
           <SectionLabel>Section 7</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Regularization — L1, L2, Elastic Net</h2>
@@ -1153,9 +1288,25 @@ print(gs.best_params_)`}
             correlated features (L1 arbitrarily picks one from a correlated group; Elastic Net selects the
             group together). λ is always tuned via cross-validation.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: "When would you use L1 vs L2 regularization?",
+              a: "Use L1 (Lasso) when you believe most features are irrelevant and you want automatic feature selection — L1 produces sparse solutions with exact zeros. Use L2 (Ridge) when many features each contribute a small amount — L2 shrinks all weights proportionally but rarely zeroes any out, which is better for dense signal. Use Elastic Net when features are correlated: L1 arbitrarily selects one from a correlated group (which one depends on random initialization), while Elastic Net tends to include or exclude the whole group together. One practical rule: start with Ridge for numeric stability and interpretability; switch to Lasso or Elastic Net if you need a sparse model or suspect many irrelevant features.",
+            },
+            {
+              q: "Does L1 or L2 regularization give you the true minimizer? Can Ridge achieve a lower loss than OLS?",
+              a: (<>
+                <p className="mb-2">No — both add a penalty term, so the regularized minimizer is not the OLS minimizer. Ridge minimizes:</p>
+                <MathBlock math={String.raw`\|\hat\theta_{\text{ridge}}\|_2 \geq \|\hat\theta_{\text{OLS}}\|_2 \text{ is not guaranteed, but } \mathcal{L}_{\text{train}}(\hat\theta_{\text{ridge}}) \geq \mathcal{L}_{\text{train}}(\hat\theta_{\text{OLS}})`} />
+                <p className="mt-2">OLS achieves the minimum of the unpenalized training loss by definition. Ridge can never beat OLS on training loss — it intentionally accepts higher training loss in exchange for smaller weights that generalize better. However, Ridge can achieve lower test loss when the OLS solution overfits. The bias-variance tradeoff in one line: Ridge trades a little bias for a lot of variance reduction.</p>
+              </>),
+            },
+          ]} />
         </Card>
 
         {/* ── 8. Bias-Variance ── */}
+        <div id="sec-8" />
         <Card>
           <SectionLabel>Section 8</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bias-Variance Trade-off</h2>
@@ -1262,6 +1413,7 @@ High train error + Low test error    → Impossible
         </Card>
 
         {/* ── 9. Cross-Validation ── */}
+        <div id="sec-9" />
         <Card>
           <SectionLabel>Section 9</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Cross-Validation</h2>
@@ -1345,6 +1497,7 @@ tscv = TimeSeriesSplit(n_splits=5)`}
         </Card>
 
         {/* ── 10. Feature Engineering ── */}
+        <div id="sec-10" />
         <Card>
           <SectionLabel>Section 10</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Feature Engineering</h2>
@@ -1444,6 +1597,7 @@ XGBoost/LightGBM handle missing values natively — no imputation needed.`}
         </Card>
 
         {/* ── 11. Classical vs Deep Learning ── */}
+        <div id="sec-11" />
         <Card>
           <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">When Classical ML Beats Deep Learning</h2>
@@ -1554,72 +1708,19 @@ Example: 'Does this intervention reduce supplier emissions?'
             learning. For sustainability data — supplier tables, emissions inventories, regulatory filings —
             classical ML is almost always the right first choice.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: "You have a dataset with 5,000 rows and 200 features. Which model do you start with?",
+              a: "Start with logistic/linear regression as a baseline — it's fast, interpretable, and tells you whether the signal is strong enough to warrant anything else. Then try XGBoost: it handles 5K rows without overfitting (with early stopping on a validation split), naturally deals with correlated features and missing values, and SHAP gives you feature attribution. With 200 features on 5K rows, neural networks are a bad fit — you'd need heavy regularization and they'd likely underperform gradient boosting. Reserve deep learning for when you have > 50–100K rows or the features are unstructured (text, images). Spend most of your time on feature engineering and data quality — model choice rarely matters more than those.",
+            },
+          ]} />
         </Card>
 
-        {/* ── 12. Interview Q&A ── */}
+        {/* ── 12. Cheat Sheet ── */}
+        <div id="sec-12" />
         <Card>
           <SectionLabel>Section 12</SectionLabel>
-          <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
-          <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
-          <div className="space-y-5">
-            {[
-              {
-                q: "What is the difference between bagging and boosting?",
-                a: "Bagging (Random Forests) trains many models in parallel on bootstrap samples and averages predictions — reduces variance while keeping bias the same. Boosting trains sequentially where each model corrects the errors of the previous one — reduces bias while keeping variance roughly the same. Bagging is more robust to noisy data. Boosting achieves lower error on clean data but can overfit noise.",
-              },
-              {
-                q: "When would you use L1 vs L2 regularization?",
-                a: "L1 (Lasso) when you believe most features are irrelevant and want automatic feature selection — produces sparse solutions with exact zeros. L2 (Ridge) when you believe most features contribute a little and want to keep all of them with smaller weights. Elastic Net when you have correlated features — L1 tends to arbitrarily pick one from a correlated group while Elastic Net selects the group together.",
-              },
-              {
-                q: "How does XGBoost handle missing values?",
-                a: "During training, for each split XGBoost learns the optimal default direction for missing values — it tries sending missing values left and right and picks whichever direction reduces loss more. This learned default is stored in the tree. At inference time, missing values are automatically routed down the learned direction. No imputation needed.",
-              },
-              {
-                q: "Why does Random Forest reduce variance but not bias?",
-                a: "Variance of an average of N uncorrelated variables = σ²/N. By training on different bootstrap samples with random feature subsets, the trees are decorrelated — their errors don't all go in the same direction. Averaging N decorrelated trees reduces variance by approximately 1/N. Bias doesn't change because each individual tree is just as biased as before — averaging doesn't make each tree less biased.",
-              },
-              {
-                q: "What is the kernel trick in SVMs?",
-                a: "The SVM optimization only needs dot products between training points, never the raw feature vectors. The kernel trick replaces the dot product xᵢᵀxⱼ with a kernel function K(xᵢ,xⱼ) that computes the dot product in a higher-dimensional space without actually mapping there. The RBF kernel corresponds to an infinite-dimensional space. This enables non-linear decision boundaries at the computational cost of the original space.",
-              },
-              {
-                q: "You have a dataset with 5,000 rows and 200 features. Which model do you start with?",
-                a: "I'd start with a Random Forest or XGBoost baseline. 5K rows is small enough that deep learning would likely overfit. I'd use 5-fold stratified cross-validation to evaluate, check OOB error as a sanity check, and use permutation importance to identify the most predictive features. If interpretability matters, I'd also fit a logistic regression with L2 regularization for comparison.",
-              },
-              {
-                q: "Can you fit non-linear data with linear regression?",
-                a: "Yes — by adding non-linear transformations of the features as new inputs. The model remains linear in its weights so all the math still works, but it can now fit curves. Common approaches: polynomial features (add x², x³), log transforms for exponential relationships, and explicit interaction terms. The risk is overfitting with high-degree polynomials and feature explosion with many inputs — degree-2 on 100 features produces 5,050 columns. This is why tree-based models are usually preferred for complex non-linear relationships: they learn interactions automatically without manual feature engineering.",
-              },
-              {
-                q: "Using L1 or L2 regularization in regression — does it give you the true minimizer? Can ridge achieve a lower loss than OLS?",
-                a: "No on both counts. Linear regression minimizes L(w) = ||y - Xw||² with minimizer w* = (XᵀX)⁻¹Xᵀy. Ridge minimizes a different objective entirely: L_ridge(w) = ||y - Xw||² + λ||w||², whose minimizer is w_ridge = (XᵀX + λI)⁻¹Xᵀy. Adding λ||w||² reshapes the loss landscape — it pulls the solution toward the origin. w_ridge is a biased estimate of w*; regularization deliberately trades the true minimizer for a smaller-norm solution that generalises better. For L1 the constraint region is a diamond and the solution hits a corner, producing sparse weights — also not the true minimizer. On the second question: if the base problem is well-posed with a unique minimizer w*, then by definition L(w*) ≤ L(w) for all w. w_ridge is just another point in ℝᵈ, so L(w*) ≤ L(w_ridge) always. Ridge cannot achieve lower unregularized training loss. What it does achieve is a lower value of its own regularized objective — L_ridge(w_ridge) ≤ L_ridge(w*) = L(w*) + λ||w*||². In concrete terms: if OLS loss = 100 and ||w*||² = 25 with λ = 2, then L_ridge(w*) = 150. Ridge finds w_ridge with say unregularized loss 110 but norm 8, giving L_ridge = 126 — lower regularized loss, higher plain loss. The one edge case: as λ → 0 the constraint becomes non-binding, w_ridge → w*, and both losses converge.",
-              },
-              {
-                q: "What happens when you fit logistic regression to perfectly linearly separable data? What about SVM?",
-                a: "The two models behave in completely opposite ways. Logistic regression fails — the weights diverge to infinity. Because the data is separable, every training point is correctly classified for any sufficiently large w. The log loss for a correct prediction is -log(ŷ), which is minimized by pushing ŷ → 1, which requires wᵀx → +∞, which requires ||w|| → ∞. The optimizer keeps scaling up weights indefinitely: the decision boundary direction stabilises but the magnitude never stops growing, gradient descent never converges, and sklearn emits a 'max_iter reached' warning. Probabilities collapse to exactly 0 or 1 with no meaningful confidence. Fix: add L2 regularization — the penalty λ||w||² prevents weights growing to infinity and forces convergence to a finite solution. SVM was literally designed for this case. It finds the unique maximum margin hyperplane — the one decision boundary that is as far as possible from all training points. While logistic regression weights blow up, SVM minimizes ||w|| subject to correct classification, so its weights converge to the smallest possible value. The solution is finite, unique, and geometrically optimal. Only the support vectors (points on the margin) determine it. An interesting theoretical result: as L2-regularized logistic regression's regularization goes to zero (C → ∞ in sklearn), its solution converges to the SVM solution — they are the same classifier in the separable limit.",
-              },
-              {
-                q: "Does boosting work with linear models?",
-                a: "Technically yes, but the result collapses into a single linear model — you gain nothing over just training one linear model better. Boosting builds an additive ensemble F(x) = Σᵢ αᵢ·hᵢ(x). If each weak learner hᵢ is linear — hᵢ(x) = wᵢᵀx + bᵢ — then F(x) = (Σᵢ αᵢwᵢ)ᵀx + Σᵢ αᵢbᵢ = Wᵀx + B. The sum of linear models is just another linear model with combined weights. You're in the same function class you started in — boosting adds no expressive power. This is why boosting is always paired with weak learners that are non-linear, typically shallow decision trees (stumps). Trees can capture interactions and non-linearities that linear models can't, so each boosting round genuinely reduces a residual the previous model couldn't fit. The whole point of boosting is to escape the limitations of a single weak learner — and you can only do that if the weak learner has some non-linearity to contribute.",
-              },
-              {
-                q: "How do you make the output of binary logistic regression generative, or better reflect confidence?",
-                a: "Logistic regression is discriminative — it models P(y|x) directly and outputs a single score. It can't generate new samples or quantify uncertainty in its weights. Three approaches address this. (1) Make it generative: add a model of P(x|y) and recover P(y|x) via Bayes' theorem — P(y=1|x) = P(x|y=1)·P(y=1) / P(x), where P(x) = P(x|y=1)·P(y=1) + P(x|y=0)·P(y=0) is the normalising constant that drops out when computing class ratios. If you assume Gaussian features per class you get GDA — each class gets its own Gaussian N(μₖ, Σₖ) with a quadratic boundary. LDA is the special case where all classes share one covariance Σ, which makes the quadratic terms cancel and gives a linear boundary identical to logistic regression. LDA/GDA can generate new samples by drawing from N(μₖ, Σₖ). (2) Better confidence via Bayesian logistic regression: treat weights as a distribution rather than a point estimate. You get a mean prediction and a std per input — two inputs can both output 0.85 but one has std=0.02 (confident) and the other std=0.20 (uncertain). (3) Conformal prediction: output a set of classes guaranteed to contain the true label with user-defined probability (e.g. 90% coverage). High-confidence inputs get a singleton set {class 1}; uncertain inputs get {class 0, class 1}.",
-              },
-            ].map((item, i) => (
-              <div key={i} className="border-2 border-ink bg-bg p-5">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Q{i + 1}</p>
-                <p className="text-sm font-bold mb-3">{item.q}</p>
-                <p className="text-sm leading-relaxed text-ink/80">{item.a}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* ── 13. Cheat Sheet ── */}
-        <Card>
-          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
