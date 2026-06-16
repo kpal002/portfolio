@@ -864,7 +864,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "What distribution does logistic regression assume for the labels?",
               a: (<>
                 <p className="mb-2">Logistic regression assumes labels y&#x2099; ∈ &#123;0,1&#125; follow a <strong>Bernoulli distribution</strong> parameterized by ŷ = σ(θᵀx):</p>
-                <MathBlock math={String.raw`p(y \mid x;\theta) = \hat{y}^{\,y}(1-\hat{y})^{1-y}`} />
+                <MathBlock lines={[String.raw`p(y \mid x;\theta) = \hat{y}^{\,y}(1-\hat{y})^{1-y}`]} />
                 <p className="mt-2">Taking the negative log-likelihood over m i.i.d. samples directly produces cross-entropy loss — the two are identical. Minimizing cross-entropy is MLE under a Bernoulli assumption, not an arbitrary design choice.</p>
               </>),
             },
@@ -872,11 +872,11 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "Derive logistic regression from maximum likelihood.",
               a: (<>
                 <p className="mb-2">Likelihood over m i.i.d. samples:</p>
-                <MathBlock math={String.raw`\mathcal{L}(\theta) = \prod_{i=1}^{m} \hat{y}_i^{\,y_i}(1-\hat{y}_i)^{1-y_i}`} />
+                <MathBlock lines={[String.raw`\mathcal{L}(\theta) = \prod_{i=1}^{m} \hat{y}_i^{\,y_i}(1-\hat{y}_i)^{1-y_i}`]} />
                 <p className="mt-2 mb-2">Log-likelihood:</p>
-                <MathBlock math={String.raw`\log\mathcal{L}(\theta) = \sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`} />
+                <MathBlock lines={[String.raw`\log\mathcal{L}(\theta) = \sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`]} />
                 <p className="mt-2 mb-2">Negate to convert to a minimization objective:</p>
-                <MathBlock math={String.raw`L(\theta) = -\frac{1}{m}\sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`} />
+                <MathBlock lines={[String.raw`L(\theta) = -\frac{1}{m}\sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`]} />
                 <p className="mt-2">This is exactly cross-entropy loss. Cross-entropy is MLE under Bernoulli — a derivation, not a heuristic.</p>
               </>),
             },
@@ -884,7 +884,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "Why can't logistic regression be solved in closed form?",
               a: (<>
                 <p className="mb-2">Setting the gradient of cross-entropy loss to zero gives:</p>
-                <MathBlock math={String.raw`\frac{1}{m}X^\top(\sigma(X\theta)-y)=0`} />
+                <MathBlock lines={[String.raw`\frac{1}{m}X^\top(\sigma(X\theta)-y)=0`]} />
                 <p className="mt-2">Unlike linear regression where the equivalent equation is linear in θ (giving the Normal Equation), σ(Xθ) is a nonlinear function of θ. There is no algebraic way to isolate θ — this is a transcendental equation. Gradient descent is the only option.</p>
               </>),
             },
@@ -892,7 +892,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "What happens if you predict exactly 0 or 1 in cross-entropy loss?",
               a: (<>
                 <p className="mb-2">The loss becomes infinite. Cross-entropy is defined as:</p>
-                <MathBlock math={String.raw`L = -\bigl[y\log\hat{y} + (1-y)\log(1-\hat{y})\bigr]`} />
+                <MathBlock lines={[String.raw`L = -\bigl[y\log\hat{y} + (1-y)\log(1-\hat{y})\bigr]`]} />
                 <p className="mt-2">If y=1 and ŷ=0: L = −log(0) = +∞. The sigmoid σ(z) approaches 0 or 1 only as z→±∞, so in practice the loss never literally diverges — but it grows without bound as the model becomes over-confident in a wrong prediction. This is the mechanism that makes cross-entropy aggressively penalize confident mistakes.</p>
               </>),
             },
@@ -900,7 +900,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "Why does gradient descent on cross-entropy give exactly (ŷ − y) per example?",
               a: (<>
                 <p className="mb-2">This is a consequence of the GLM canonical link structure, not a coincidence. In exponential family notation, the log-partition function A(η) satisfies:</p>
-                <MathBlock math={String.raw`\frac{\partial A}{\partial \eta} = \mathbb{E}[y] = \hat{y}`} />
+                <MathBlock lines={[String.raw`\frac{\partial A}{\partial \eta} = \mathbb{E}[y] = \hat{y}`]} />
                 <p className="mt-2">The negative log-likelihood gradient is always (Ê[y]−y)·x = (ŷ−y)·x. The logistic function is exactly the canonical link for the Bernoulli family, so the gradient telescopes cleanly. This same pattern holds for Poisson regression with log-link and Gaussian with identity-link — each produces (prediction − target) as the error signal.</p>
               </>),
             },
@@ -908,7 +908,7 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "What happens when logistic regression trains on perfectly linearly separable data?",
               a: (<>
                 <p className="mb-2">Weights diverge to ±∞. A separating hyperplane exists, so the loss can always be decreased by scaling weights up:</p>
-                <MathBlock math={String.raw`\lim_{\|\theta\|\to\infty} \sigma(\theta^\top x_i) \to \begin{cases}1 & y_i=1 \\ 0 & y_i=0\end{cases}`} />
+                <MathBlock lines={[String.raw`\lim_{\|\theta\|\to\infty} \sigma(\theta^\top x_i) \to \begin{cases}1 & y_i=1 \\ 0 & y_i=0\end{cases}`]} />
                 <p className="mt-2">Gradient descent never converges — it keeps growing the weights. L2 regularization fixes this by adding a competing term λ‖θ‖² that makes the total objective convex with a finite minimizer. L1 has the same effect. SVMs handle separable data naturally because their objective directly maximizes the margin rather than minimizing a probabilistic loss.</p>
               </>),
             },
@@ -1318,7 +1318,7 @@ print(gs.best_params_)`}
               q: "Does L1 or L2 regularization give you the true minimizer? Can Ridge achieve a lower loss than OLS?",
               a: (<>
                 <p className="mb-2">No — both add a penalty term, so the regularized minimizer is not the OLS minimizer. Ridge minimizes:</p>
-                <MathBlock math={String.raw`\|\hat\theta_{\text{ridge}}\|_2 \geq \|\hat\theta_{\text{OLS}}\|_2 \text{ is not guaranteed, but } \mathcal{L}_{\text{train}}(\hat\theta_{\text{ridge}}) \geq \mathcal{L}_{\text{train}}(\hat\theta_{\text{OLS}})`} />
+                <MathBlock lines={[String.raw`\|\hat\theta_{\text{ridge}}\|_2 \geq \|\hat\theta_{\text{OLS}}\|_2 \text{ is not guaranteed, but } \mathcal{L}_{\text{train}}(\hat\theta_{\text{ridge}}) \geq \mathcal{L}_{\text{train}}(\hat\theta_{\text{OLS}})`]} />
                 <p className="mt-2">OLS achieves the minimum of the unpenalized training loss by definition. Ridge can never beat OLS on training loss — it intentionally accepts higher training loss in exchange for smaller weights that generalize better. However, Ridge can achieve lower test loss when the OLS solution overfits. The bias-variance tradeoff in one line: Ridge trades a little bias for a lot of variance reduction.</p>
               </>),
             },
