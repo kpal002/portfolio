@@ -861,6 +861,26 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
 
           <QABlock items={[
             {
+              q: "What distribution does logistic regression assume for the labels?",
+              a: (<>
+                <p className="mb-2">Logistic regression assumes labels y&#x2099; ∈ &#123;0,1&#125; follow a <strong>Bernoulli distribution</strong> parameterized by ŷ = σ(θᵀx):</p>
+                <MathBlock math={String.raw`p(y \mid x;\theta) = \hat{y}^{\,y}(1-\hat{y})^{1-y}`} />
+                <p className="mt-2">Taking the negative log-likelihood over m i.i.d. samples directly produces cross-entropy loss — the two are identical. Minimizing cross-entropy is MLE under a Bernoulli assumption, not an arbitrary design choice.</p>
+              </>),
+            },
+            {
+              q: "Derive logistic regression from maximum likelihood.",
+              a: (<>
+                <p className="mb-2">Likelihood over m i.i.d. samples:</p>
+                <MathBlock math={String.raw`\mathcal{L}(\theta) = \prod_{i=1}^{m} \hat{y}_i^{\,y_i}(1-\hat{y}_i)^{1-y_i}`} />
+                <p className="mt-2 mb-2">Log-likelihood:</p>
+                <MathBlock math={String.raw`\log\mathcal{L}(\theta) = \sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`} />
+                <p className="mt-2 mb-2">Negate to convert to a minimization objective:</p>
+                <MathBlock math={String.raw`L(\theta) = -\frac{1}{m}\sum_{i=1}^{m}\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`} />
+                <p className="mt-2">This is exactly cross-entropy loss. Cross-entropy is MLE under Bernoulli — a derivation, not a heuristic.</p>
+              </>),
+            },
+            {
               q: "Why can't logistic regression be solved in closed form?",
               a: (<>
                 <p className="mb-2">Setting the gradient of cross-entropy loss to zero gives:</p>
