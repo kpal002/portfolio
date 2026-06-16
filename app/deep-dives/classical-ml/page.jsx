@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import katex from "katex";
+import QABlock from "./QABlock";
 
 export const metadata = {
   title: "Classical ML — Deep Dives — Kuntal Pal",
@@ -150,22 +151,6 @@ function Insight({ label = "Key Insight", children }) {
   );
 }
 
-function QABlock({ items, title = "Q&A" }) {
-  return (
-    <div className="mt-8 border-t-2 border-ink pt-8">
-      <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">{title}</p>
-      <div className="space-y-5">
-        {items.map((item, i) => (
-          <div key={i} className="border-2 border-ink bg-bg p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Q{i + 1}</p>
-            <p className="text-sm font-bold mb-3">{item.q}</p>
-            <div className="text-sm leading-relaxed text-ink/80">{item.a}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function ClassicalMLPage() {
   return (
