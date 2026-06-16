@@ -290,23 +290,6 @@ export default function ClassicalMLPage() {
           />
           <p className="mt-2 mb-4 text-sm leading-relaxed text-ink/80">MAE has no closed-form equivalent.</p>
 
-          <div className="mt-4 border-2 border-ink bg-bg p-5">
-            <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-accent">Sustainability angle — when this comes up in interviews</p>
-            <p className="text-sm leading-relaxed text-ink/80 mb-3">
-              <em>"We're predicting carbon emissions per shipment but some routes have extreme outliers due to air freight."</em>
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-3 text-sm text-ink/90">
-                <span className="shrink-0 font-bold text-accent">→</span>
-                <span>If air freight outliers are <strong>real and important</strong> → use MSE, you want the model to take them seriously</span>
-              </li>
-              <li className="flex items-start gap-3 text-sm text-ink/90">
-                <span className="shrink-0 font-bold text-accent">→</span>
-                <span>If air freight outliers are <strong>data quality issues</strong> → use MAE, you don't want them distorting your model</span>
-              </li>
-            </ul>
-          </div>
-
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Huber loss — the practical middle ground</p>
           <MathBlock
             label="Huber Loss"
