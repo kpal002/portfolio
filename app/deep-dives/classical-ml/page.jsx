@@ -458,21 +458,16 @@ export default function ClassicalMLPage() {
             <span className="font-mono">Xw + b = 0</span>. This is a <strong>hyperplane</strong> in
             feature space — a line in 2D, a plane in 3D.
           </p>
-          <CodeBlock
+          <MathBlock
             label="Why it's called a linear classifier"
-            code={`Decision boundary: wᵀx + b = 0  →  a hyperplane
-
-  σ(wᵀx + b) = 0.5  ←→  wᵀx + b = 0  ←→  Xw + b = 0
-
-The sigmoid is nonlinear, but the boundary it creates is linear.
-That's why logistic regression is a linear classifier.
-
-Can only separate:   ✓ linearly separable classes
-Cannot separate:     ✗ XOR  ✗ concentric circles  ✗ spirals
-
-For non-linear boundaries:
-  → Feature engineering: add polynomial features x₁², x₂², x₁x₂
-  → More powerful model: SVM with RBF kernel, neural network`}
+            lines={[
+              String.raw`\text{Decision boundary: }w^\top x + b = 0 \;\rightarrow\; \text{a hyperplane}`,
+              String.raw`\sigma(w^\top x+b)=0.5 \;\Longleftrightarrow\; w^\top x+b=0`,
+              String.raw`\text{The sigmoid is nonlinear, but the boundary it creates is linear.}`,
+              String.raw``,
+              String.raw`\text{Can separate: linearly separable classes}\quad\checkmark`,
+              String.raw`\text{Cannot separate: XOR, concentric circles, spirals}\quad\times`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Multiclass Extension — Softmax</p>
@@ -510,14 +505,11 @@ For non-linear boundaries:
                 },
                 {
                   label: "Linearity of log-odds",
-                  body: "The key assumption. Linear relationship between features and the log-odds of the outcome — not the probability directly.",
-                  code: `log(P(y=1) / P(y=0)) = wᵀx + b   ← log-odds is linear in x
-
-Probability: S-shaped (sigmoid) relationship with x
-Log-odds:    LINEAR relationship with x
-
-Check: plot log-odds against each continuous feature
-Fix:   add polynomial terms or bin the feature if non-linear`,
+                  body: "The key assumption. Linear relationship between features and the log-odds of the outcome — not the probability directly. Check by plotting log-odds against each continuous feature. Fix by adding polynomial terms or binning if non-linear.",
+                  mathLines: [
+                    String.raw`\log\frac{P(y=1)}{P(y=0)} = w^\top x + b \quad\leftarrow\text{log-odds is linear in }x`,
+                    String.raw`\text{Probability: S-shaped (sigmoid) in }x \quad\text{Log-odds: linear in }x`,
+                  ],
                 },
                 {
                   label: "No multicollinearity",
@@ -535,11 +527,7 @@ Fix:   add polynomial terms or bin the feature if non-linear`,
                 <div key={item.label} className="border-l-4 border-ink pl-5">
                   <p className="text-sm font-bold">{item.label}</p>
                   <p className="mt-1 text-sm leading-relaxed text-ink/80">{item.body}</p>
-                  {item.code && (
-                    <pre className="mt-2 overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                      <code>{item.code}</code>
-                    </pre>
-                  )}
+                  {item.mathLines && <MathBlock lines={item.mathLines} />}
                 </div>
               ))}
             </div>
@@ -602,84 +590,66 @@ Fix:   add polynomial terms or bin the feature if non-linear`,
             <div className="space-y-4">
 
               {/* Step 1 */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Probabilistic model</p>
-                <p className="text-sm text-ink/80 mb-3">
-                  Model each label as a Bernoulli random variable. Both cases in one expression:
-                </p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`P(y | x) = ŷʸ · (1-ŷ)^(1-y)
-
-y=1: ŷ¹ · (1-ŷ)⁰ = ŷ       ✓
-y=0: ŷ⁰ · (1-ŷ)¹ = (1-ŷ)   ✓`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="Step 1 — Probabilistic model: both cases in one expression"
+                lines={[
+                  String.raw`p(y \mid x) = \hat{y}^{\,y}(1-\hat{y})^{1-y}`,
+                  String.raw`y=1:\quad \hat{y}^1(1-\hat{y})^0 = \hat{y} \quad\checkmark`,
+                  String.raw`y=0:\quad \hat{y}^0(1-\hat{y})^1 = 1-\hat{y} \quad\checkmark`,
+                ]}
+              />
 
               {/* Step 2 */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Write the likelihood</p>
-                <p className="text-sm text-ink/80 mb-3">
-                  Assuming N examples are independent, the probability of observing all of them is:
-                </p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`L(w) = ∏ᵢ P(yᵢ | xᵢ)  =  ∏ᵢ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ)`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="Step 2 — Joint likelihood over N i.i.d. examples"
+                lines={[
+                  String.raw`\mathcal{L}(w) = \prod_i p(y_i \mid x_i) = \prod_i \hat{y}_i^{\,y_i}(1-\hat{y}_i)^{1-y_i}`,
+                ]}
+              />
 
               {/* Step 3 */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Take the log</p>
-                <p className="text-sm text-ink/80 mb-3">
-                  Log turns products into sums. Maximizing log L(w) is equivalent to maximizing L(w).
-                </p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`log L(w) = Σᵢ log [ ŷᵢʸⁱ · (1-ŷᵢ)^(1-yᵢ) ]   ← log(∏) = Σlog
-
-         = Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]   ← log(aᵇ) = b·log(a)`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="Step 3 — Log-likelihood (log turns ∏ into Σ)"
+                lines={[
+                  String.raw`\log\mathcal{L}(w) = \sum_i \log\bigl[\hat{y}_i^{\,y_i}(1-\hat{y}_i)^{1-y_i}\bigr] \qquad \log(\textstyle\prod)=\textstyle\sum\log`,
+                  String.raw`= \sum_i \bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr] \qquad \log(a^b)=b\log a`,
+                ]}
+              />
 
               {/* Step 4 */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Negate to get a loss</p>
-                <p className="text-sm text-ink/80 mb-3">
-                  ML frameworks minimize, not maximize. Negate and average:
-                </p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`Loss = -(1/N) Σᵢ [ yᵢ·log(ŷᵢ) + (1-yᵢ)·log(1-ŷᵢ) ]
-
-This is exactly binary cross-entropy.  ✓`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="Step 4 — Negate and average to get a minimization objective"
+                lines={[
+                  String.raw`L(w) = -\frac{1}{N}\sum_i\bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr] \quad\checkmark\;\text{binary cross-entropy}`,
+                ]}
+              />
 
               {/* Intuition */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Intuition — penalty grows exponentially for confident mistakes</p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`y=1, ŷ=0.99  (correct, confident)  →  -log(0.99) ≈ 0.01   tiny
-y=1, ŷ=0.50  (correct, uncertain)  →  -log(0.50) ≈ 0.69   moderate
-y=1, ŷ=0.01  (wrong,   confident)  →  -log(0.01) ≈ 4.60   huge
-
-As ŷ → 0 when y=1:  -log(ŷ)   → +∞
-As ŷ → 1 when y=0:  -log(1-ŷ) → +∞`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="Intuition — penalty grows for confident mistakes"
+                lines={[
+                  String.raw`\hat{y}=0.99\;\text{(correct, confident)}\;\rightarrow\;{-\log(0.99)}\approx 0.01\;\text{(tiny)}`,
+                  String.raw`\hat{y}=0.50\;\text{(correct, uncertain)}\;\rightarrow\;{-\log(0.50)}\approx 0.69\;\text{(moderate)}`,
+                  String.raw`\hat{y}=0.01\;\text{(wrong,}\;\text{confident)}\;\rightarrow\;{-\log(0.01)}\approx 4.60\;\text{(huge)}`,
+                  String.raw``,
+                  String.raw`\hat{y}\to 0\text{ when }y=1:\;-\log(\hat{y})\to+\infty`,
+                  String.raw`\hat{y}\to 1\text{ when }y=0:\;-\log(1-\hat{y})\to+\infty`,
+                ]}
+              />
 
               {/* Full chain */}
-              <div className="border-2 border-ink bg-bg p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">The full chain</p>
-                <pre className="overflow-x-auto bg-ink p-4 text-[11px] leading-relaxed text-accent">
-                  <code>{`Bernoulli model for binary labels
-           ↓
-L(w) = ∏ ŷʸ(1-ŷ)^(1-y)
-           ↓
-log L(w) = Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]
-           ↓
-Negate + average
-           ↓
-Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
-                </pre>
-              </div>
+              <MathBlock
+                label="The full chain"
+                lines={[
+                  String.raw`\text{Bernoulli: }p(y\mid x)=\hat{y}^y(1-\hat{y})^{1-y}`,
+                  String.raw`\downarrow`,
+                  String.raw`\mathcal{L}(w)=\prod_i\hat{y}_i^{y_i}(1-\hat{y}_i)^{1-y_i}`,
+                  String.raw`\downarrow`,
+                  String.raw`\log\mathcal{L}(w)=\sum_i[y_i\log\hat{y}_i+(1-y_i)\log(1-\hat{y}_i)]`,
+                  String.raw`\downarrow`,
+                  String.raw`L=-\tfrac{1}{N}\sum_i[y_i\log\hat{y}_i+(1-y_i)\log(1-\hat{y}_i)]`,
+                ]}
+              />
 
             </div>
 
@@ -932,6 +902,27 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
                   String.raw`-\tfrac{1}{2}x^T(\Sigma_1^{-1} - \Sigma_0^{-1})x + \text{linear terms} + \text{const}`,
                 ]} />
                 <p className="mt-2">The quadratic term survives → log-odds is quadratic in x → sigmoid of a quadratic → <strong>Quadratic Discriminant Analysis (QDA)</strong>, not logistic regression. The decision boundary becomes a conic section (ellipse, parabola, hyperbola) instead of a hyperplane.</p>
+              </>),
+            },
+            {
+              q: "Why is MSE non-convex for logistic regression, and why does cross-entropy fix it?",
+              a: (<>
+                <p className="mb-3">MSE with a sigmoid output composes a quadratic loss with a nonlinear function of θ. The Hessian contains a sign-flipping factor that makes it indefinite in some regions — so the loss surface has local minima gradient descent can get stuck in.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">The MSE Hessian — not PSD everywhere</p>
+                <MathBlock lines={[
+                  String.raw`L_{\text{MSE}}(\theta) = \tfrac{1}{m}\sum_i(y_i - \sigma(\theta^\top x_i))^2`,
+                  String.raw`\frac{\partial^2 L}{\partial \theta^2} \propto \sigma(1-\sigma)\underbrace{(1-2\sigma)}_{\text{flips sign}} \cdot xx^\top`,
+                ]} />
+                <p className="mt-1 mb-3 text-sm">When σ {">"} 0.5 the factor (1−2σ) is negative — the Hessian is not PSD, meaning the loss is not convex at those points. Gradient descent can converge to a local minimum.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Cross-entropy Hessian — always PSD</p>
+                <MathBlock lines={[
+                  String.raw`L_{\text{CE}}(\theta) = -\tfrac{1}{m}\sum_i[y_i\log\hat{y}_i+(1-y_i)\log(1-\hat{y}_i)]`,
+                  String.raw`H = \tfrac{1}{m}X^\top S X, \quad S = \mathrm{diag}(\hat{y}_i(1-\hat{y}_i))`,
+                  String.raw`\hat{y}_i(1-\hat{y}_i) > 0 \;\;\forall i \;\Rightarrow\; H \succeq 0 \;\text{always}`,
+                ]} />
+                <p className="mt-2">The log and sigmoid cancel each other{"'"}s nonlinearity. Rewriting in terms of the raw logit z = θᵀx, the loss reduces to softplus log(1+e⁻ᶻ) — convex — plus a linear term (1−y)z — also convex. Their sum is convex with a single global minimum.</p>
               </>),
             },
           ]} />
@@ -1219,16 +1210,16 @@ Connection to gradient descent:
             SVMs only need dot products between points. Replace with a kernel K(xᵢ, xⱼ) that computes dot
             products in a higher-dimensional space without explicitly mapping there.
           </p>
-          <CodeBlock
+          <MathBlock
             label="Common kernels"
-            code={`Linear:      K(x,z) = xᵀz                      → linear boundary
-Polynomial:  K(x,z) = (xᵀz + c)ᵈ               → degree-d boundary
-RBF/Gaussian: K(x,z) = exp(-γ||x-z||²)          → infinite-dimensional space
-                                                   → most powerful, default choice
-
-γ controls locality:
-  High γ → complex boundary, each support vector has narrow influence
-  Low γ  → smooth boundary, wide influence`}
+            lines={[
+              String.raw`\text{Linear:}\quad K(x,z)=x^\top z \;\rightarrow\; \text{linear boundary}`,
+              String.raw`\text{Polynomial:}\quad K(x,z)=(x^\top z+c)^d \;\rightarrow\; \text{degree-}d\text{ boundary}`,
+              String.raw`\text{RBF/Gaussian:}\quad K(x,z)=\exp(-\gamma\|x-z\|^2) \;\rightarrow\; \text{infinite-dimensional space (default)}`,
+              String.raw``,
+              String.raw`\text{High }\gamma \;\rightarrow\; \text{complex boundary, narrow influence per support vector}`,
+              String.raw`\text{Low }\gamma \;\rightarrow\; \text{smooth boundary, wide influence}`,
+            ]}
           />
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">SVM Hyperparameters</p>
@@ -1368,44 +1359,35 @@ print(gs.best_params_)`}
             <span className="font-mono">f̄ = E[f̂]</span> be the expected prediction of the model.
           </p>
 
-          <div className="space-y-0 border-2 border-ink">
-            {/* Step 1 */}
-            <div className="border-b-2 border-ink p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 1 — Add and subtract f̄</p>
-              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`E[(y − f̂)²]
-
-= E[(y − f̄  +  f̄ − f̂)²]
-
-= E[(y − f̄)²]  +  2E[(y − f̄)(f̄ − f̂)]  +  E[(f̄ − f̂)²]`}</pre>
-            </div>
-
-            {/* Step 2 */}
-            <div className="border-b-2 border-ink p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 2 — Cross term vanishes</p>
-              <p className="text-sm text-ink/80 mb-2">
-                <span className="font-mono">E[f̄ − f̂] = 0</span> because <span className="font-mono">f̄</span> is defined as <span className="font-mono">E[f̂]</span>, so the middle term is zero.
-              </p>
-              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(y − f̄)²]  +  E[(f̄ − f̂)²]
-
-= E[(f(x) + ε − f̄)²]  +  Var(f̂)`}</pre>
-            </div>
-
-            {/* Step 3 */}
-            <div className="border-b-2 border-ink p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 3 — Expand the first term</p>
-              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= E[(f(x) − f̄)²]  +  2E[ε(f(x) − f̄)]  +  E[ε²]  +  Var(f̂)`}</pre>
-            </div>
-
-            {/* Step 4 */}
-            <div className="p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">Step 4 — Middle term vanishes, collect terms</p>
-              <p className="text-sm text-ink/80 mb-2">
-                <span className="font-mono">E[ε] = 0</span> and <span className="font-mono">ε</span> is independent of <span className="font-mono">f(x) − f̄</span>, so the cross term is zero.
-              </p>
-              <pre className="text-[12px] leading-relaxed text-ink font-mono whitespace-pre-wrap">{`= (f(x) − f̄)²  +  Var(f̂)  +  σ²
-
-= Bias²  +  Variance  +  Irreducible Noise`}</pre>
-            </div>
+          <div className="space-y-0">
+            <MathBlock
+              label="Step 1 — Add and subtract f̄ = E[f̂]"
+              lines={[
+                String.raw`\mathbb{E}[(y-\hat{f})^2]`,
+                String.raw`= \mathbb{E}[(y-\bar{f}+\bar{f}-\hat{f})^2]`,
+                String.raw`= \mathbb{E}[(y-\bar{f})^2] + 2\,\mathbb{E}[(y-\bar{f})(\bar{f}-\hat{f})] + \mathbb{E}[(\bar{f}-\hat{f})^2]`,
+              ]}
+            />
+            <MathBlock
+              label="Step 2 — Cross term vanishes (E[f̄ − f̂] = 0 since f̄ = E[f̂])"
+              lines={[
+                String.raw`= \mathbb{E}[(y-\bar{f})^2] + \mathbb{E}[(\bar{f}-\hat{f})^2]`,
+                String.raw`= \mathbb{E}[(f(x)+\varepsilon-\bar{f})^2] + \mathrm{Var}(\hat{f})`,
+              ]}
+            />
+            <MathBlock
+              label="Step 3 — Expand the first term"
+              lines={[
+                String.raw`= \mathbb{E}[(f(x)-\bar{f})^2] + 2\,\mathbb{E}[\varepsilon(f(x)-\bar{f})] + \mathbb{E}[\varepsilon^2] + \mathrm{Var}(\hat{f})`,
+              ]}
+            />
+            <MathBlock
+              label="Step 4 — Cross term vanishes (E[ε] = 0, ε ⊥ f(x)−f̄); collect"
+              lines={[
+                String.raw`= (f(x)-\bar{f})^2 + \mathrm{Var}(\hat{f}) + \sigma^2`,
+                String.raw`= \underbrace{(f(x)-\bar{f})^2}_{\text{Bias}^2} + \underbrace{\mathrm{Var}(\hat{f})}_{\text{Variance}} + \underbrace{\sigma^2}_{\text{Irreducible Noise}}`,
+              ]}
+            />
           </div>
 
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Algorithm Positions on the Spectrum</p>
