@@ -670,6 +670,135 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               </p>
             </div>
           </div>
+
+          {/* Why MSE is non-convex */}
+          <div className="mt-8 border-t-2 border-ink pt-8">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-muted">
+              Why MSE Is Non-Convex for Logistic Regression
+            </p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-4">
+              Plugging the sigmoid prediction directly into MSE seems natural but breaks convexity —
+              this is why logistic regression uses cross-entropy instead.
+            </p>
+
+            <MathBlock
+              label="MSE loss with a sigmoid prediction"
+              lines={[
+                String.raw`\hat{y} = \sigma(\theta^\top x) = \frac{1}{1+e^{-\theta^\top x}}`,
+                String.raw`L(\theta) = \frac{1}{m}\sum_{i=1}^{m}\bigl(y_i - \sigma(\theta^\top x_i)\bigr)^2`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-4">
+              σ is a nonlinear function of θ. Composing a quadratic loss with a nonlinear function
+              destroys convexity — the resulting surface can have multiple local minima that gradient
+              descent gets stuck in.
+            </p>
+
+            <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Proof — the Hessian is not PSD everywhere</p>
+            <p className="text-sm leading-relaxed text-ink/90 mb-3">
+              Convexity requires the Hessian H = ∇²L(θ) to be positive semi-definite (all eigenvalues
+              ≥ 0) at every point. Expanding the second derivative of σ:
+            </p>
+            <MathBlock
+              label="Second derivative of the sigmoid"
+              lines={[
+                String.raw`\frac{\partial \sigma}{\partial \theta} = \sigma(1-\sigma)\cdot x`,
+                String.raw`\frac{\partial^2 \sigma}{\partial \theta^2} = \sigma(1-\sigma)(1-2\sigma)\cdot xx^\top`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-4">
+              The factor (1 − 2σ) flips sign depending on whether σ {">"} 0.5 or σ {"<"} 0.5. That sign
+              flip means the Hessian is not guaranteed PSD everywhere — convexity breaks. Geometrically:
+              linear-regression MSE is a single bowl with one global minimum reachable from any starting
+              point; MSE-on-sigmoid has ridges and local minima that trap gradient descent depending on
+              where it starts.
+            </p>
+
+            <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Why Cross-Entropy Fixes It</p>
+            <MathBlock
+              label="Cross-entropy Hessian — always PSD"
+              lines={[
+                String.raw`L(\theta) = -\frac{1}{m}\sum_{i=1}^m \bigl[y_i\log\hat{y}_i + (1-y_i)\log(1-\hat{y}_i)\bigr]`,
+                String.raw`H = \frac{1}{m}X^\top S X, \quad S = \text{diag}\bigl(\hat{y}_i(1-\hat{y}_i)\bigr)`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-2">
+              The log and sigmoid cancel each other{"'"}s nonlinearity elegantly — every diagonal entry of
+              S is positive since ŷᵢ ∈ (0,1), so XᵗSX is positive semi-definite <em>by construction</em>:
+              guaranteed convex, one global minimum, gradient descent always converges.
+            </p>
+
+            <p className="mt-6 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted/70">The log-sigmoid cancellation, step by step</p>
+            <p className="text-sm leading-relaxed text-ink/80 mb-3">
+              Work with the raw logit z = θᵗx (before the sigmoid) and one sample with label y ∈ &#123;0,1&#125;:
+            </p>
+            <MathBlock
+              label="Step 1 — rewrite log ŷ and log(1−ŷ) purely in terms of z"
+              lines={[
+                String.raw`\log\hat{y} = \log\frac{1}{1+e^{-z}} = -\log(1+e^{-z})`,
+                String.raw`1-\hat{y} = \frac{e^{-z}}{1+e^{-z}} \;\Rightarrow\; \log(1-\hat{y}) = -z - \log(1+e^{-z})`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-2">
+              The sigmoid has disappeared from both terms — only logs and exponentials of the raw
+              linear output z remain.
+            </p>
+            <MathBlock
+              label="Step 2 — substitute into the loss and simplify"
+              lines={[
+                String.raw`L = -\bigl[y\log\hat{y} + (1-y)\log(1-\hat{y})\bigr]`,
+                String.raw`= y\log(1+e^{-z}) + (1-y)\bigl(z+\log(1+e^{-z})\bigr)`,
+                String.raw`L = \log(1+e^{-z}) + (1-y)z`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-2">
+              The sigmoid is completely gone — the loss is now a function of the raw logit z alone
+              (this is the <em>softplus</em> form of log loss).
+            </p>
+            <MathBlock
+              label="Step 3 — gradient: where the clean (ŷ − y) form comes from"
+              lines={[
+                String.raw`\frac{\partial L}{\partial z} = \frac{-e^{-z}}{1+e^{-z}} + (1-y) = -(1-\sigma(z)) + (1-y) = \sigma(z) - y = \hat{y}-y`,
+              ]}
+            />
+            <MathBlock
+              label="Step 4 — Hessian: proving convexity"
+              lines={[
+                String.raw`\frac{\partial^2 L}{\partial z^2} = \frac{\partial}{\partial z}(\hat{y}-y) = \sigma(z)(1-\sigma(z)) = \hat{y}(1-\hat{y})`,
+                String.raw`\hat{y}(1-\hat{y}) > 0 \quad \text{everywhere, since } \hat{y}\in(0,1)`,
+              ]}
+            />
+            <p className="text-sm leading-relaxed text-ink/80 mb-4">
+              The log undoes the compressive nonlinearity of the sigmoid. What remains is softplus
+              log(1+e⁻ᶻ) — smooth and convex — plus a linear term (1−y)z, which is trivially convex.
+              The sum of convex functions is convex.
+            </p>
+
+            <CompareTable
+              headers={["", "MSE on σ(θᵗx)", "Cross-Entropy"]}
+              rows={[
+                ["Convex?", "No", "Yes"],
+                ["Why", "Sigmoid nonlinearity makes the Hessian indefinite", "Log cancels sigmoid — Hessian σ(1−σ)·xxᵗ is always PSD"],
+                ["Gradient", "Nested derivatives of σ — messy", "ŷ − y — clean and linear"],
+                ["Optimization", "Can get stuck in local minima", "Always converges to the global minimum"],
+              ]}
+            />
+
+            <div className="mt-4 border-l-4 border-accent pl-5">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">
+                <span className="text-accent">▸ </span>Interview One-Liner
+              </p>
+              <p className="text-sm leading-relaxed text-ink/80">
+                Plugging σ(θᵗx) into MSE composes a quadratic with a nonlinear sigmoid, and the term
+                (1−2σ) in the second derivative flips sign — so the Hessian isn{"'"}t PSD everywhere and
+                the loss surface gets local minima. Cross-entropy avoids this because the log and the
+                sigmoid cancel: rewritten in terms of the raw logit z, the loss reduces to softplus
+                log(1+e⁻ᶻ) plus a linear term, both convex. The choice of cross-entropy for
+                classification isn{"'"}t arbitrary — it{"'"}s the loss that restores convexity once the
+                output passes through a sigmoid.
+              </p>
+            </div>
+          </div>
         </Card>
 
         {/* ── 3. Decision Trees ── */}
