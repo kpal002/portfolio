@@ -901,6 +901,56 @@ Log Loss = -(1/N) Σ [y·log(ŷ) + (1-y)·log(1-ŷ)]`}</code>
               q: "How do you make the output of binary logistic regression better reflect confidence?",
               a: "Raw logistic regression outputs are probabilities but they are not well-calibrated — especially when regularization is strong or training data is small. Two fixes: (1) Platt scaling: train a logistic regression on the model's output scores on a held-out set. (2) Isotonic regression: a non-parametric monotonic transform fitted on held-out outputs. Use calibration curves (reliability diagrams) to diagnose the problem: a well-calibrated model should have predicted probability ≈ actual frequency in each probability bin.",
             },
+            {
+              q: "What is the relationship between logistic regression and Gaussian Naive Bayes?",
+              a: (<>
+                <p className="mb-3">Both produce a linear decision boundary. Under specific assumptions they are equivalent: GNB with shared covariance derives logistic regression exactly.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Setup — Gaussian class conditionals</p>
+                <MathBlock lines={[
+                  String.raw`p(x \mid y=k) = \frac{1}{(2\pi)^{d/2}|\Sigma|^{1/2}}\exp\!\left(-\tfrac{1}{2}(x-\mu_k)^T\Sigma^{-1}(x-\mu_k)\right)`,
+                ]} />
+                <p className="mb-3 text-[11px] text-muted">Shared covariance Σ across both classes — the key assumption.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 1 — Log-odds via Bayes' theorem</p>
+                <MathBlock lines={[
+                  String.raw`\log\frac{p(y=1\mid x)}{p(y=0\mid x)} = \log\frac{p(x\mid y=1)\,p(y=1)}{p(x\mid y=0)\,p(y=0)}`,
+                  String.raw`= \log\frac{p(x\mid y=1)}{p(x\mid y=0)} + \log\frac{p(y=1)}{p(y=0)}`,
+                ]} />
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 2 — Expand the Gaussian log-ratio</p>
+                <MathBlock lines={[
+                  String.raw`\log\frac{p(x\mid y=1)}{p(x\mid y=0)} = -\tfrac{1}{2}(x-\mu_1)^T\Sigma^{-1}(x-\mu_1) + \tfrac{1}{2}(x-\mu_0)^T\Sigma^{-1}(x-\mu_0)`,
+                ]} />
+                <p className="mb-3 text-[11px] text-muted">Normalizing constants cancel because Σ is shared.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 3 — Expand quadratics; x&#x1D40;Σ⁻¹x cancels</p>
+                <MathBlock lines={[
+                  String.raw`(x-\mu_k)^T\Sigma^{-1}(x-\mu_k) = x^T\Sigma^{-1}x - 2\mu_k^T\Sigma^{-1}x + \mu_k^T\Sigma^{-1}\mu_k`,
+                ]} />
+                <p className="mb-1 text-[11px] text-muted">Subtracting (k=1 minus k=0) the x&#x1D40;Σ⁻¹x terms cancel — this is the crucial step that makes the boundary linear:</p>
+                <MathBlock lines={[
+                  String.raw`= (\mu_1-\mu_0)^T\Sigma^{-1}x - \tfrac{1}{2}(\mu_1^T\Sigma^{-1}\mu_1 - \mu_0^T\Sigma^{-1}\mu_0)`,
+                ]} />
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 4 — Collect into θ&#x1D40;x + b</p>
+                <MathBlock lines={[
+                  String.raw`\log\frac{p(y=1\mid x)}{p(y=0\mid x)} = \underbrace{(\mu_1-\mu_0)^T\Sigma^{-1}}_{\theta^T}x + \underbrace{-\tfrac{1}{2}(\mu_1^T\Sigma^{-1}\mu_1 - \mu_0^T\Sigma^{-1}\mu_0) + \log\frac{p(y=1)}{p(y=0)}}_{b}`,
+                  String.raw`\theta = \Sigma^{-1}(\mu_1-\mu_0), \qquad b = -\tfrac{1}{2}(\mu_1^T\Sigma^{-1}\mu_1 - \mu_0^T\Sigma^{-1}\mu_0) + \log\frac{p(y=1)}{p(y=0)}`,
+                ]} />
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 5 — Recover the sigmoid</p>
+                <MathBlock lines={[
+                  String.raw`\frac{p(y=1\mid x)}{1-p(y=1\mid x)} = e^{\theta^T x+b} \implies p(y=1\mid x) = \sigma(\theta^T x + b)`,
+                ]} />
+                <p className="mt-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Why shared Σ is the critical assumption</p>
+                <p>If classes have different covariances Σ₁ ≠ Σ₀, the x&#x1D40;Σ⁻¹x terms do not cancel:</p>
+                <MathBlock lines={[
+                  String.raw`-\tfrac{1}{2}x^T(\Sigma_1^{-1} - \Sigma_0^{-1})x + \text{linear terms} + \text{const}`,
+                ]} />
+                <p className="mt-2">The quadratic term survives → log-odds is quadratic in x → sigmoid of a quadratic → <strong>Quadratic Discriminant Analysis (QDA)</strong>, not logistic regression. The decision boundary becomes a conic section (ellipse, parabola, hyperbola) instead of a hyperplane.</p>
+              </>),
+            },
           ]} />
         </Card>
 
