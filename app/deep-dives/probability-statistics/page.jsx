@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import katex from "katex";
+import QABlock from "./QABlock";
 
 export const metadata = {
   title: "Probability & Statistics — Deep Dives — Kuntal Pal",
@@ -1884,6 +1885,67 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
             n. CIs and two-sided hypothesis tests are duals: reject H₀ at α ↔ μ₀ outside 1−α CI.
             Bootstrap CIs work for any statistic when CLT fails.
           </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: `What is wrong with saying "95% probability that μ is in this CI"?`,
+              a: (<>
+                <p className="mb-3">μ is a fixed unknown constant — not a random variable. It is either in the interval or it is not. Probability statements about fixed constants are meaningless in the frequentist framework.</p>
+                <p className="mb-3">What is random is the interval itself — x̄ and s vary across samples, so the CI endpoints vary. The correct statement: <em>"The procedure that generated this interval, if repeated infinitely, would produce intervals containing μ 95% of the time."</em></p>
+                <p className="mb-3">Concretely: once you observe x̄ = 5.2 and compute [4.1, 6.3], the probability that μ ∈ [4.1, 6.3] is either 0 or 1 — you just don{"'"}t know which. The 95% is a property of the procedure, not of any single realized interval.</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">The Bayesian statement IS valid</p>
+                <MathBlock lines={[String.raw`P(\mu \in \text{CI} \mid \text{data}) = 0.95`]} />
+                <p className="mt-2">This is a <strong>credible interval</strong> — requires a prior on μ and treats μ as a random variable. The statement most people intuitively want requires the Bayesian framework.</p>
+              </>),
+            },
+            {
+              q: "You construct 20 CIs at 95% — how many do you expect to miss?",
+              a: (<>
+                <p className="mb-3">Each CI independently misses μ with probability α = 0.05. Number of misses ~ Binomial(20, 0.05):</p>
+                <MathBlock lines={[
+                  String.raw`\mathbb{E}[\text{misses}] = 20 \times 0.05 = 1`,
+                  String.raw`\text{Var}(\text{misses}) = 20 \times 0.05 \times 0.95 = 0.95`,
+                  String.raw`P(\text{no misses}) = (0.95)^{20} = 0.358`,
+                  String.raw`P(\text{misses} \geq 2) = 1 - 0.358 - 0.377 = 0.265`,
+                ]} />
+                <p className="mt-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Why this matters for multiple testing</p>
+                <p className="mb-3">If you test 20 hypotheses each at α = 0.05, the familywise error rate — probability of at least one false positive — is:</p>
+                <MathBlock lines={[
+                  String.raw`\text{FWER} = 1-(1-0.05)^{20} = 1-0.358 = 0.642`,
+                ]} />
+                <p className="mt-2">64% chance of at least one false positive. The per-test α and the experiment-wide α are completely different things — exactly why multiple testing corrections (Bonferroni, Benjamini-Hochberg) exist.</p>
+              </>),
+            },
+            {
+              q: "A 95% CI for the difference in means is [−0.3, 4.2]. What can you conclude at α = 0.05?",
+              a: (<>
+                <p className="mb-3">Fail to reject H₀: μ₁ − μ₂ = 0 at α = 0.05. The CI and two-sided hypothesis test are equivalent — the CI is the set of all δ₀ values you would fail to reject:</p>
+                <MathBlock lines={[
+                  String.raw`\text{Fail to reject }H_0:\mu_1-\mu_2=\delta_0 \iff \delta_0 \in \text{CI}`,
+                ]} />
+                <p className="mt-3 mb-3">Since 0 ∈ [−0.3, 4.2], the null value is inside the interval — fail to reject.</p>
+                <p className="mb-3">But the CI tells you something the p-value cannot: the effect could range from −0.3 to 4.2. This wide interval means the test is <strong>underpowered</strong> — failing to reject does not mean no effect, it means insufficient evidence.</p>
+                <p>Contrast with CI = [−0.02, 0.03]: also fails to reject, but now you know the effect is negligible in magnitude. The CI gives you this — the p-value alone does not.</p>
+              </>),
+            },
+            {
+              q: "Why does a wider CI not mean a better estimate?",
+              a: (<>
+                <p className="mb-3">A CI has two properties: <strong>coverage</strong> (does it contain μ?) and <strong>precision</strong> (how wide is it?). Width and quality pull in opposite directions.</p>
+                <p className="mb-3">The trivial CI (−∞, +∞) has 100% coverage — it always contains μ. But it tells you nothing. It is the worst possible estimate.</p>
+                <MathBlock lines={[String.raw`\text{Width} = 2z_{\alpha/2}\frac{s}{\sqrt{n}}`]} />
+                <p className="mt-3 mb-2">A wider CI means one of:</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm mb-3">
+                  <li>Higher confidence level 1−α → you paid for coverage with precision</li>
+                  <li>Large s → high population variance, noisy data</li>
+                  <li>Small n → insufficient data</li>
+                </ul>
+                <p className="mb-3">None of these make the estimate better — they reflect a deliberate trade-off or a data limitation. A better estimate is one that is <em>narrow</em> AND has correct coverage. The only lever that achieves this:</p>
+                <MathBlock lines={[String.raw`\text{Width} \propto \frac{1}{\sqrt{n}}`]} />
+                <p className="mt-2">Quadrupling n halves the width. More data strictly dominates higher confidence if the goal is a precise, reliable estimate.</p>
+              </>),
+            },
+          ]} />
         </Card>
 
         {/* ── 14. A/B Testing ── */}
