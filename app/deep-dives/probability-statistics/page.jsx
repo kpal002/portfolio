@@ -1732,7 +1732,28 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
             ]}
           />
 
-          <p className="mt-4 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Critical values for common levels</p>
+          {/* Worked example */}
+          <div className="mt-6 border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Worked Example — NFL Punter</p>
+            <p className="text-sm text-ink/80 mb-4">
+              A punter historically averages 41 yards/punt with SD 8 yards.
+              What is the probability their next 40 punts average at least 45 yards?
+            </p>
+            <MathBlock
+              lines={[
+                String.raw`\bar{X}_{40} = \frac{1}{40}\sum_{i=1}^{40}X_i, \quad \mathbb{E}[\bar{X}_{40}]=41, \quad \text{SD}(\bar{X}_{40})=\frac{8}{\sqrt{40}}`,
+                String.raw`P(\bar{X}_{40}\geq 45) = P\!\left(\frac{\bar{X}_{40}-41}{8/\sqrt{40}} \geq \frac{45-41}{8/\sqrt{40}}\right) = P(Z \geq 3.16)`,
+                String.raw`= 1 - \Phi(3.16) \approx 7.8\times10^{-4} \quad \text{(1 in 1\,000 chance)}`,
+              ]}
+            />
+            <p className="mt-3 text-sm text-ink/80">
+              The same standardization step — divide by SE = σ/√n, subtract μ — is exactly what
+              CI construction inverts: instead of computing a probability from a fixed x̄, the CI
+              finds all μ values consistent with the observed x̄.
+            </p>
+          </div>
+
+          <p className="mt-6 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Critical values for common levels</p>
           <div className="overflow-x-auto">
             <table className="w-full border-2 border-ink text-sm">
               <thead>
