@@ -262,14 +262,15 @@ export default function ProbabilityStatisticsPage() {
               { n: 7,  label: "Law of Large Numbers",            id: "sec-7"  },
               { n: 8,  label: "Moment Generating Functions",     id: "sec-8"  },
               { n: 9,  label: "Central Limit Theorem",           id: "sec-9"  },
-              { n: 10, label: "Information Theory",              id: "sec-10" },
-              { n: 11, label: "Maximum Likelihood (MLE)",        id: "sec-11" },
-              { n: 12, label: "Hypothesis Testing",              id: "sec-12" },
-              { n: 13, label: "Confidence Intervals",            id: "sec-13" },
-              { n: 14, label: "A/B Testing",                     id: "sec-14" },
-              { n: 15, label: "Bayesian Inference",              id: "sec-15" },
-              { n: 16, label: "Interview Q&A",                   id: "sec-16" },
-              { n: 17, label: "Cheat Sheet",                     id: "sec-17" },
+              { n: 10, label: "Random Sampling & Estimation",    id: "sec-10" },
+              { n: 11, label: "Information Theory",              id: "sec-11" },
+              { n: 12, label: "Maximum Likelihood (MLE)",        id: "sec-12" },
+              { n: 13, label: "Hypothesis Testing",              id: "sec-13" },
+              { n: 14, label: "Confidence Intervals",            id: "sec-14" },
+              { n: 15, label: "A/B Testing",                     id: "sec-15" },
+              { n: 16, label: "Bayesian Inference",              id: "sec-16" },
+              { n: 17, label: "Interview Q&A",                   id: "sec-17" },
+              { n: 18, label: "Cheat Sheet",                     id: "sec-18" },
             ].map(({ n, label, id }) => (
               <a
                 key={id}
@@ -1227,10 +1228,151 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 10. Information Theory ── */}
+        {/* ── 10. Random Sampling & Estimation ── */}
         <div id="sec-10" />
         <Card>
           <SectionLabel>Section 10</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Random Sampling {"&"} Parameter Estimation</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Random sampling is the process of selecting a subset from a population such that every sample
+            has a known, non-zero probability of being selected. It is the mechanism that makes statistical
+            inference possible — allowing you to draw conclusions about a population from a subset.
+          </p>
+
+          <p className="mt-6 mb-2 text-[11px] font-bold uppercase tracking-widest text-muted">Why It Matters</p>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Without random sampling, estimates are biased. The classic failure: the 1936 Literary Digest
+            poll predicted Landon over Roosevelt by sampling phone book and car registration owners —
+            systematically missing poor voters. The sample size was 2.4 million. Still wrong.{" "}
+            <strong>Bias cannot be fixed by more data — only by better sampling.</strong>
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Simple Random Sampling (SRS)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Every subset of size n from a population of size N is equally likely. Each individual has
+            selection probability n/N. The sample mean is an unbiased estimator of the population mean:
+          </p>
+          <MathBlock
+            label="SRS — selection probability and sampling distribution of X̄"
+            lines={[
+              String.raw`P(\text{any sample of size }n) = \frac{1}{\binom{N}{n}}`,
+              String.raw`\mathbb{E}[\bar{X}] = \mu, \qquad \mathrm{Var}(\bar{X}) = \frac{\sigma^2}{n}\!\left(1 - \frac{n}{N}\right)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            The factor (1 − n/N) is the <strong>finite population correction</strong> — it vanishes
+            when n ≪ N, recovering the standard σ²/n from the LLN.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Sample Mean — Estimating μ</p>
+          <MathBlock
+            label="Definition and unbiasedness proof"
+            lines={[
+              String.raw`\bar{x} = \frac{1}{n}\sum_{i=1}^{n}x_i`,
+              String.raw`\mathbb{E}[\bar{x}] = \frac{1}{n}\sum_{i=1}^{n}\mathbb{E}[x_i] = \frac{1}{n}\cdot n\mu = \mu \quad\checkmark`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            x̄ is an unbiased estimator of μ — no systematic over- or under-estimate.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Sample Variance — Estimating σ² (Bessel{"'"}s Correction)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The naive estimator dividing by n is biased because x̄ is computed from the same sample —
+            it is closer to each xᵢ than μ is, systematically underestimating spread.
+          </p>
+          <MathBlock
+            label="The biased estimator and why it fails"
+            lines={[
+              String.raw`\tilde{s}^2 = \frac{1}{n}\sum_{i=1}^{n}(x_i - \bar{x})^2`,
+              String.raw`(x_i - \bar{x}) = (x_i - \mu) - (\bar{x} - \mu)`,
+              String.raw`\sum_i(x_i-\bar{x})^2 = \sum_i(x_i-\mu)^2 - n(\bar{x}-\mu)^2`,
+              String.raw`\mathbb{E}\!\left[\sum_i(x_i-\bar{x})^2\right] = n\sigma^2 - n\cdot\frac{\sigma^2}{n} = (n-1)\sigma^2`,
+              String.raw`\therefore\;\mathbb{E}[\tilde{s}^2] = \frac{(n-1)\sigma^2}{n} \neq \sigma^2`,
+            ]}
+          />
+          <MathBlock
+            label="Bessel's correction — unbiased estimator"
+            lines={[
+              String.raw`s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2`,
+              String.raw`\mathbb{E}[s^2] = \frac{1}{n-1}\cdot(n-1)\sigma^2 = \sigma^2 \quad\checkmark`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mb-3">
+            Dividing by n−1 instead of n corrects for the lost degree of freedom. Once x̄ is fixed,
+            only n−1 of the deviations (xᵢ−x̄) are free — the last is determined by
+            Σ(xᵢ−x̄) = 0.
+          </p>
+          <p className="text-sm leading-relaxed text-ink/80">
+            <strong>Geometric intuition:</strong> n data points live in ℝⁿ. Computing x̄ projects
+            onto a 1-dimensional subspace — the constraint Σ(xᵢ−x̄) = 0 confines residuals to an
+            (n−1)-dimensional subspace. Variance is computed in this subspace, so we divide by its
+            true dimension n−1.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Standard Error of the Mean</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The variance of x̄ as an estimator — how much it fluctuates across different samples:
+          </p>
+          <MathBlock
+            label="SE and its sampling distribution"
+            lines={[
+              String.raw`\text{SE}(\bar{x}) = \frac{s}{\sqrt{n}}`,
+              String.raw`\frac{\bar{x}-\mu}{\text{SE}(\bar{x})} \;\sim\; t_{n-1} \;\xrightarrow{n\to\infty}\; \mathcal{N}(0,1)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            For small n the t-distribution accounts for extra uncertainty from estimating σ with s —
+            heavier tails than Gaussian, converging to Gaussian as n grows.
+          </p>
+
+          <p className="mt-8 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Summary</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Quantity</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Population (unknown)</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Sample estimator</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Biased?</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Mean", "μ", String.raw`\bar{x}=\tfrac{1}{n}\textstyle\sum x_i`, "No"],
+                  ["Variance", "σ²", String.raw`s^2=\tfrac{1}{n-1}\textstyle\sum(x_i-\bar{x})^2`, "No"],
+                  ["Std dev", "σ", String.raw`s=\sqrt{s^2}`, "Slightly yes*"],
+                  ["Std error", String.raw`\sigma/\sqrt{n}`, String.raw`s/\sqrt{n}`, "No"],
+                ].map(([qty, pop, est, bias]) => (
+                  <tr key={qty} className="border-b border-ink/30">
+                    <td className="px-4 py-2 text-sm font-bold">{qty}</td>
+                    <td className="px-4 py-2 text-center text-sm font-mono"
+                      dangerouslySetInnerHTML={{ __html: katex.renderToString(pop, { throwOnError: false }) }} />
+                    <td className="px-4 py-2 text-center text-sm font-mono"
+                      dangerouslySetInnerHTML={{ __html: katex.renderToString(est, { throwOnError: false }) }} />
+                    <td className="px-4 py-2 text-center text-sm">{bias}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            *s is slightly biased for σ because E[√s²] ≠ √E[s²] by Jensen{"'"}s inequality — bias is O(1/n) and negligible in practice.
+          </p>
+
+          <InterviewCallout>
+            Bias cannot be fixed with more data — only with better sampling. x̄ is unbiased for μ.
+            s² divides by n−1 (Bessel{"'"}s correction) because x̄ is estimated from the same data,
+            consuming one degree of freedom. The SE = s/√n measures how precisely x̄ estimates μ;
+            divided by SE, x̄ follows a t-distribution for small n and converges to standard normal
+            as n→∞ by CLT.
+          </InterviewCallout>
+        </Card>
+
+        {/* ── 11. Information Theory ── */}
+        <div id="sec-11" />
+        <Card>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The mathematical backbone of cross-entropy loss, KL divergence, decision tree splits, and
@@ -1429,9 +1571,9 @@ Examples:
         </Card>
 
         {/* ── 11. MLE ── */}
-        <div id="sec-11" />
+        <div id="sec-12" />
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -1484,9 +1626,9 @@ Examples:
         </Card>
 
         {/* ── 12. Hypothesis Testing ── */}
-        <div id="sec-12" />
+        <div id="sec-13" />
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -1554,9 +1696,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
         </Card>
 
         {/* ── 13. Confidence Intervals ── */}
-        <div id="sec-13" />
+        <div id="sec-14" />
         <Card>
-          <SectionLabel>Section 13</SectionLabel>
+          <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
@@ -1598,9 +1740,9 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
         </Card>
 
         {/* ── 14. A/B Testing ── */}
-        <div id="sec-14" />
+        <div id="sec-15" />
         <Card>
-          <SectionLabel>Section 14</SectionLabel>
+          <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -1659,9 +1801,9 @@ Step 6: Ship if p < α AND guardrails ok`}
         </Card>
 
         {/* ── 15. Bayesian Inference ── */}
-        <div id="sec-15" />
+        <div id="sec-16" />
         <Card>
-          <SectionLabel>Section 15</SectionLabel>
+          <SectionLabel>Section 16</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -1761,9 +1903,9 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 16. Interview Q&A ── */}
-        <div id="sec-16" />
+        <div id="sec-17" />
         <Card>
-          <SectionLabel>Section 16</SectionLabel>
+          <SectionLabel>Section 17</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1799,9 +1941,9 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 17. Cheat Sheet ── */}
-        <div id="sec-17" />
+        <div id="sec-18" />
         <Card>
-          <SectionLabel>Section 17</SectionLabel>
+          <SectionLabel>Section 18</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
