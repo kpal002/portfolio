@@ -1701,42 +1701,168 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
           <SectionLabel>Section 14</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
           <p className="text-sm leading-relaxed text-ink/90">
-            A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
-            would contain the true parameter. Not a probability statement about a single interval.
+            A confidence interval is a random interval constructed from sample data that contains the
+            true population parameter with a specified probability — the confidence level 1−α.
           </p>
 
-          <MathBlock
-            label="Confidence interval formulas"
-            lines={[
-              String.raw`\text{Mean (known }\sigma\text{):}\quad \bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}`,
-              String.raw`\text{Mean (unknown }\sigma\text{):}\quad \bar{x} \pm t_{\alpha/2,\,n-1} \cdot \frac{s}{\sqrt{n}}`,
-              String.raw`\text{Proportion:}\quad \hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}`,
-            ]}
-          />
-
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Correct Interpretation</p>
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Correct vs Wrong Interpretation</p>
           <div className="space-y-3">
             <div className="border-2 border-ink bg-bg p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">✗ Wrong</p>
-              <p className="text-sm text-ink/80">"There is a 95% probability the true parameter is in this interval." — The true parameter is fixed, not random. This interval either contains it or it doesn{"'"}t.</p>
+              <p className="text-sm text-ink/80">"There is a 95% probability that μ is in this interval." — μ is fixed (not random). This interval either contains it or it doesn{"'"}t.</p>
             </div>
             <div className="border-2 border-ink bg-accent p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-ink mb-1">✓ Correct</p>
-              <p className="text-sm text-ink">"If we repeated this study many times and built a CI each time, 95% of those intervals would contain the true parameter." Or: "We are 95% confident this interval captures the true value."</p>
+              <p className="text-sm text-ink">If you repeated the experiment infinitely many times, 100(1−α)% of the constructed intervals would contain the true μ. <strong>The interval is random, not the parameter.</strong></p>
             </div>
           </div>
 
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CI Width Depends On</p>
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Construction from CLT</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For large n, by CLT the standardized sample mean is approximately standard normal.
+            We find z&#x1D49;&#x2044;&#x2082; such that the central probability equals 1−α, then rearrange
+            to isolate μ:
+          </p>
+          <MathBlock
+            label="Derivation — isolating μ"
+            lines={[
+              String.raw`\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim \mathcal{N}(0,1)`,
+              String.raw`P\!\left(-z_{\alpha/2} \leq \frac{\bar{x}-\mu}{s/\sqrt{n}} \leq z_{\alpha/2}\right) = 1-\alpha`,
+              String.raw`\boxed{\text{CI} = \bar{x} \pm z_{\alpha/2}\frac{s}{\sqrt{n}}}`,
+            ]}
+          />
+
+          <p className="mt-4 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Critical values for common levels</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Confidence Level</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">α</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">z&#x1D49;&#x2044;&#x2082;</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[["90%", "0.10", "1.645"], ["95%", "0.05", "1.960"], ["99%", "0.01", "2.576"]].map(([cl, a, z]) => (
+                  <tr key={cl} className="border-b border-ink/30">
+                    <td className="px-4 py-2 font-bold">{cl}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{a}</td>
+                    <td className="px-4 py-2 text-center font-mono">{z}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Small Samples — t-Distribution</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When n is small, σ is unknown and estimated by s — adding uncertainty. The statistic
+            follows a t-distribution with n−1 degrees of freedom:
+          </p>
+          <MathBlock
+            label="t-interval (small n or unknown σ)"
+            lines={[
+              String.raw`\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim t_{n-1}`,
+              String.raw`\text{CI} = \bar{x} \pm t_{\alpha/2,\,n-1}\frac{s}{\sqrt{n}}`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            t&#x2099;₋₁ has heavier tails than N(0,1) — reflecting the extra uncertainty from
+            estimating σ with s. As n→∞, t&#x2099;₋₁ → N(0,1) and the two intervals converge.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Width of the CI — Three Levers</p>
+          <MathBlock
+            label="Width formula"
+            lines={[
+              String.raw`\text{Width} = 2\,z_{\alpha/2}\frac{s}{\sqrt{n}}`,
+            ]}
+          />
           <BulletList items={[
-            "Sample size n: larger n → narrower CI (√n in denominator)",
-            "Variance σ²: higher variance → wider CI",
-            "Confidence level: 99% CI is wider than 95% CI",
+            "Confidence level ↑ → z_{α/2} larger → wider interval. More confidence costs precision.",
+            "Sample size n ↑ → width shrinks at 1/√n. To halve the width, quadruple n.",
+            "Population variance σ² ↑ → wider interval. More variable population needs more data.",
           ]} />
 
-          <Insight label="CI vs Hypothesis Test — Equivalence">
-            A 95% CI for μ₁−μ₂ that excludes 0 ↔ two-sample t-test rejects H₀: μ₁=μ₂ at α=0.05. CI is
-            more informative: hypothesis test gives yes/no, CI gives effect size and uncertainty range.
-          </Insight>
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Connection to Hypothesis Testing — Duality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            CI and hypothesis testing are dual formulations of the same question. A two-sided test
+            of H₀: μ = μ₀ at level α rejects iff μ₀ falls outside the 1−α CI:
+          </p>
+          <MathBlock
+            label="Reject H₀ ↔ μ₀ outside CI"
+            lines={[
+              String.raw`\text{Reject }H_0 \iff \mu_0 \notin \left[\bar{x} - z_{\alpha/2}\frac{s}{\sqrt{n}},\; \bar{x} + z_{\alpha/2}\frac{s}{\sqrt{n}}\right]`,
+              String.raw`\iff |z| = \frac{|\bar{x}-\mu_0|}{s/\sqrt{n}} > z_{\alpha/2} \iff p\text{-value} < \alpha`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            The CI is the set of all μ₀ values you would <em>fail</em> to reject at level α. They
+            encode identical information — different presentations of the same inference.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Bootstrap Confidence Intervals</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When CLT is unreliable — small n, heavy tails, complex statistics like AUC or F1 — use
+            the bootstrap:
+          </p>
+          <BulletList items={[
+            "Resample B datasets of size n with replacement from your sample.",
+            "Compute the statistic θ̂⁽ᵇ⁾ on each resample.",
+            "The empirical distribution of {θ̂⁽ᵇ⁾} approximates the sampling distribution.",
+          ]} />
+          <MathBlock
+            label="Percentile bootstrap CI"
+            lines={[
+              String.raw`\text{CI} = \left[\hat{\theta}^{(\alpha/2 \cdot B)},\; \hat{\theta}^{((1-\alpha/2)\cdot B)}\right]`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            Take the α/2 and 1−α/2 quantiles of the bootstrap distribution. Justification:
+            by the Glivenko-Cantelli theorem, the empirical CDF F̂&#x2099; → F uniformly as n→∞,
+            so the bootstrap distribution converges to the true sampling distribution.
+          </p>
+
+          <p className="mt-8 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Frequentist CI vs Bayesian Credible Interval</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest"></th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Frequentist CI</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Bayesian Credible Interval</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["What is random", "The interval", "The parameter"],
+                  ["Interpretation", "95% of such intervals contain μ", "P(μ ∈ interval | data) = 0.95"],
+                  ["Requires prior", "No", "Yes"],
+                  ["Correct statement", `"The procedure captures μ 95% of the time"`, `"μ is in this interval with 95% probability"`],
+                ].map(([row, a, b]) => (
+                  <tr key={row} className="border-b border-ink/30">
+                    <td className="px-4 py-2 font-bold text-ink">{row}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{a}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-ink/80">
+            The Bayesian credible interval is what most people intuitively think a frequentist CI
+            means — but it requires a prior and gives a genuinely probabilistic statement about
+            the parameter.
+          </p>
+
+          <InterviewCallout>
+            A CI is a random interval — the parameter is fixed, the interval varies across samples.
+            95% CI means the construction procedure captures μ 95% of the time, not that this
+            specific interval has 95% probability. Use z-intervals for large n; t-intervals for
+            small n or unknown σ (heavier tails, n−1 df). Width = 2z·s/√n — to halve it, quadruple
+            n. CIs and two-sided hypothesis tests are duals: reject H₀ at α ↔ μ₀ outside 1−α CI.
+            Bootstrap CIs work for any statistic when CLT fails.
+          </InterviewCallout>
         </Card>
 
         {/* ── 14. A/B Testing ── */}
