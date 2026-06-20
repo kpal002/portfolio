@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import katex from "katex";
+import QABlock from "./QABlock";
 
 export const metadata = {
   title: "Probability & Statistics — Deep Dives — Kuntal Pal",
@@ -262,14 +263,15 @@ export default function ProbabilityStatisticsPage() {
               { n: 7,  label: "Law of Large Numbers",            id: "sec-7"  },
               { n: 8,  label: "Moment Generating Functions",     id: "sec-8"  },
               { n: 9,  label: "Central Limit Theorem",           id: "sec-9"  },
-              { n: 10, label: "Information Theory",              id: "sec-10" },
-              { n: 11, label: "Maximum Likelihood (MLE)",        id: "sec-11" },
-              { n: 12, label: "Hypothesis Testing",              id: "sec-12" },
-              { n: 13, label: "Confidence Intervals",            id: "sec-13" },
-              { n: 14, label: "A/B Testing",                     id: "sec-14" },
-              { n: 15, label: "Bayesian Inference",              id: "sec-15" },
-              { n: 16, label: "Interview Q&A",                   id: "sec-16" },
-              { n: 17, label: "Cheat Sheet",                     id: "sec-17" },
+              { n: 10, label: "Random Sampling & Estimation",    id: "sec-10" },
+              { n: 11, label: "Information Theory",              id: "sec-11" },
+              { n: 12, label: "Maximum Likelihood (MLE)",        id: "sec-12" },
+              { n: 13, label: "Hypothesis Testing",              id: "sec-13" },
+              { n: 14, label: "Confidence Intervals",            id: "sec-14" },
+              { n: 15, label: "A/B Testing",                     id: "sec-15" },
+              { n: 16, label: "Bayesian Inference",              id: "sec-16" },
+              { n: 17, label: "Interview Q&A",                   id: "sec-17" },
+              { n: 18, label: "Cheat Sheet",                     id: "sec-18" },
             ].map(({ n, label, id }) => (
               <a
                 key={id}
@@ -1227,10 +1229,151 @@ Examples:
           </InterviewCallout>
         </Card>
 
-        {/* ── 10. Information Theory ── */}
+        {/* ── 10. Random Sampling & Estimation ── */}
         <div id="sec-10" />
         <Card>
           <SectionLabel>Section 10</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Random Sampling {"&"} Parameter Estimation</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Random sampling is the process of selecting a subset from a population such that every sample
+            has a known, non-zero probability of being selected. It is the mechanism that makes statistical
+            inference possible — allowing you to draw conclusions about a population from a subset.
+          </p>
+
+          <p className="mt-6 mb-2 text-[11px] font-bold uppercase tracking-widest text-muted">Why It Matters</p>
+          <p className="text-sm leading-relaxed text-ink/90">
+            Without random sampling, estimates are biased. The classic failure: the 1936 Literary Digest
+            poll predicted Landon over Roosevelt by sampling phone book and car registration owners —
+            systematically missing poor voters. The sample size was 2.4 million. Still wrong.{" "}
+            <strong>Bias cannot be fixed by more data — only by better sampling.</strong>
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Simple Random Sampling (SRS)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            Every subset of size n from a population of size N is equally likely. Each individual has
+            selection probability n/N. The sample mean is an unbiased estimator of the population mean:
+          </p>
+          <MathBlock
+            label="SRS — selection probability and sampling distribution of X̄"
+            lines={[
+              String.raw`P(\text{any sample of size }n) = \frac{1}{\binom{N}{n}}`,
+              String.raw`\mathbb{E}[\bar{X}] = \mu, \qquad \mathrm{Var}(\bar{X}) = \frac{\sigma^2}{n}\!\left(1 - \frac{n}{N}\right)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            The factor (1 − n/N) is the <strong>finite population correction</strong> — it vanishes
+            when n ≪ N, recovering the standard σ²/n from the LLN.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Sample Mean — Estimating μ</p>
+          <MathBlock
+            label="Definition and unbiasedness proof"
+            lines={[
+              String.raw`\bar{x} = \frac{1}{n}\sum_{i=1}^{n}x_i`,
+              String.raw`\mathbb{E}[\bar{x}] = \frac{1}{n}\sum_{i=1}^{n}\mathbb{E}[x_i] = \frac{1}{n}\cdot n\mu = \mu \quad\checkmark`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            x̄ is an unbiased estimator of μ — no systematic over- or under-estimate.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Sample Variance — Estimating σ² (Bessel{"'"}s Correction)</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The naive estimator dividing by n is biased because x̄ is computed from the same sample —
+            it is closer to each xᵢ than μ is, systematically underestimating spread.
+          </p>
+          <MathBlock
+            label="The biased estimator and why it fails"
+            lines={[
+              String.raw`\tilde{s}^2 = \frac{1}{n}\sum_{i=1}^{n}(x_i - \bar{x})^2`,
+              String.raw`(x_i - \bar{x}) = (x_i - \mu) - (\bar{x} - \mu)`,
+              String.raw`\sum_i(x_i-\bar{x})^2 = \sum_i(x_i-\mu)^2 - n(\bar{x}-\mu)^2`,
+              String.raw`\mathbb{E}\!\left[\sum_i(x_i-\bar{x})^2\right] = n\sigma^2 - n\cdot\frac{\sigma^2}{n} = (n-1)\sigma^2`,
+              String.raw`\therefore\;\mathbb{E}[\tilde{s}^2] = \frac{(n-1)\sigma^2}{n} \neq \sigma^2`,
+            ]}
+          />
+          <MathBlock
+            label="Bessel's correction — unbiased estimator"
+            lines={[
+              String.raw`s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2`,
+              String.raw`\mathbb{E}[s^2] = \frac{1}{n-1}\cdot(n-1)\sigma^2 = \sigma^2 \quad\checkmark`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80 mb-3">
+            Dividing by n−1 instead of n corrects for the lost degree of freedom. Once x̄ is fixed,
+            only n−1 of the deviations (xᵢ−x̄) are free — the last is determined by
+            Σ(xᵢ−x̄) = 0.
+          </p>
+          <p className="text-sm leading-relaxed text-ink/80">
+            <strong>Geometric intuition:</strong> n data points live in ℝⁿ. Computing x̄ projects
+            onto a 1-dimensional subspace — the constraint Σ(xᵢ−x̄) = 0 confines residuals to an
+            (n−1)-dimensional subspace. Variance is computed in this subspace, so we divide by its
+            true dimension n−1.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Standard Error of the Mean</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            The variance of x̄ as an estimator — how much it fluctuates across different samples:
+          </p>
+          <MathBlock
+            label="SE and its sampling distribution"
+            lines={[
+              String.raw`\text{SE}(\bar{x}) = \frac{s}{\sqrt{n}}`,
+              String.raw`\frac{\bar{x}-\mu}{\text{SE}(\bar{x})} \;\sim\; t_{n-1} \;\xrightarrow{n\to\infty}\; \mathcal{N}(0,1)`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            For small n the t-distribution accounts for extra uncertainty from estimating σ with s —
+            heavier tails than Gaussian, converging to Gaussian as n grows.
+          </p>
+
+          <p className="mt-8 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Summary</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Quantity</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Population (unknown)</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Sample estimator</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Biased?</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Mean", "μ", String.raw`\bar{x}=\tfrac{1}{n}\textstyle\sum x_i`, "No"],
+                  ["Variance", "σ²", String.raw`s^2=\tfrac{1}{n-1}\textstyle\sum(x_i-\bar{x})^2`, "No"],
+                  ["Std dev", "σ", String.raw`s=\sqrt{s^2}`, "Slightly yes*"],
+                  ["Std error", String.raw`\sigma/\sqrt{n}`, String.raw`s/\sqrt{n}`, "No"],
+                ].map(([qty, pop, est, bias]) => (
+                  <tr key={qty} className="border-b border-ink/30">
+                    <td className="px-4 py-2 text-sm font-bold">{qty}</td>
+                    <td className="px-4 py-2 text-center text-sm font-mono"
+                      dangerouslySetInnerHTML={{ __html: katex.renderToString(pop, { throwOnError: false }) }} />
+                    <td className="px-4 py-2 text-center text-sm font-mono"
+                      dangerouslySetInnerHTML={{ __html: katex.renderToString(est, { throwOnError: false }) }} />
+                    <td className="px-4 py-2 text-center text-sm">{bias}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-muted">
+            *s is slightly biased for σ because E[√s²] ≠ √E[s²] by Jensen{"'"}s inequality — bias is O(1/n) and negligible in practice.
+          </p>
+
+          <InterviewCallout>
+            Bias cannot be fixed with more data — only with better sampling. x̄ is unbiased for μ.
+            s² divides by n−1 (Bessel{"'"}s correction) because x̄ is estimated from the same data,
+            consuming one degree of freedom. The SE = s/√n measures how precisely x̄ estimates μ;
+            divided by SE, x̄ follows a t-distribution for small n and converges to standard normal
+            as n→∞ by CLT.
+          </InterviewCallout>
+        </Card>
+
+        {/* ── 11. Information Theory ── */}
+        <div id="sec-11" />
+        <Card>
+          <SectionLabel>Section 11</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Information Theory for ML</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The mathematical backbone of cross-entropy loss, KL divergence, decision tree splits, and
@@ -1429,9 +1572,9 @@ Examples:
         </Card>
 
         {/* ── 11. MLE ── */}
-        <div id="sec-11" />
+        <div id="sec-12" />
         <Card>
-          <SectionLabel>Section 11</SectionLabel>
+          <SectionLabel>Section 12</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Maximum Likelihood Estimation (MLE)</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             Finds the parameter values that make the observed data most probable. The foundation of
@@ -1484,9 +1627,9 @@ Examples:
         </Card>
 
         {/* ── 12. Hypothesis Testing ── */}
-        <div id="sec-12" />
+        <div id="sec-13" />
         <Card>
-          <SectionLabel>Section 12</SectionLabel>
+          <SectionLabel>Section 13</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Hypothesis Testing</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A formal framework for deciding whether observed data provides enough evidence to reject a
@@ -1554,53 +1697,261 @@ IMPORTANT: failing to reject H₀ ≠ proving H₀`}
         </Card>
 
         {/* ── 13. Confidence Intervals ── */}
-        <div id="sec-13" />
-        <Card>
-          <SectionLabel>Section 13</SectionLabel>
-          <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
-          <p className="text-sm leading-relaxed text-ink/90">
-            A 95% CI means: if we repeated this experiment many times, 95% of the constructed intervals
-            would contain the true parameter. Not a probability statement about a single interval.
-          </p>
-
-          <MathBlock
-            label="Confidence interval formulas"
-            lines={[
-              String.raw`\text{Mean (known }\sigma\text{):}\quad \bar{x} \pm z_{\alpha/2} \cdot \frac{\sigma}{\sqrt{n}}`,
-              String.raw`\text{Mean (unknown }\sigma\text{):}\quad \bar{x} \pm t_{\alpha/2,\,n-1} \cdot \frac{s}{\sqrt{n}}`,
-              String.raw`\text{Proportion:}\quad \hat{p} \pm z_{\alpha/2} \sqrt{\frac{\hat{p}(1-\hat{p})}{n}}`,
-            ]}
-          />
-
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Correct Interpretation</p>
-          <div className="space-y-3">
-            <div className="border-2 border-ink bg-bg p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">✗ Wrong</p>
-              <p className="text-sm text-ink/80">"There is a 95% probability the true parameter is in this interval." — The true parameter is fixed, not random. This interval either contains it or it doesn{"'"}t.</p>
-            </div>
-            <div className="border-2 border-ink bg-accent p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-ink mb-1">✓ Correct</p>
-              <p className="text-sm text-ink">"If we repeated this study many times and built a CI each time, 95% of those intervals would contain the true parameter." Or: "We are 95% confident this interval captures the true value."</p>
-            </div>
-          </div>
-
-          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">CI Width Depends On</p>
-          <BulletList items={[
-            "Sample size n: larger n → narrower CI (√n in denominator)",
-            "Variance σ²: higher variance → wider CI",
-            "Confidence level: 99% CI is wider than 95% CI",
-          ]} />
-
-          <Insight label="CI vs Hypothesis Test — Equivalence">
-            A 95% CI for μ₁−μ₂ that excludes 0 ↔ two-sample t-test rejects H₀: μ₁=μ₂ at α=0.05. CI is
-            more informative: hypothesis test gives yes/no, CI gives effect size and uncertainty range.
-          </Insight>
-        </Card>
-
-        {/* ── 14. A/B Testing ── */}
         <div id="sec-14" />
         <Card>
           <SectionLabel>Section 14</SectionLabel>
+          <h2 className="mb-4 text-xl font-bold">Confidence Intervals</h2>
+          <p className="text-sm leading-relaxed text-ink/90">
+            A confidence interval is a random interval constructed from sample data that contains the
+            true population parameter with a specified probability — the confidence level 1−α.
+          </p>
+
+          <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Correct vs Wrong Interpretation</p>
+          <div className="space-y-3">
+            <div className="border-2 border-ink bg-bg p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">✗ Wrong</p>
+              <p className="text-sm text-ink/80">"There is a 95% probability that μ is in this interval." — μ is fixed (not random). This interval either contains it or it doesn{"'"}t.</p>
+            </div>
+            <div className="border-2 border-ink bg-accent p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-ink mb-1">✓ Correct</p>
+              <p className="text-sm text-ink">If you repeated the experiment infinitely many times, 100(1−α)% of the constructed intervals would contain the true μ. <strong>The interval is random, not the parameter.</strong></p>
+            </div>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Construction from CLT</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            For large n, by CLT the standardized sample mean is approximately standard normal.
+            We find z&#x1D49;&#x2044;&#x2082; such that the central probability equals 1−α, then rearrange
+            to isolate μ:
+          </p>
+          <MathBlock
+            label="Derivation — isolating μ"
+            lines={[
+              String.raw`\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim \mathcal{N}(0,1)`,
+              String.raw`P\!\left(-z_{\alpha/2} \leq \frac{\bar{x}-\mu}{s/\sqrt{n}} \leq z_{\alpha/2}\right) = 1-\alpha`,
+              String.raw`\boxed{\text{CI} = \bar{x} \pm z_{\alpha/2}\frac{s}{\sqrt{n}}}`,
+            ]}
+          />
+
+          {/* Worked example */}
+          <div className="mt-6 border-2 border-ink bg-bg p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-3">Worked Example — NFL Punter</p>
+            <p className="text-sm text-ink/80 mb-4">
+              A punter historically averages 41 yards/punt with SD 8 yards.
+              What is the probability their next 40 punts average at least 45 yards?
+            </p>
+            <MathBlock
+              lines={[
+                String.raw`\bar{X}_{40} = \frac{1}{40}\sum_{i=1}^{40}X_i, \quad \mathbb{E}[\bar{X}_{40}]=41, \quad \text{SD}(\bar{X}_{40})=\frac{8}{\sqrt{40}}`,
+                String.raw`P(\bar{X}_{40}\geq 45) = P\!\left(\frac{\bar{X}_{40}-41}{8/\sqrt{40}} \geq \frac{45-41}{8/\sqrt{40}}\right) = P(Z \geq 3.16)`,
+                String.raw`= 1 - \Phi(3.16) \approx 7.8\times10^{-4} \quad \text{(1 in 1\,000 chance)}`,
+              ]}
+            />
+            <p className="mt-3 text-sm text-ink/80">
+              The same standardization step — divide by SE = σ/√n, subtract μ — is exactly what
+              CI construction inverts: instead of computing a probability from a fixed x̄, the CI
+              finds all μ values consistent with the observed x̄.
+            </p>
+          </div>
+
+          <p className="mt-6 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Critical values for common levels</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest">Confidence Level</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">α</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">z&#x1D49;&#x2044;&#x2082;</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[["90%", "0.10", "1.645"], ["95%", "0.05", "1.960"], ["99%", "0.01", "2.576"]].map(([cl, a, z]) => (
+                  <tr key={cl} className="border-b border-ink/30">
+                    <td className="px-4 py-2 font-bold">{cl}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{a}</td>
+                    <td className="px-4 py-2 text-center font-mono">{z}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Small Samples — t-Distribution</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When n is small, σ is unknown and estimated by s — adding uncertainty. The statistic
+            follows a t-distribution with n−1 degrees of freedom:
+          </p>
+          <MathBlock
+            label="t-interval (small n or unknown σ)"
+            lines={[
+              String.raw`\frac{\bar{x}-\mu}{s/\sqrt{n}} \sim t_{n-1}`,
+              String.raw`\text{CI} = \bar{x} \pm t_{\alpha/2,\,n-1}\frac{s}{\sqrt{n}}`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            t&#x2099;₋₁ has heavier tails than N(0,1) — reflecting the extra uncertainty from
+            estimating σ with s. As n→∞, t&#x2099;₋₁ → N(0,1) and the two intervals converge.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Width of the CI — Three Levers</p>
+          <MathBlock
+            label="Width formula"
+            lines={[
+              String.raw`\text{Width} = 2\,z_{\alpha/2}\frac{s}{\sqrt{n}}`,
+            ]}
+          />
+          <BulletList items={[
+            "Confidence level ↑ → z_{α/2} larger → wider interval. More confidence costs precision.",
+            "Sample size n ↑ → width shrinks at 1/√n. To halve the width, quadruple n.",
+            "Population variance σ² ↑ → wider interval. More variable population needs more data.",
+          ]} />
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Connection to Hypothesis Testing — Duality</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            CI and hypothesis testing are dual formulations of the same question. A two-sided test
+            of H₀: μ = μ₀ at level α rejects iff μ₀ falls outside the 1−α CI:
+          </p>
+          <MathBlock
+            label="Reject H₀ ↔ μ₀ outside CI"
+            lines={[
+              String.raw`\text{Reject }H_0 \iff \mu_0 \notin \left[\bar{x} - z_{\alpha/2}\frac{s}{\sqrt{n}},\; \bar{x} + z_{\alpha/2}\frac{s}{\sqrt{n}}\right]`,
+              String.raw`\iff |z| = \frac{|\bar{x}-\mu_0|}{s/\sqrt{n}} > z_{\alpha/2} \iff p\text{-value} < \alpha`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            The CI is the set of all μ₀ values you would <em>fail</em> to reject at level α. They
+            encode identical information — different presentations of the same inference.
+          </p>
+
+          <p className="mt-8 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Bootstrap Confidence Intervals</p>
+          <p className="text-sm leading-relaxed text-ink/90 mb-3">
+            When CLT is unreliable — small n, heavy tails, complex statistics like AUC or F1 — use
+            the bootstrap:
+          </p>
+          <BulletList items={[
+            "Resample B datasets of size n with replacement from your sample.",
+            "Compute the statistic θ̂⁽ᵇ⁾ on each resample.",
+            "The empirical distribution of {θ̂⁽ᵇ⁾} approximates the sampling distribution.",
+          ]} />
+          <MathBlock
+            label="Percentile bootstrap CI"
+            lines={[
+              String.raw`\text{CI} = \left[\hat{\theta}^{(\alpha/2 \cdot B)},\; \hat{\theta}^{((1-\alpha/2)\cdot B)}\right]`,
+            ]}
+          />
+          <p className="text-sm leading-relaxed text-ink/80">
+            Take the α/2 and 1−α/2 quantiles of the bootstrap distribution. Justification:
+            by the Glivenko-Cantelli theorem, the empirical CDF F̂&#x2099; → F uniformly as n→∞,
+            so the bootstrap distribution converges to the true sampling distribution.
+          </p>
+
+          <p className="mt-8 mb-3 text-[11px] font-bold uppercase tracking-widest text-muted">Frequentist CI vs Bayesian Credible Interval</p>
+          <div className="overflow-x-auto">
+            <table className="w-full border-2 border-ink text-sm">
+              <thead>
+                <tr className="border-b-2 border-ink bg-ink text-bg">
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest"></th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Frequentist CI</th>
+                  <th className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-widest">Bayesian Credible Interval</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["What is random", "The interval", "The parameter"],
+                  ["Interpretation", "95% of such intervals contain μ", "P(μ ∈ interval | data) = 0.95"],
+                  ["Requires prior", "No", "Yes"],
+                  ["Correct statement", `"The procedure captures μ 95% of the time"`, `"μ is in this interval with 95% probability"`],
+                ].map(([row, a, b]) => (
+                  <tr key={row} className="border-b border-ink/30">
+                    <td className="px-4 py-2 font-bold text-ink">{row}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{a}</td>
+                    <td className="px-4 py-2 text-center text-ink/80">{b}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-sm leading-relaxed text-ink/80">
+            The Bayesian credible interval is what most people intuitively think a frequentist CI
+            means — but it requires a prior and gives a genuinely probabilistic statement about
+            the parameter.
+          </p>
+
+          <InterviewCallout>
+            A CI is a random interval — the parameter is fixed, the interval varies across samples.
+            95% CI means the construction procedure captures μ 95% of the time, not that this
+            specific interval has 95% probability. Use z-intervals for large n; t-intervals for
+            small n or unknown σ (heavier tails, n−1 df). Width = 2z·s/√n — to halve it, quadruple
+            n. CIs and two-sided hypothesis tests are duals: reject H₀ at α ↔ μ₀ outside 1−α CI.
+            Bootstrap CIs work for any statistic when CLT fails.
+          </InterviewCallout>
+
+          <QABlock items={[
+            {
+              q: `What is wrong with saying "95% probability that μ is in this CI"?`,
+              a: (<>
+                <p className="mb-3">μ is a fixed unknown constant — not a random variable. It is either in the interval or it is not. Probability statements about fixed constants are meaningless in the frequentist framework.</p>
+                <p className="mb-3">What is random is the interval itself — x̄ and s vary across samples, so the CI endpoints vary. The correct statement: <em>"The procedure that generated this interval, if repeated infinitely, would produce intervals containing μ 95% of the time."</em></p>
+                <p className="mb-3">Concretely: once you observe x̄ = 5.2 and compute [4.1, 6.3], the probability that μ ∈ [4.1, 6.3] is either 0 or 1 — you just don{"'"}t know which. The 95% is a property of the procedure, not of any single realized interval.</p>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">The Bayesian statement IS valid</p>
+                <MathBlock lines={[String.raw`P(\mu \in \text{CI} \mid \text{data}) = 0.95`]} />
+                <p className="mt-2">This is a <strong>credible interval</strong> — requires a prior on μ and treats μ as a random variable. The statement most people intuitively want requires the Bayesian framework.</p>
+              </>),
+            },
+            {
+              q: "You construct 20 CIs at 95% — how many do you expect to miss?",
+              a: (<>
+                <p className="mb-3">Each CI independently misses μ with probability α = 0.05. Number of misses ~ Binomial(20, 0.05):</p>
+                <MathBlock lines={[
+                  String.raw`\mathbb{E}[\text{misses}] = 20 \times 0.05 = 1`,
+                  String.raw`\text{Var}(\text{misses}) = 20 \times 0.05 \times 0.95 = 0.95`,
+                  String.raw`P(\text{no misses}) = (0.95)^{20} = 0.358`,
+                  String.raw`P(\text{misses} \geq 2) = 1 - 0.358 - 0.377 = 0.265`,
+                ]} />
+                <p className="mt-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Why this matters for multiple testing</p>
+                <p className="mb-3">If you test 20 hypotheses each at α = 0.05, the familywise error rate — probability of at least one false positive — is:</p>
+                <MathBlock lines={[
+                  String.raw`\text{FWER} = 1-(1-0.05)^{20} = 1-0.358 = 0.642`,
+                ]} />
+                <p className="mt-2">64% chance of at least one false positive. The per-test α and the experiment-wide α are completely different things — exactly why multiple testing corrections (Bonferroni, Benjamini-Hochberg) exist.</p>
+              </>),
+            },
+            {
+              q: "A 95% CI for the difference in means is [−0.3, 4.2]. What can you conclude at α = 0.05?",
+              a: (<>
+                <p className="mb-3">Fail to reject H₀: μ₁ − μ₂ = 0 at α = 0.05. The CI and two-sided hypothesis test are equivalent — the CI is the set of all δ₀ values you would fail to reject:</p>
+                <MathBlock lines={[
+                  String.raw`\text{Fail to reject }H_0:\mu_1-\mu_2=\delta_0 \iff \delta_0 \in \text{CI}`,
+                ]} />
+                <p className="mt-3 mb-3">Since 0 ∈ [−0.3, 4.2], the null value is inside the interval — fail to reject.</p>
+                <p className="mb-3">But the CI tells you something the p-value cannot: the effect could range from −0.3 to 4.2. This wide interval means the test is <strong>underpowered</strong> — failing to reject does not mean no effect, it means insufficient evidence.</p>
+                <p>Contrast with CI = [−0.02, 0.03]: also fails to reject, but now you know the effect is negligible in magnitude. The CI gives you this — the p-value alone does not.</p>
+              </>),
+            },
+            {
+              q: "Why does a wider CI not mean a better estimate?",
+              a: (<>
+                <p className="mb-3">A CI has two properties: <strong>coverage</strong> (does it contain μ?) and <strong>precision</strong> (how wide is it?). Width and quality pull in opposite directions.</p>
+                <p className="mb-3">The trivial CI (−∞, +∞) has 100% coverage — it always contains μ. But it tells you nothing. It is the worst possible estimate.</p>
+                <MathBlock lines={[String.raw`\text{Width} = 2z_{\alpha/2}\frac{s}{\sqrt{n}}`]} />
+                <p className="mt-3 mb-2">A wider CI means one of:</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm mb-3">
+                  <li>Higher confidence level 1−α → you paid for coverage with precision</li>
+                  <li>Large s → high population variance, noisy data</li>
+                  <li>Small n → insufficient data</li>
+                </ul>
+                <p className="mb-3">None of these make the estimate better — they reflect a deliberate trade-off or a data limitation. A better estimate is one that is <em>narrow</em> AND has correct coverage. The only lever that achieves this:</p>
+                <MathBlock lines={[String.raw`\text{Width} \propto \frac{1}{\sqrt{n}}`]} />
+                <p className="mt-2">Quadrupling n halves the width. More data strictly dominates higher confidence if the goal is a precise, reliable estimate.</p>
+              </>),
+            },
+          ]} />
+        </Card>
+
+        {/* ── 14. A/B Testing ── */}
+        <div id="sec-15" />
+        <Card>
+          <SectionLabel>Section 15</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">A/B Testing in Production</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             The gold standard for measuring causal effects of changes. Connects directly to hypothesis
@@ -1659,9 +2010,9 @@ Step 6: Ship if p < α AND guardrails ok`}
         </Card>
 
         {/* ── 15. Bayesian Inference ── */}
-        <div id="sec-15" />
+        <div id="sec-16" />
         <Card>
-          <SectionLabel>Section 15</SectionLabel>
+          <SectionLabel>Section 16</SectionLabel>
           <h2 className="mb-4 text-xl font-bold">Bayesian Inference</h2>
           <p className="text-sm leading-relaxed text-ink/90">
             A framework for updating beliefs using data. Unlike frequentist statistics (fixed estimates),
@@ -1761,9 +2112,9 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 16. Interview Q&A ── */}
-        <div id="sec-16" />
+        <div id="sec-17" />
         <Card>
-          <SectionLabel>Section 16</SectionLabel>
+          <SectionLabel>Section 17</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Interview Q{"&"}A — Quick Reference</h2>
           <p className="mb-6 text-sm text-ink/70">Practice answering each in under 90 seconds.</p>
           <div className="space-y-5">
@@ -1799,9 +2150,9 @@ Advantages over frequentist:
         </Card>
 
         {/* ── 17. Cheat Sheet ── */}
-        <div id="sec-17" />
+        <div id="sec-18" />
         <Card>
-          <SectionLabel>Section 17</SectionLabel>
+          <SectionLabel>Section 18</SectionLabel>
           <h2 className="mb-6 text-xl font-bold">Quick Reference Cheat Sheet</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {[
