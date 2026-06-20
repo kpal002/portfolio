@@ -995,6 +995,18 @@ export default function ClassicalMLPage() {
             random subsets of data and features, then averaging predictions.
           </p>
 
+          <div className="mt-6 border-2 border-ink overflow-hidden">
+            <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted border-b-2 border-ink bg-bg">
+              Animation — How Random Forests Work
+            </p>
+            <iframe
+              src="/rf-animation.html"
+              className="w-full"
+              style={{ height: "540px", border: "none" }}
+              title="Random Forest Explained"
+            />
+          </div>
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Two Sources of Randomness</p>
           <CodeBlock
             label="Bagging + feature randomness"
@@ -1075,7 +1087,54 @@ result = permutation_importance(rf, X_val, y_val)
             },
             {
               q: "Why does Random Forest reduce variance but not bias?",
-              a: "Each tree in a Random Forest is an unbiased (or near-unbiased) estimator on its training data — grown deep, it fits the data closely. Averaging N uncorrelated estimators reduces the variance of the mean by a factor of N, but it doesn't change the expected value of each estimator. So bias stays the same (whatever the single-tree bias was) and variance drops. Boosting attacks bias instead: each weak learner has high bias, and sequential fitting of residuals iteratively corrects systematic errors, trading some variance for lower bias.",
+              a: (<>
+                <p className="mb-4">B trees each with variance σ² and pairwise correlation ρ. We want Var(ensemble average):</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 1 — Pull the constant out</p>
+                <MathBlock lines={[
+                  String.raw`\mathrm{Var}\!\left(\frac{1}{B}\sum_{b=1}^B T_b\right) = \frac{1}{B^2}\,\mathrm{Var}\!\left(\sum_{b=1}^B T_b\right)`,
+                ]} />
+
+                <p className="mt-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 2 — Expand variance of a sum</p>
+                <MathBlock lines={[
+                  String.raw`\mathrm{Var}\!\left(\sum T_b\right) = \sum_{b=1}^B \mathrm{Var}(T_b) + 2\!\sum_{i<j}\mathrm{Cov}(T_i,T_j)`,
+                  String.raw`= B\sigma^2 + B(B-1)\cdot\rho\sigma^2 \quad\leftarrow \mathrm{Cov}(T_i,T_j)=\rho\sigma^2,\;\binom{B}{2}\text{ pairs}`,
+                ]} />
+
+                <p className="mt-3 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Step 3 — Divide by B²</p>
+                <MathBlock lines={[
+                  String.raw`\mathrm{Var}\!\left(\frac{1}{B}\sum T_b\right) = \frac{B\sigma^2}{B^2}+\frac{B(B-1)\rho\sigma^2}{B^2}`,
+                  String.raw`\boxed{= \frac{\sigma^2}{B} + \frac{B-1}{B}\,\rho\sigma^2}`,
+                ]} />
+
+                <p className="mt-4 mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">Two terms, two insights</p>
+                <ul className="space-y-2 mb-4 text-sm">
+                  <li><strong>σ²/B</strong> — vanishes as B→∞. Adding more trees always helps here. This is the pure averaging benefit.</li>
+                  <li><strong>(B−1)/B · ρσ²</strong> — as B→∞ this → ρσ². It is the <strong>irreducible floor</strong> set by inter-tree correlation.</li>
+                </ul>
+                <MathBlock lines={[
+                  String.raw`\lim_{B\to\infty}\mathrm{Var}\!\left(\tfrac{1}{B}\sum T_b\right) = \rho\sigma^2`,
+                ]} />
+                <p className="mt-2 mb-4 text-sm">You can never beat ρσ² no matter how many trees you add. This is why feature randomization (reducing ρ) matters more than adding trees beyond a point.</p>
+
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Two special cases</p>
+                <MathBlock lines={[
+                  String.raw`\rho=0:\quad\mathrm{Var}=\frac{\sigma^2}{B}\to 0 \quad\text{(perfect variance elimination)}`,
+                  String.raw`\rho=1:\quad\mathrm{Var}=\frac{\sigma^2}{B}+\frac{B-1}{B}\sigma^2=\sigma^2 \quad\text{(averaging does nothing)}`,
+                ]} />
+
+                <p className="mt-4 mb-1 text-[10px] font-bold uppercase tracking-widest text-muted">Why bias is unchanged</p>
+                <MathBlock lines={[
+                  String.raw`\mathbb{E}[F(x)] = \frac{1}{B}\sum_{b=1}^B\mathbb{E}[T_b(x)] = \mathbb{E}[T_b(x)]`,
+                ]} />
+                <p className="mt-2 mb-3 text-sm">Averaging does not shift the center of a distribution — only tightens it. The ensemble{"'"}s expected prediction equals a single tree{"'"}s expected prediction. Bias is identical.</p>
+
+                <p className="mb-2 text-sm">Feature randomization does technically raise bias slightly (trees can{"'"}t always split on the best feature), but deep trees have low bias to begin with and the variance reduction from decorrelation far outweighs it:</p>
+                <MathBlock lines={[
+                  String.raw`\mathrm{Bias}_{RF} \approx \mathrm{Bias}_{\text{single tree}}\quad\text{(slightly higher, negligible)}`,
+                  String.raw`\mathrm{Var}_{RF} \ll \mathrm{Var}_{\text{single tree}}`,
+                ]} />
+              </>),
             },
           ]} />
         </Card>
