@@ -995,6 +995,18 @@ export default function ClassicalMLPage() {
             random subsets of data and features, then averaging predictions.
           </p>
 
+          <div className="mt-6 border-2 border-ink overflow-hidden">
+            <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted border-b-2 border-ink bg-bg">
+              Animation — How Random Forests Work
+            </p>
+            <iframe
+              src="/rf-animation.html"
+              className="w-full"
+              style={{ height: "540px", border: "none" }}
+              title="Random Forest Explained"
+            />
+          </div>
+
           <p className="mt-6 mb-1 text-[11px] font-bold uppercase tracking-widest text-muted">Two Sources of Randomness</p>
           <CodeBlock
             label="Bagging + feature randomness"
